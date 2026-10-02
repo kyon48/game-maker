@@ -280,7 +280,7 @@ interface PackSource {
 |---|---|
 | 맵 | `orientation: "orthogonal"`, `infinite: false`, `tilewidth = tileheight = game.tileSize`. 위반하면 검증 오류 |
 | 타일셋 | 임베드 또는 외부 `.tsj`. 여러 개 허용(`firstgid`). 이미지 경로는 `.tmj`/`.tsj` 파일 위치 기준 |
-| 타일 GID | 상위 3비트(뒤집기 플래그)는 마스킹해서 무시. MVP 밖 |
+| 타일 GID | 상위 4비트(뒤집기 플래그)는 마스킹해서 무시. MVP 밖 |
 | 레이어 `collision` | tilelayer. GID가 0이 아니면 통행 불가. 그리지 않음. 없으면 전부 통행 가능 |
 | 레이어 이름이 `over_`로 시작 | 캐릭터 위에 그림 |
 | 그 외 tilelayer | 캐릭터 아래에 Tiled 순서대로 그림. `visible: false`는 그리지 않음 |

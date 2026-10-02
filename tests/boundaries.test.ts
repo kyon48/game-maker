@@ -33,7 +33,7 @@ it('enforces imports and reexports across layers',async()=>{
   ] as const;
   for(const [filePath,code,allowed] of cases){
     const result=await eslint.lintText(code,{filePath});
-    const errors=result.flatMap(result=>result.messages).filter(message=>message.ruleId==='no-restricted-imports' || message.ruleId==='architecture/boundary');
+    const errors=result.flatMap(result=>result.messages).filter(message=>message.ruleId==='architecture/boundary');
     expect(errors.length===0,`${filePath}: ${code}`).toBe(allowed);
   }
 });

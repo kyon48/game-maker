@@ -1,4 +1,4 @@
-import type { TextMeasurer } from '@engine/api';
+import type { TextMeasurer } from './ports';
 export class HeadlessTextMeasurer implements TextMeasurer {
   constructor(private readonly fontSize: number) {}
   width(text: string): number {

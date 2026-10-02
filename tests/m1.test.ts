@@ -5,7 +5,7 @@ import { Keyboard } from '../engine/platform/keyboard';
 import { integerScale } from '../engine/platform/scale';
 import { loadTiled, markers, tileGid } from '../engine/data/loader/tiled';
 import { packPath } from '../engine/data/loader/path';
-import { HeadlessTextMeasurer } from '../engine/data/loader/textMeasurer';
+import { HeadlessTextMeasurer } from '../engine/sim/HeadlessTextMeasurer';
 import { drawTileMap } from '../engine/platform/renderer/tileMap';
 import type { Action, PackSource } from '../engine/sim/ports';
 import { readFileSync } from 'node:fs';
