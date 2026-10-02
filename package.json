@@ -1,0 +1,26 @@
+{
+  "name": "game-maker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.sim.json",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "check": "npm run typecheck && npm run lint && npm run test",
+    "tiles": "tsx tools/generate-tiles.ts"
+  },
+  "dependencies": {
+    "@sinclair/typebox": "^0.34.41"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vite": "^7.1.9",
+    "vitest": "^3.2.4",
+    "eslint": "^9.37.0",
+    "typescript-eslint": "^8.46.0",
+    "tsx": "^4.20.6",
+    "@types/node": "^22.18.10"
+  }
+}

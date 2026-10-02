@@ -1,0 +1,30 @@
+{
+  "id": "demo",
+  "title": "작은 마을",
+  "version": "0.1.0",
+  "formatVersion": 1,
+  "screen": {
+    "width": 320,
+    "height": 240
+  },
+  "tileSize": 16,
+  "maps": [
+    "village"
+  ],
+  "start": {
+    "map": "village",
+    "x": 15,
+    "y": 10,
+    "dir": "down"
+  },
+  "player": "hero",
+  "plugins": [],
+  "labels": {
+    "continue": "이어하기",
+    "newGame": "처음부터"
+  },
+  "state": {
+    "flags": {},
+    "vars": {}
+  }
+}
