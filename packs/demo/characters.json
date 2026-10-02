@@ -1,1 +1,15 @@
-{"hero": {"placeholder": "#ffd866", "moveTicks": 16}}
+{
+  "hero": {
+    "sheet": "assets/characters/hero.png",
+    "frameWidth": 16,
+    "frameHeight": 24,
+    "moveTicks": 16
+  },
+  "elder": {
+    "placeholder": "#c08040",
+    "moveTicks": 20
+  },
+  "flower": {
+    "placeholder": "#ec81ae"
+  }
+}

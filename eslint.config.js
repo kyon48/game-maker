@@ -1,12 +1,12 @@
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import tseslint from 'typescript-eslint';
-const boundary = (regex, allowTypeImports = false) => ({ regex, allowTypeImports, message: '명세 §4.2 import 경계 위반' });
-const typebox = '@sinclair/typebox(?:/.*)?';
-const local = '(?:\\./|\\.\\./)';
+const configRoot = path.dirname(fileURLToPath(import.meta.url));
+const projectPath = (filename, cwd) => path.relative(configRoot, path.resolve(cwd, filename)).split(path.sep).join('/');
 const resolvedBoundary = {
   meta: { type: 'problem', schema: [], messages: { boundary: '명세 §4.2 import 경계 위반: {{source}}' } },
   create(context) {
-    const origin = path.relative(process.cwd(), context.filename).split(path.sep).join('/');
+    const origin = projectPath(context.filename, context.cwd);
     const layer = origin.match(/^engine\/(sim|data|api)\//)?.[1];
     const plugin = /^packs\/[^/]+\/plugins\//.test(origin);
     const tool = origin.startsWith('tools/');
@@ -17,7 +17,7 @@ const resolvedBoundary = {
       const typeOnly = node.importKind === 'type' || node.exportKind === 'type'
         || (node.specifiers?.length > 0 && node.specifiers.every(specifier => specifier.importKind === 'type' || specifier.exportKind === 'type'));
       const target = source.startsWith('.')
-        ? path.relative(process.cwd(), path.resolve(path.dirname(context.filename), source)).split(path.sep).join('/')
+        ? projectPath(path.resolve(context.cwd, path.dirname(context.filename), source), context.cwd)
         : source.startsWith('@engine/') ? 'engine/' + source.slice(8) : source;
       const targetLayer = target.match(/^engine\/(sim|data|api)(?:\/|$)/)?.[1];
       const typebox = /^@sinclair\/typebox(?:\/|$)/.test(source);
@@ -36,20 +36,7 @@ export default tseslint.config(
   { ignores: ['node_modules/**', 'dist/**', '.omc/**', 'docs/**'] },
   ...tseslint.configs.recommended,
   { plugins: { architecture: { rules: { boundary: resolvedBoundary } } }, rules: { 'architecture/boundary': 'error' } },
-  { files: ['engine/sim/**/*.ts'], rules: {
-    'no-restricted-imports': ['error', { patterns: [boundary('(?:^|/)(?:platform|tools|packs)(?:/|$)'), boundary('(?:^@engine/api$|(?:^|/)api(?:/|$))', true), boundary(`^(?!${typebox}$|${local}|@engine/(?:sim|data|api)(?:/|$)).*`)] }],
+  { files: ['**/engine/sim/**/*.ts'], rules: {
     'no-restricted-properties': ['error', { object: 'Math', property: 'random' }, { object: 'Date', property: 'now' }, { object: 'performance', property: 'now' }],
-  } },
-  { files: ['engine/data/**/*.ts'], rules: {
-    'no-restricted-imports': ['error', { patterns: [boundary('(?:^|/)(?:sim|platform|tools|packs)(?:/|$)'), boundary('(?:^@engine/api$|(?:^|/)api(?:/|$))', true), boundary(`^(?!${typebox}$|${local}|@engine/(?:data|api)(?:/|$)).*`)] }],
-  } },
-  { files: ['engine/api/**/*.ts'], rules: {
-    'no-restricted-imports': ['error', { patterns: [boundary(`^(?!${typebox}$|${local}(?!.*platform|.*tools|.*packs)|@engine/(?:sim|data)(?:/|$)).*`)] }],
-  } },
-  { files: ['packs/*/plugins/**/*.ts'], rules: {
-    'no-restricted-imports': ['error', { patterns: [boundary(`^(?!@engine/api$|${typebox}$).*`)] }],
-  } },
-  { files: ['tools/**/*.ts'], rules: {
-    'no-restricted-imports': ['error', { patterns: [boundary('(?:^|/)platform(?:/|$)')] }],
   } },
 );

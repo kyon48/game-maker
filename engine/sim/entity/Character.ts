@@ -1,0 +1,74 @@
+import type { CharacterDefinition } from '../../data/characters';
+export type Dir = 'up' | 'down' | 'left' | 'right';
+export const directions: readonly Dir[] = ['up', 'down', 'left', 'right'];
+const delta: Readonly<Record<Dir, { x: number; y: number }>> = {
+  up: { x: 0, y: -1 }, down: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 },
+};
+interface Movement { readonly x: number; readonly y: number; elapsed: number }
+export interface CharacterSnapshot {
+  readonly id: string; readonly graphic: CharacterDefinition | undefined;
+  readonly pixelX: number; readonly pixelY: number; readonly dir: Dir; readonly frame: number;
+  readonly active: boolean; readonly visible: boolean;
+}
+export class Character {
+  private movement: Movement | undefined;
+  private walkingTicks = 0;
+  private tileX: number;
+  private tileY: number;
+  dir: Dir;
+  active = true;
+  visible = true;
+  through = false;
+  readonly moveTicks: number;
+  readonly graphic: CharacterDefinition | undefined;
+  constructor(readonly id: string, x: number, y: number, dir: Dir,
+    readonly tileSize: number, graphic?: CharacterDefinition) {
+    if (!Number.isSafeInteger(tileSize) || tileSize < 1) throw new Error(`Invalid tile size: ${id}`);
+    if (graphic && (typeof graphic.sheet === 'string') === (typeof graphic.placeholder === 'string')) throw new Error(`Expected one character graphic: ${id}`);
+    if (!Number.isInteger(x) || !Number.isInteger(y) || !directions.includes(dir)) throw new Error(`Invalid character placement: ${id}`);
+    this.tileX = x; this.tileY = y; this.dir = dir;
+    this.moveTicks = graphic?.moveTicks ?? 16;
+    if (!Number.isSafeInteger(this.moveTicks) || this.moveTicks < 1) throw new Error(`Invalid moveTicks: ${id}`);
+    if (graphic && 'sheet' in graphic && graphic.sheet !== undefined) {
+      const frameTicks = graphic.frameTicks ?? 8, walkFrames = graphic.walkFrames ?? [0, 1, 0, 2];
+      const rows = graphic.rows ?? { down: 0, left: 1, right: 2, up: 3 };
+      if (!Number.isSafeInteger(frameTicks) || frameTicks < 1 || !walkFrames.length
+        || !walkFrames.every(frame => Number.isSafeInteger(frame) && frame >= 0)
+        || !directions.every(dir => Number.isSafeInteger(rows[dir]) && rows[dir] >= 0)
+        || !Number.isSafeInteger(graphic.frameWidth) || graphic.frameWidth < 1
+        || !Number.isSafeInteger(graphic.frameHeight) || graphic.frameHeight < 1) throw new Error(`Invalid character sheet: ${id}`);
+      this.graphic = { ...graphic, frameTicks, walkFrames: [...walkFrames], rows: { ...rows } };
+    } else this.graphic = graphic && { ...graphic };
+  }
+  get x(): number { return this.tileX; }
+  get y(): number { return this.tileY; }
+  get moving(): boolean { return this.movement !== undefined; }
+  get destination(): Readonly<{ x: number; y: number }> | undefined { return this.movement; }
+  get pixelX(): number {
+    return (this.x + (this.movement ? (this.movement.x - this.x) * this.movement.elapsed / this.moveTicks : 0)) * this.tileSize;
+  }
+  get pixelY(): number {
+    return (this.y + (this.movement ? (this.movement.y - this.y) * this.movement.elapsed / this.moveTicks : 0)) * this.tileSize;
+  }
+  target(dir: Dir): { x: number; y: number } { return { x: this.x + delta[dir].x, y: this.y + delta[dir].y }; }
+  beginMove(x: number, y: number): void {
+    if (this.moving || !Number.isInteger(x) || !Number.isInteger(y) || Math.abs(x - this.x) + Math.abs(y - this.y) !== 1) throw new Error(`Invalid movement: ${this.id}`);
+    this.movement = { x, y, elapsed: 0 };
+  }
+  stand(): void { if (!this.moving) this.walkingTicks = 0; }
+  advance(): boolean {
+    if (!this.movement) return false;
+    this.movement.elapsed++; this.walkingTicks++;
+    if (this.movement.elapsed < this.moveTicks) return false;
+    this.tileX = this.movement.x; this.tileY = this.movement.y; this.movement = undefined;
+    return true;
+  }
+  snapshot(): CharacterSnapshot {
+    const graphic = this.graphic;
+    const frame = graphic && 'sheet' in graphic && graphic.sheet !== undefined
+      ? graphic.walkFrames![this.moving ? Math.floor(this.walkingTicks / graphic.frameTicks!) % graphic.walkFrames!.length : 0]!
+      : 0;
+    return { id: this.id, graphic, pixelX: this.pixelX, pixelY: this.pixelY, dir: this.dir,
+      frame, active: this.active, visible: this.visible };
+  }
+}

@@ -1,1 +1,28 @@
-{"events": []}
+{
+  "events": [
+    {
+      "id": "elder",
+      "x": 17,
+      "y": 10,
+      "pages": [
+        {
+          "character": "elder",
+          "dir": "left",
+          "trigger": "none"
+        }
+      ]
+    },
+    {
+      "id": "flower",
+      "x": 13,
+      "y": 11,
+      "pages": [
+        {
+          "character": "flower",
+          "through": true,
+          "trigger": "none"
+        }
+      ]
+    }
+  ]
+}

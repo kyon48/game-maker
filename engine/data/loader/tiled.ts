@@ -11,15 +11,19 @@ export interface TileLayer {
 interface ObjectLayer {
   type: 'objectgroup'; name: string; objects: { name: string; point?: boolean; x: number; y: number }[];
 }
+export interface TileReference {
+  readonly tileset: Tileset; readonly sourceX: number; readonly sourceY: number;
+}
 export interface TileMapData {
   width: number; height: number; tilewidth: number; tileheight: number;
   layers: (TileLayer | ObjectLayer)[]; tilesets: Tileset[];
+  tileLookup: ReadonlyMap<number, TileReference>;
 }
-interface RawMap extends Omit<TileMapData, 'tilesets'> {
+interface RawMap extends Omit<TileMapData, 'tilesets' | 'tileLookup'> {
   orientation: string; infinite: boolean;
   tilesets: (Tileset | { firstgid: number; source: string })[];
 }
-export const tileGid = (gid: number): number => (gid >>> 0) & 0x1fffffff;
+export const tileGid = (gid: number): number => (gid >>> 0) & 0x0fffffff;
 export async function loadTiled(source: PackSource, path: string, tileSize: number): Promise<TileMapData> {
   const raw = await source.readJson(path) as RawMap;
   if (raw.orientation !== 'orthogonal' || raw.infinite !== false || raw.tilewidth !== tileSize || raw.tileheight !== tileSize
@@ -48,7 +52,19 @@ export async function loadTiled(source: PackSource, path: string, tileSize: numb
     return { ...set, firstgid: entry.firstgid, image: packPath(owner, set.image) };
   }));
   tilesets.sort((a, b) => a.firstgid - b.firstgid);
-  return { ...raw, tilesets };
+  const tileLookup = new Map<number, TileReference>();
+  for (const set of tilesets) {
+    if (set.firstgid + set.tilecount - 1 > 0x0fffffff) throw new Error(`Invalid tileset range: ${path}`);
+    const spacing = set.spacing ?? 0, margin = set.margin ?? 0;
+    for (let tile = 0; tile < set.tilecount; tile++) {
+      const gid = set.firstgid + tile;
+      if (tileLookup.has(gid)) throw new Error(`Overlapping tilesets: ${path}`);
+      tileLookup.set(gid, { tileset: set,
+        sourceX: margin + (tile % set.columns) * (set.tilewidth + spacing),
+        sourceY: margin + Math.floor(tile / set.columns) * (set.tileheight + spacing) });
+    }
+  }
+  return { ...raw, tilesets, tileLookup };
 }
 export function markers(map: TileMapData): ReadonlyMap<string, { x: number; y: number }> {
   const points = new Map<string, { x: number; y: number }>();
