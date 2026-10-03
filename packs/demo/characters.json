@@ -11,5 +11,11 @@
   },
   "flower": {
     "placeholder": "#ec81ae"
+  },
+  "chest_closed": {
+    "placeholder": "#996633"
+  },
+  "chest_open": {
+    "placeholder": "#665544"
   }
 }

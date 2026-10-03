@@ -19,7 +19,7 @@ function mapData(blocked: number[] = []): TileMapData {
 }
 const placeholder: CharacterDefinition = { placeholder: '#123456', moveTicks: 4 };
 const actor = (id: string, x: number, y: number) => new Character(id, x, y, 'down', 16, placeholder);
-const input = (...actions: Action[]): InputFrame => ({ held: new Set(actions), pressed: new Set() });
+const input = (...actions: Action[]): InputFrame => ({ held: new Set(actions), pressed: new Set(actions) });
 function ticks(world: MapState, count: number): void { for (let i = 0; i < count; i++) world.advance(); }
 
 describe('M2 movement and collision', () => {
@@ -82,7 +82,7 @@ describe('M2 movement and collision', () => {
     for (let i = 0; i < 4; i++) tick(input('right'));
     expect(player.x).toBe(4); expect(player.dir).toBe('right');
   });
-  it('uses deterministic single direction priority and ignores turn input during movement', () => {
+  it('uses the latest pressed direction and ignores turn input during movement', () => {
     const player = new Player('p', 2, 2, 'down', 16, placeholder), world = new MapState('map', mapData(), [player]);
     player.handleInput(input('right', 'up'), world); expect(player.dir).toBe('up');
     player.handleInput(input('left'), world); expect(player.dir).toBe('up'); expect(player.destination).toMatchObject({ x: 2, y: 1 });
@@ -147,7 +147,7 @@ it('demo starts with player-first stable y sort and cannot walk through elder or
   const events = await source.readJson('maps/village.events.json');
   const data = await loadTiled(source, 'maps/village.tmj', 16);
   const game = new Game(config, data, characters, events.events), twin = new Game(config, data, characters, events.events);
-  expect(game.snapshot.characters.map(character => character.id)).toEqual(['player', 'elder', 'flower']);
+  expect(game.snapshot.characters.map(character => character.id)).toEqual(['player', 'elder', 'chest', 'flower']);
   const initial = game.snapshot;
   for (let i = 0; i < 64; i++) { game.tick(input('right')); twin.tick(input('right')); }
   expect(game.player.x).toBe(16); expect(game.player.y).toBe(10); expect(game.player.dir).toBe('right');

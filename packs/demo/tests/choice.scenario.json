@@ -1,0 +1,37 @@
+{
+  "name": "숨긴 선택지의 원래 인덱스를 유지하고 분기 실행",
+  "start": {
+    "map": "village",
+    "x": 16,
+    "y": 10,
+    "dir": "right"
+  },
+  "steps": [
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 2
+    },
+    {
+      "expect": {
+        "textContains": "말이 없어도 괜찮네."
+      }
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "met_elder",
+        "is": true
+      }
+    }
+  ]
+}

@@ -1,14 +1,29 @@
 import { Character } from './Character';
-import type { EventDefinition } from '../../data/game';
+import type { EventDefinition, EventPage } from '../../data/game';
 import type { Characters } from '../../data/characters';
+import type { GameState } from '../state/GameState';
+import { evaluate } from '../event/conditions';
 export class EventObject extends Character {
-  constructor(definition: EventDefinition, tileSize: number, characters: Characters) {
-    if (definition.pages.some(page => page.when !== undefined)) throw new Error(`Conditional pages require M3: ${definition.id}`);
-    const page = definition.pages[definition.pages.length - 1];
-    if (!page) throw new Error(`Missing event page: ${definition.id}`);
-    const graphic = page.character === undefined ? undefined : characters[page.character];
-    if (page.character !== undefined && !graphic) throw new Error(`Unknown character: ${page.character}`);
-    super(definition.id, definition.x, definition.y, page.dir ?? 'down', tileSize, graphic);
-    this.through = page.through ?? false;
+  private selected = -2;
+  constructor(private readonly definition: EventDefinition, tileSize: number,
+    private readonly characters: Characters, state: GameState, readonly mapId: string) {
+    super(definition.id, definition.x, definition.y, 'down', tileSize);
+    if (!definition.pages.length) throw new Error(`Missing event page: ${definition.id}`);
+    this.refresh(state);
+  }
+  get page(): EventPage | undefined { return this.definition.pages[this.selected]; }
+  refresh(state: GameState): void {
+    let selected = -1;
+    for (let i = this.definition.pages.length - 1; i >= 0; i--) {
+      const page = this.definition.pages[i]!;
+      if (page.when === undefined || evaluate(page.when, state, { mapId: this.mapId, id: this.id })) { selected = i; break; }
+    }
+    if (selected === this.selected) return;
+    this.selected = selected;
+    const page = this.page;
+    const graphic = page?.character === undefined ? undefined : this.characters[page.character];
+    if (page?.character !== undefined && !graphic) throw new Error(`Unknown character: ${page.character}`);
+    this.active = page !== undefined; this.through = page?.through ?? false;
+    this.dir = page?.dir ?? 'down'; this.setGraphic(graphic);
   }
 }

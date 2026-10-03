@@ -1,0 +1,10 @@
+import { copyFileSync, mkdirSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+const require = createRequire(import.meta.url);
+const packageRoot = dirname(require.resolve('galmuri/package.json'));
+const destination = fileURLToPath(new URL('../packs/demo/assets/fonts/', import.meta.url));
+mkdirSync(destination, { recursive: true });
+copyFileSync(join(packageRoot, 'dist/Galmuri11.woff2'), join(destination, 'Galmuri11.woff2'));
+copyFileSync(join(packageRoot, 'dist/LICENSE.txt'), join(destination, 'OFL.txt'));
