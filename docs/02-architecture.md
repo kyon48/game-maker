@@ -313,6 +313,7 @@ interface PackSource {
           ]
         },
         {
+          "when": { "flag": "met_elder", "is": true },
           "character": "elder", "dir": "down",
           "trigger": "action",
           "commands": [ { "cmd": "text", "speaker": "촌장", "text": "또 왔나." } ]
@@ -406,7 +407,7 @@ interface PackSource {
 | `wait` | `frames`(1 이상) | 틱 단위 대기 | O | 허용 |
 | `stop` | – | 현재 인터프리터의 실행 전체를 끝냄(호출 중인 공통 이벤트와 바깥 이벤트 모두) | – | 허용 |
 | `set_flag` | `flag`, `value` | 플래그 설정 | – | 허용 |
-| `set_var` | `var`, `op`(`set`/`add`/`sub`), `value`(정수) | 변수 변경. 결과가 안전 정수 범위를 벗어나면 런타임 오류 | – | 허용 |
+| `set_var` | `var`, `op`(`set`/`add`/`sub`, 기본 `set`), `value`(정수) | 변수 변경. 결과가 안전 정수 범위를 벗어나면 런타임 오류 | – | 허용 |
 | `set_self_flag` | `name`, `value` | 현재 이벤트의 셀프 플래그 설정 | – | 허용 |
 | `transfer` | `map`, `marker` **또는** `x`+`y`, `dir?`(현재 유지), `fade`(true) | 맵 이동(§7.5) | 완료까지 | 금지 |
 | `move` | `target`, `route`(토큰 배열), `wait`(false) | 이동 경로 실행(§7.4) | `wait`가 true면 경로 완료까지 | 허용 |
