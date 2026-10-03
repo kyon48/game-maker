@@ -6,9 +6,92 @@
       "y": 10,
       "pages": [
         {
+          "when": {
+            "flag": "met_elder",
+            "is": false
+          },
           "character": "elder",
           "dir": "left",
-          "trigger": "none"
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "face",
+              "target": "this",
+              "dir": "player"
+            },
+            {
+              "cmd": "text",
+              "speaker": "촌장",
+              "text": "처음 보는 얼굴이군. 우리 마을에 온 것을 환영하네."
+            },
+            {
+              "cmd": "choice",
+              "prompt": "뭐라고 답할까?",
+              "cancel": 2,
+              "options": [
+                {
+                  "label": "이미 만났어요",
+                  "when": {
+                    "flag": "met_elder",
+                    "is": true
+                  },
+                  "commands": []
+                },
+                {
+                  "label": "여행자입니다",
+                  "commands": [
+                    {
+                      "cmd": "text",
+                      "speaker": "촌장",
+                      "text": "북쪽 숲은 조심하게."
+                    }
+                  ]
+                },
+                {
+                  "label": "…",
+                  "commands": [
+                    {
+                      "cmd": "if",
+                      "cond": {
+                        "not": {
+                          "flag": "met_elder",
+                          "is": true
+                        }
+                      },
+                      "then": [
+                        {
+                          "cmd": "text",
+                          "speaker": "촌장",
+                          "text": "말이 없어도 괜찮네."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "cmd": "set_flag",
+              "flag": "met_elder",
+              "value": true
+            }
+          ]
+        },
+        {
+          "when": {
+            "flag": "met_elder",
+            "is": true
+          },
+          "character": "elder",
+          "dir": "left",
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "text",
+              "speaker": "촌장",
+              "text": "또 왔나. 마을을 천천히 둘러보게."
+            }
+          ]
         }
       ]
     },
@@ -20,6 +103,67 @@
         {
           "character": "flower",
           "through": true,
+          "trigger": "none"
+        }
+      ]
+    },
+    {
+      "id": "chest",
+      "x": 13,
+      "y": 10,
+      "pages": [
+        {
+          "when": {
+            "self": "opened",
+            "is": false
+          },
+          "character": "chest_closed",
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "text",
+              "text": "금화 10개를 얻었다."
+            },
+            {
+              "cmd": "set_var",
+              "var": "gold",
+              "op": "add",
+              "value": 10
+            },
+            {
+              "cmd": "set_self_flag",
+              "name": "opened",
+              "value": true
+            },
+            {
+              "cmd": "wait",
+              "frames": 1
+            },
+            {
+              "cmd": "if",
+              "cond": {
+                "self": "opened",
+                "is": true
+              },
+              "then": [
+                {
+                  "cmd": "stop"
+                }
+              ]
+            },
+            {
+              "cmd": "set_var",
+              "var": "gold",
+              "value": 999
+            }
+          ]
+        },
+        {
+          "when": {
+            "self": "opened",
+            "is": true
+          },
+          "character": "chest_open",
           "trigger": "none"
         }
       ]

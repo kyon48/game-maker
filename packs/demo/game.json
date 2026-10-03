@@ -24,7 +24,11 @@
     "newGame": "처음부터"
   },
   "state": {
-    "flags": {},
-    "vars": {}
+    "flags": {
+      "met_elder": false
+    },
+    "vars": {
+      "gold": 0
+    }
   }
 }

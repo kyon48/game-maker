@@ -1,0 +1,43 @@
+{
+  "name": "촌장 대화 뒤 다음 대사가 바뀐다",
+  "start": {
+    "map": "village",
+    "x": 16,
+    "y": 10,
+    "dir": "right"
+  },
+  "steps": [
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 1
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "met_elder",
+        "is": true
+      }
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "wait": 1
+    },
+    {
+      "expect": {
+        "textContains": "또 왔나"
+      }
+    }
+  ]
+}

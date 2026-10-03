@@ -1,0 +1,48 @@
+{
+  "name": "상자는 한 번만 열리고 금화는 한 번만 증가한다",
+  "start": {
+    "map": "village",
+    "x": 14,
+    "y": 10,
+    "dir": "left"
+  },
+  "steps": [
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "var": "gold",
+        "op": "==",
+        "value": 10
+      }
+    },
+    {
+      "expect": {
+        "self": "opened",
+        "is": true,
+        "map": "village",
+        "event": "chest"
+      }
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "wait": 2
+    },
+    {
+      "expect": {
+        "var": "gold",
+        "op": "==",
+        "value": 10
+      }
+    }
+  ]
+}

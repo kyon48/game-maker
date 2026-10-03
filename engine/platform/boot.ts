@@ -10,6 +10,9 @@ import type { GameConfig, EventDefinition } from '../data/game';
 import type { Characters } from '../data/characters';
 import { Game } from '../sim/Game';
 import { drawCharacters } from './renderer/characters';
+import { drawUi } from './renderer/ui';
+import { CanvasTextMeasurer } from './textMeasurer';
+import type { Skin } from '../data/skin';
 const app = document.querySelector<HTMLElement>('#app')!;
 function fail(error: unknown): void {
   const output = document.createElement('pre'); output.textContent = String(error); app.replaceChildren(output);
@@ -23,21 +26,27 @@ async function boot(): Promise<void> {
     || !Number.isInteger(game.screen.height) || game.screen.height <= 0
     || !game.maps?.includes(game.start.map)) throw new Error('Invalid game configuration');
   const map = await loadTiled(source, `maps/${game.start.map}.tmj`, game.tileSize);
-  const [characters, mapEvents] = await Promise.all([
+  const [characters, mapEvents, skin] = await Promise.all([
     source.readJson('characters.json') as Promise<Characters>,
     source.readJson(`maps/${game.start.map}.events.json`) as Promise<{ events: EventDefinition[] }>,
+    source.readJson('skin.json') as Promise<Skin>,
   ]);
-  const simulation = new Game(game, map, characters, mapEvents.events);
+  const font = new FontFace(skin.font.family, `url(${JSON.stringify(source.url(skin.font.src))})`);
+  document.fonts.add(await font.load());
+  await document.fonts.ready;
+  const canvas = document.createElement('canvas'); canvas.width = game.screen.width; canvas.height = game.screen.height;
+  const context = canvas.getContext('2d'); if (!context) throw new Error('Canvas 2D unavailable');
+  context.font = `${skin.font.size}px ${JSON.stringify(skin.font.family)}`;
+  const simulation = new Game(game, map, characters, mapEvents.events, { skin, textMeasurer: new CanvasTextMeasurer(context) });
   const images = new Map<string, HTMLImageElement>();
   const paths = new Set(map.tilesets.map(set => set.image));
-  for (const character of simulation.snapshot.characters) if (character.graphic?.sheet) paths.add(character.graphic.sheet);
+  for (const graphic of Object.values(characters)) if (graphic.sheet) paths.add(graphic.sheet);
+  if (skin.window.image) paths.add(skin.window.image);
   await Promise.all([...paths].map(async path => {
     const image = new Image(); image.src = source.url(path); await image.decode(); images.set(path, image);
   }));
   document.title = game.title;
-  const canvas = document.createElement('canvas'); canvas.width = game.screen.width; canvas.height = game.screen.height;
   app.replaceChildren(canvas);
-  const context = canvas.getContext('2d'); if (!context) throw new Error('Canvas 2D unavailable');
   const keyboard = new Keyboard(window);
   const size = { width: map.width * map.tilewidth, height: map.height * map.tileheight };
   const resize = () => resizeCanvas(canvas); resize(); window.addEventListener('resize', resize);
@@ -49,6 +58,7 @@ async function boot(): Promise<void> {
     drawTileMap(context, map, images, view, 'below');
     drawCharacters(context, snapshot.characters, images, game.tileSize, view);
     drawTileMap(context, map, images, view, 'over');
+    drawUi(context, snapshot, skin, images);
   }), error => { keyboard.dispose(); fail(error); });
   window.addEventListener('pagehide', () => { stop(); keyboard.dispose(); window.removeEventListener('resize', resize); }, { once: true });
 }

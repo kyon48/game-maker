@@ -11,7 +11,7 @@ export class Keyboard {
     const action = mapping[event.code];
     if (!action) return;
     event.preventDefault();
-    if (!this.keys.has(event.code) && !event.repeat) this.pressed.add(action);
+    if (!this.keys.has(event.code) && !event.repeat) { this.pressed.delete(action); this.pressed.add(action); }
     this.keys.add(event.code);
   };
   private readonly up = (event: KeyboardEvent) => {
