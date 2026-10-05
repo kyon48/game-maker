@@ -1,0 +1,80 @@
+{
+  "name": "집 입장 컷신 뒤 문을 통해 마을로 돌아온다",
+  "start": {
+    "map": "village",
+    "x": 7,
+    "y": 8,
+    "dir": "up"
+  },
+  "steps": [
+    {
+      "walk": [
+        "up"
+      ]
+    },
+    {
+      "wait": 60
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "map": "house",
+        "x": 6,
+        "y": 7,
+        "dir": "up"
+      }
+    },
+    {
+      "expect": {
+        "flag": "visited_house",
+        "is": true
+      }
+    },
+    {
+      "walk": [
+        "down",
+        "down"
+      ]
+    },
+    {
+      "wait": 1
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "map": "village",
+        "x": 7,
+        "y": 8,
+        "dir": "down"
+      }
+    },
+    {
+      "walk": [
+        "up"
+      ]
+    },
+    {
+      "wait": 1
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "map": "house",
+        "x": 6,
+        "y": 8
+      }
+    },
+    {
+      "expect": {
+        "flag": "visited_house",
+        "is": true
+      }
+    }
+  ]
+}

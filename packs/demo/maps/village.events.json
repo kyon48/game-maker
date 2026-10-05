@@ -27,16 +27,8 @@
             {
               "cmd": "choice",
               "prompt": "뭐라고 답할까?",
-              "cancel": 2,
+              "cancel": 1,
               "options": [
-                {
-                  "label": "이미 만났어요",
-                  "when": {
-                    "flag": "met_elder",
-                    "is": true
-                  },
-                  "commands": []
-                },
                 {
                   "label": "여행자입니다",
                   "commands": [
@@ -51,20 +43,9 @@
                   "label": "…",
                   "commands": [
                     {
-                      "cmd": "if",
-                      "cond": {
-                        "not": {
-                          "flag": "met_elder",
-                          "is": true
-                        }
-                      },
-                      "then": [
-                        {
-                          "cmd": "text",
-                          "speaker": "촌장",
-                          "text": "말이 없어도 괜찮네."
-                        }
-                      ]
+                      "cmd": "text",
+                      "speaker": "촌장",
+                      "text": "말이 없어도 괜찮네."
                     }
                   ]
                 }
@@ -134,27 +115,6 @@
               "cmd": "set_self_flag",
               "name": "opened",
               "value": true
-            },
-            {
-              "cmd": "wait",
-              "frames": 1
-            },
-            {
-              "cmd": "if",
-              "cond": {
-                "self": "opened",
-                "is": true
-              },
-              "then": [
-                {
-                  "cmd": "stop"
-                }
-              ]
-            },
-            {
-              "cmd": "set_var",
-              "var": "gold",
-              "value": 999
             }
           ]
         },
@@ -165,6 +125,54 @@
           },
           "character": "chest_open",
           "trigger": "none"
+        }
+      ]
+    },
+    {
+      "id": "to_house",
+      "x": 7,
+      "y": 7,
+      "pages": [
+        {
+          "trigger": "touch",
+          "through": true,
+          "commands": [
+            {
+              "cmd": "transfer",
+              "map": "house",
+              "marker": "door_in",
+              "dir": "up"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "walker",
+      "x": 10,
+      "y": 13,
+      "pages": [
+        {
+          "trigger": "parallel",
+          "character": "walker",
+          "commands": [
+            {
+              "cmd": "move",
+              "target": "this",
+              "route": [
+                "right",
+                "wait:30",
+                "right",
+                "face:down",
+                "wait:30",
+                "left",
+                "left",
+                "face:down",
+                "wait:30"
+              ],
+              "wait": true
+            }
+          ]
         }
       ]
     }

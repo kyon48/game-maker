@@ -1,0 +1,51 @@
+{
+  "name": "입장 컷신의 move·show_character·fade·shake 후 공통 이벤트로 쉰다",
+  "start": {
+    "map": "house",
+    "x": 6,
+    "y": 8,
+    "dir": "up"
+  },
+  "steps": [
+    {
+      "wait": 1
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "visited_house",
+        "is": true
+      }
+    },
+    {
+      "expect": {
+        "map": "house",
+        "x": 6,
+        "y": 7,
+        "dir": "up"
+      }
+    },
+    {
+      "walk": [
+        "up"
+      ]
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "rested",
+        "is": true
+      }
+    }
+  ]
+}

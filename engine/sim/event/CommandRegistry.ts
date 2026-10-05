@@ -16,6 +16,7 @@ export class CommandRegistry {
   execute(command: Command, context: CommandContext): CommandGen | void {
     const definition = this.commands.get(command.cmd);
     if (!definition) throw new Error(`Unknown command: ${command.cmd}`);
+    if (context.parallel && !definition.parallelSafe) throw new Error(`Command forbidden in parallel: ${command.cmd}`);
     const args: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(command)) if (key !== 'cmd') args[key] = value;
     if (!Value.Check(definition.args, args)) throw new Error(`Invalid arguments: ${command.cmd}`);

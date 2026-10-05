@@ -1,0 +1,116 @@
+{
+  "events": [
+    {
+      "id": "to_village",
+      "x": 6,
+      "y": 9,
+      "pages": [
+        {
+          "trigger": "touch",
+          "through": true,
+          "commands": [
+            {
+              "cmd": "transfer",
+              "map": "village",
+              "marker": "door_out",
+              "dir": "down"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "arrival",
+      "x": 1,
+      "y": 1,
+      "pages": [
+        {
+          "trigger": "auto",
+          "through": true,
+          "when": {
+            "flag": "visited_house",
+            "is": false
+          },
+          "commands": [
+            {
+              "cmd": "fade",
+              "to": "black",
+              "frames": 15
+            },
+            {
+              "cmd": "show_character",
+              "target": "keeper",
+              "visible": false
+            },
+            {
+              "cmd": "move",
+              "target": "player",
+              "route": [
+                "up"
+              ],
+              "wait": true
+            },
+            {
+              "cmd": "move",
+              "target": "keeper",
+              "route": [
+                "down",
+                "face:down"
+              ],
+              "wait": true
+            },
+            {
+              "cmd": "show_character",
+              "target": "keeper",
+              "visible": true
+            },
+            {
+              "cmd": "fade",
+              "to": "clear",
+              "frames": 15
+            },
+            {
+              "cmd": "shake",
+              "power": 2,
+              "frames": 12,
+              "wait": true
+            },
+            {
+              "cmd": "set_flag",
+              "flag": "visited_house",
+              "value": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "keeper",
+      "x": 6,
+      "y": 4,
+      "pages": [
+        {
+          "trigger": "action",
+          "character": "keeper",
+          "dir": "down",
+          "commands": [
+            {
+              "cmd": "face",
+              "target": "this",
+              "dir": "player"
+            },
+            {
+              "cmd": "text",
+              "speaker": "집주인",
+              "text": "어서 오세요. 잠시 쉬었다 가세요."
+            },
+            {
+              "cmd": "call",
+              "common": "inn_rest"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

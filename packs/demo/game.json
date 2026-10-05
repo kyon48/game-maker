@@ -9,7 +9,8 @@
   },
   "tileSize": 16,
   "maps": [
-    "village"
+    "village",
+    "house"
   ],
   "start": {
     "map": "village",
@@ -25,7 +26,9 @@
   },
   "state": {
     "flags": {
-      "met_elder": false
+      "met_elder": false,
+      "visited_house": false,
+      "rested": false
     },
     "vars": {
       "gold": 0

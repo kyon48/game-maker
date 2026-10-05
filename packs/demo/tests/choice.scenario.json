@@ -1,5 +1,5 @@
 {
-  "name": "숨긴 선택지의 원래 인덱스를 유지하고 분기 실행",
+  "name": "촌장의 두 번째 선택지 대화를 실행한다",
   "start": {
     "map": "village",
     "x": 16,
@@ -14,7 +14,7 @@
       "advanceText": true
     },
     {
-      "choose": 2
+      "choose": 1
     },
     {
       "expect": {
