@@ -7,9 +7,7 @@ export class MapState {
   constructor(readonly id: string, readonly data: TileMapData, characters: readonly Character[]) {
     this.collision = new Collision(data);
     this.characters = [...characters];
-    for (const character of characters) {
-      if (!this.collision.inBounds(character.x, character.y)) throw new Error(`Invalid character spawn: ${character.id}`);
-    }
+
   }
   canEnter(character: Character, x: number, y: number): boolean {
     if (!this.collision.passable(x, y)) return false;

@@ -1,8 +1,4 @@
-import type { Dir } from '@engine/api';
-interface Timing { moveTicks?: number }
-export type CharacterDefinition = Readonly<Timing & (
-  | { placeholder: string; sheet?: never }
-  | { sheet: string; placeholder?: never; frameWidth: number; frameHeight: number;
-      rows?: Readonly<Record<Dir, number>>; walkFrames?: readonly number[]; frameTicks?: number }
-)>;
-export type Characters = Readonly<Record<string, CharacterDefinition>>;
+import type { Static } from '@sinclair/typebox';
+import type { CharacterSchema, CharactersSchema } from './schema/characters';
+export type CharacterDefinition = Readonly<Static<typeof CharacterSchema>>;
+export type Characters = Readonly<Static<typeof CharactersSchema>>;

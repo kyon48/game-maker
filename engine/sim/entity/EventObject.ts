@@ -8,7 +8,6 @@ export class EventObject extends Character {
   constructor(private readonly definition: EventDefinition, tileSize: number,
     private readonly characters: Characters, state: GameState, readonly mapId: string) {
     super(definition.id, definition.x, definition.y, 'down', tileSize);
-    if (!definition.pages.length) throw new Error(`Missing event page: ${definition.id}`);
     this.refresh(state);
   }
   get pageIndex(): number { return this.selected; }
@@ -23,7 +22,7 @@ export class EventObject extends Character {
     this.selected = selected;
     const page = this.page;
     const graphic = page?.character === undefined ? undefined : this.characters[page.character];
-    if (page?.character !== undefined && !graphic) throw new Error(`Unknown character: ${page.character}`);
+    if (!page) this.cancelRoute();
     this.active = page !== undefined; this.through = page?.through ?? false;
     this.dir = page?.dir ?? 'down'; this.setGraphic(graphic);
   }

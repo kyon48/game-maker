@@ -12,7 +12,7 @@ const data = (): TileMapData => ({ width: 8, height: 8, tilewidth: 16, tileheigh
 const commands = (n: number): Command[] => [{ cmd: 'set_var', var: 'n', op: 'add', value: n }];
 const event = (id: string, trigger: 'auto' | 'parallel' | 'touch' | 'action' | 'none', list: Command[], x = 2, y = 1, through = true): EventDefinition => ({ id, x, y, pages: [{ trigger, through, character: 'hero', commands: list }] });
 function create(events: EventDefinition[], options: GameOptions = {}, override: Partial<GameConfig> = {}) {
-  return new Game({ title: '', tileSize: 16, screen: { width: 160, height: 160 }, maps: ['a', 'b'], start: { map: 'a', x: 1, y: 1, dir: 'right' }, player: 'hero', state: { flags: { done: false }, vars: { n: 0 } }, ...override }, data(), { hero: { placeholder: '#fff', moveTicks: 2 } }, events, options);
+  return new Game({ id: 'test', version: '0.1.0', formatVersion: 1, plugins: [], labels: { continue: 'Continue', newGame: 'New' }, title: 'Test', tileSize: 16, screen: { width: 160, height: 160 }, maps: ['a', 'b'], start: { map: 'a', x: 1, y: 1, dir: 'right' }, player: 'hero', state: { flags: { done: false }, vars: { n: 0 } }, ...override }, data(), { hero: { placeholder: '#fff', moveTicks: 2 } }, events, options);
 }
 const ticks = (game: Game, n: number) => { for (let i = 0; i < n; i++) game.tick(empty); };
 async function until(game: Game, test: () => boolean, max = 100) {

@@ -1,3 +1,5 @@
+import { argsSchema as saveArgs } from './save';
+import { CommandRegistry as Registry } from '../event/CommandRegistry';
 import { registerTransfer } from './transfer';
 import { registerShowCharacter } from './show_character';
 import { registerShake } from './shake';
@@ -30,4 +32,9 @@ export function registerBuiltins(registry: CommandRegistry): void {
   registerFace(registry);
   registerIf(registry);
   registerChoice(registry);
+}
+
+export function builtinCatalog() {
+  const registry = new Registry(); registerBuiltins(registry);
+  return new Map([...registry.catalog, ['save', { args: saveArgs, parallelSafe: false }] as const]);
 }

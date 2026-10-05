@@ -1,16 +1,10 @@
+import type { Static } from '@sinclair/typebox';
+import type { TilesetSchema, TiledSchema, TileLayerSchema, ObjectLayerSchema } from '../schema/tiled';
 import type { PackSource } from '@engine/api';
 import { packPath } from './path';
-export interface Tileset {
-  firstgid: number; image: string; tilewidth: number; tileheight: number;
-  tilecount: number; columns: number; margin?: number; spacing?: number;
-}
-export interface TileLayer {
-  type: 'tilelayer'; name: string; width: number; height: number; data: number[];
-  visible?: boolean; opacity?: number; x?: number; y?: number; offsetx?: number; offsety?: number;
-}
-interface ObjectLayer {
-  type: 'objectgroup'; name: string; objects: { name: string; point?: boolean; x: number; y: number }[];
-}
+export type Tileset = Static<typeof TilesetSchema> & { firstgid: number };
+export type TileLayer = Static<typeof TileLayerSchema>;
+type ObjectLayer = Static<typeof ObjectLayerSchema>;
 export interface TileReference {
   readonly tileset: Tileset; readonly sourceX: number; readonly sourceY: number;
 }
@@ -19,10 +13,7 @@ export interface TileMapData {
   layers: (TileLayer | ObjectLayer)[]; tilesets: Tileset[];
   tileLookup: ReadonlyMap<number, TileReference>;
 }
-interface RawMap extends Omit<TileMapData, 'tilesets' | 'tileLookup'> {
-  orientation: string; infinite: boolean;
-  tilesets: (Tileset | { firstgid: number; source: string })[];
-}
+type RawMap = Static<typeof TiledSchema>;
 export const tileGid = (gid: number): number => (gid >>> 0) & 0x0fffffff;
 export async function loadTiled(source: PackSource, path: string, tileSize: number): Promise<TileMapData> {
   const raw = await source.readJson(path) as RawMap;
@@ -64,7 +55,7 @@ export async function loadTiled(source: PackSource, path: string, tileSize: numb
         sourceY: margin + Math.floor(tile / set.columns) * (set.tileheight + spacing) });
     }
   }
-  return { ...raw, tilesets, tileLookup };
+  return { ...raw, layers: raw.layers.filter(layer => layer.type !== 'group'), tilesets, tileLookup };
 }
 export function markers(map: TileMapData): ReadonlyMap<string, { x: number; y: number }> {
   const points = new Map<string, { x: number; y: number }>();

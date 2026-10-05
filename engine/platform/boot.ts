@@ -1,3 +1,5 @@
+import { builtinCatalog } from '../sim/commands';
+import { PackValidationError, showError } from './errorScreen';
 import './style.css';
 import { MapCache } from '../data/loader/MapCache';
 import { BrowserMapLoader } from './mapLoader';
@@ -17,16 +19,19 @@ import { CanvasTextMeasurer } from './textMeasurer';
 import type { Skin } from '../data/skin';
 const app = document.querySelector<HTMLElement>('#app')!;
 function fail(error: unknown): void {
-  const output = document.createElement('pre'); output.textContent = String(error); app.replaceChildren(output);
+  showError(app, error);
 }
 async function boot(): Promise<void> {
   const id = new URLSearchParams(location.search).get('pack');
   if (!id || !/^[a-z][a-z0-9_]*$/.test(id)) throw new Error('Specify ?pack=<packId>');
-  const source = new FetchSource(`/packs/${id}/`);
+  const source = new FetchSource(`/packs/${id}/`, import.meta.env.DEV ? `/__pack-files?pack=${id}` : undefined);
+  if (import.meta.env.DEV) {
+    const { validatePack } = await import('../data/validator/validate');
+    const { diagnostics } = await validatePack(source, id, { commands: builtinCatalog() });
+    for (const warning of diagnostics.filter(item => item.level === 'warning')) console.warn(`${warning.file}${warning.pointer} ${warning.code}: ${warning.message}`);
+    if (diagnostics.some(item => item.level === 'error')) throw new PackValidationError(diagnostics);
+  }
   const game = await source.readJson('game.json') as GameConfig;
-  if (!game.screen || !Number.isInteger(game.screen.width) || game.screen.width <= 0
-    || !Number.isInteger(game.screen.height) || game.screen.height <= 0
-    || !game.maps?.includes(game.start.map)) throw new Error('Invalid game configuration');
   const [characters, entries, skin, commonEvents] = await Promise.all([
     source.readJson('characters.json') as Promise<Characters>,
     Promise.all(game.maps.map(async id => [id, (await source.readJson(`maps/${id}.events.json`) as { events: EventDefinition[] }).events] as const)),
