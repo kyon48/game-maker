@@ -17,5 +17,15 @@
   },
   "chest_open": {
     "placeholder": "#665544"
+  },
+  "walker": {
+    "placeholder": "#87bbed",
+    "moveTicks": 24
+  },
+  "keeper": {
+    "sheet": "assets/characters/keeper.png",
+    "frameWidth": 16,
+    "frameHeight": 24,
+    "moveTicks": 20
   }
 }

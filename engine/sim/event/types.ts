@@ -7,6 +7,7 @@ export type CommandGen<R = void> = Generator<Wait, R, void>;
 export type CommandHandler<A> = (args: A, ctx: CommandContext) => CommandGen | void;
 export interface TextRequest { text: string; speaker?: string }
 export interface ChoiceRequest { prompt?: string; labels: (string | null)[]; cancelIndex: number | null }
+export interface TransferRequest { map: string; marker?: string; x?: number; y?: number; dir?: Dir; fade?: boolean }
 export interface CommandContext {
   state: GameState;
   thisEvent: EventScope | null;
@@ -18,7 +19,15 @@ export interface CommandContext {
   showChoice(request: ChoiceRequest): CommandGen<number>;
   evaluate(condition: Condition): boolean;
   face(target: string, dir: Dir | 'player'): void;
+  transfer(request: TransferRequest): CommandGen;
+  move(target: string, route: readonly string[]): { done: boolean };
+  fade(to: 'black' | 'clear', frames: number): { done: boolean };
+  shake(power: number, frames: number): { done: boolean };
+  showCharacter(target: string, visible: boolean): void;
+  common(id: string): readonly Command[];
+  call(id: string): CommandGen;
+  readonly parallel?: boolean;
   readonly stopped: boolean;
   stop(): void;
 }
-export type CommandHost = Omit<CommandContext, 'runCommands' | 'stopped' | 'stop'>;
+export type CommandHost = Omit<CommandContext, 'runCommands' | 'stopped' | 'stop' | 'call'>;

@@ -1,3 +1,9 @@
+import { registerTransfer } from './transfer';
+import { registerShowCharacter } from './show_character';
+import { registerShake } from './shake';
+import { registerFade } from './fade';
+import { registerMove } from './move';
+import { registerCall } from './call';
 import { registerText } from './text';
 import { registerWait } from './wait';
 import { registerStop } from './stop';
@@ -9,6 +15,12 @@ import { registerIf } from './if';
 import { registerChoice } from './choice';
 import type { CommandRegistry } from '../event/CommandRegistry';
 export function registerBuiltins(registry: CommandRegistry): void {
+  registerTransfer(registry);
+  registerShowCharacter(registry);
+  registerShake(registry);
+  registerFade(registry);
+  registerMove(registry);
+  registerCall(registry);
   registerText(registry);
   registerWait(registry);
   registerStop(registry);

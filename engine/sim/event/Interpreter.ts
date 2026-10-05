@@ -9,21 +9,29 @@ export class Interpreter {
   private waiting: Wait | undefined;
   private stopRequested = false;
   private count = 0;
+  private depth = 0;
   constructor(private readonly registry: CommandRegistry) {}
   get running(): boolean { return this.generator !== undefined; }
   start(commands: readonly Command[], host: CommandHost): void {
     if (this.running) throw new Error('Interpreter already running');
-    this.stopRequested = false;
+    this.stopRequested = false; this.depth = 0;
     const isStopped = () => this.stopRequested;
     const context: CommandContext = {
       state: host.state, thisEvent: host.thisEvent,
       get player() { return host.player; },
       waitFrames: host.waitFrames, waitUntil: host.waitUntil,
       showText: host.showText, showChoice: host.showChoice, evaluate: host.evaluate, face: host.face,
+      transfer: host.transfer, move: host.move, fade: host.fade, shake: host.shake,
+      showCharacter: host.showCharacter, common: host.common, parallel: host.parallel,
+      call: id => this.call(id, context),
       get stopped() { return isStopped(); }, stop: () => { this.stopRequested = true; },
       runCommands: list => this.runCommands(list, context),
     };
     this.generator = this.runCommands(commands, context);
+  }
+  private *call(id: string, context: CommandContext): CommandGen {
+    if (++this.depth > 16) { this.depth--; throw new Error('Common event call depth exceeds 16'); }
+    try { yield* this.runCommands(context.common(id), context); } finally { this.depth--; }
   }
   private *runCommands(list: readonly Command[], context: CommandContext): CommandGen {
     for (const command of list) {

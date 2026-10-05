@@ -11,6 +11,7 @@ export class EventObject extends Character {
     if (!definition.pages.length) throw new Error(`Missing event page: ${definition.id}`);
     this.refresh(state);
   }
+  get pageIndex(): number { return this.selected; }
   get page(): EventPage | undefined { return this.definition.pages[this.selected]; }
   refresh(state: GameState): void {
     let selected = -1;

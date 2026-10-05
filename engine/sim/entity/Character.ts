@@ -1,3 +1,4 @@
+import type { MapState } from '../world/MapState';
 import type { CharacterDefinition } from '../../data/characters';
 export type Dir = 'up' | 'down' | 'left' | 'right';
 export const directions: readonly Dir[] = ['up', 'down', 'left', 'right'];
@@ -11,6 +12,30 @@ export interface CharacterSnapshot {
   readonly active: boolean; readonly visible: boolean;
 }
 export class Character {
+  private route: { tokens: readonly string[]; index: number; wait: number; done: boolean } | undefined;
+  get routed(): boolean { return this.route !== undefined && !this.route.done; }
+  setRoute(tokens: readonly string[]): { done: boolean } {
+    if (this.route) this.route.done = true;
+    this.route = { tokens: [...tokens], index: 0, wait: 0, done: false }; return this.route;
+  }
+  place(x: number, y: number, dir = this.dir): void {
+    this.tileX = x; this.tileY = y; this.dir = dir; this.movement = undefined; this.walkingTicks = 0;
+    if (this.route) this.route.done = true;
+    this.route = undefined;
+  }
+  advanceRoute(map: MapState): void {
+    const route = this.route;
+    if (!route || route.done || this.moving || !this.active) return;
+    if (route.wait > 0 && --route.wait > 0) return;
+    while (route.index < route.tokens.length) {
+      const token = route.tokens[route.index++]!;
+      if (directions.includes(token as Dir)) {
+        if (map.tryMove(this, token as Dir)) return;
+      } else if (token.startsWith('face:')) this.dir = token.slice(5) as Dir;
+      else { route.wait = Number(token.slice(5)); return; }
+    }
+    route.done = true; this.stand();
+  }
   private movement: Movement | undefined;
   private walkingTicks = 0;
   private tileX: number;

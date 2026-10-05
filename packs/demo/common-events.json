@@ -1,1 +1,23 @@
-{}
+{
+  "inn_rest": {
+    "commands": [
+      {
+        "cmd": "fade",
+        "to": "black"
+      },
+      {
+        "cmd": "wait",
+        "frames": 30
+      },
+      {
+        "cmd": "fade",
+        "to": "clear"
+      },
+      {
+        "cmd": "set_flag",
+        "flag": "rested",
+        "value": true
+      }
+    ]
+  }
+}

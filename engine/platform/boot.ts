@@ -1,5 +1,7 @@
 import './style.css';
-import { loadTiled } from '../data/loader/tiled';
+import { MapCache } from '../data/loader/MapCache';
+import { BrowserMapLoader } from './mapLoader';
+import type { Command } from '../data/events';
 import { camera } from '../sim/world/Camera';
 import { FetchSource } from './fetchSource';
 import { Keyboard } from './keyboard';
@@ -25,39 +27,43 @@ async function boot(): Promise<void> {
   if (!game.screen || !Number.isInteger(game.screen.width) || game.screen.width <= 0
     || !Number.isInteger(game.screen.height) || game.screen.height <= 0
     || !game.maps?.includes(game.start.map)) throw new Error('Invalid game configuration');
-  const map = await loadTiled(source, `maps/${game.start.map}.tmj`, game.tileSize);
-  const [characters, mapEvents, skin] = await Promise.all([
+  const [characters, entries, skin, commonEvents] = await Promise.all([
     source.readJson('characters.json') as Promise<Characters>,
-    source.readJson(`maps/${game.start.map}.events.json`) as Promise<{ events: EventDefinition[] }>,
+    Promise.all(game.maps.map(async id => [id, (await source.readJson(`maps/${id}.events.json`) as { events: EventDefinition[] }).events] as const)),
     source.readJson('skin.json') as Promise<Skin>,
+    source.readJson('common-events.json') as Promise<Record<string, { commands: Command[] }>>,
   ]);
+  const loader = new BrowserMapLoader(new MapCache(source, game.tileSize, new Map(entries)), characters, path => source.url(path));
   const font = new FontFace(skin.font.family, `url(${JSON.stringify(source.url(skin.font.src))})`);
   document.fonts.add(await font.load());
   await document.fonts.ready;
+  const initial = await loader.load(game.start.map);
+  const playerGraphic = characters[game.player];
+  if (playerGraphic?.sheet) await loader.image(playerGraphic.sheet);
+  if (skin.window.image) await loader.image(skin.window.image);
   const canvas = document.createElement('canvas'); canvas.width = game.screen.width; canvas.height = game.screen.height;
   const context = canvas.getContext('2d'); if (!context) throw new Error('Canvas 2D unavailable');
   context.font = `${skin.font.size}px ${JSON.stringify(skin.font.family)}`;
-  const simulation = new Game(game, map, characters, mapEvents.events, { skin, textMeasurer: new CanvasTextMeasurer(context) });
-  const images = new Map<string, HTMLImageElement>();
-  const paths = new Set(map.tilesets.map(set => set.image));
-  for (const graphic of Object.values(characters)) if (graphic.sheet) paths.add(graphic.sheet);
-  if (skin.window.image) paths.add(skin.window.image);
-  await Promise.all([...paths].map(async path => {
-    const image = new Image(); image.src = source.url(path); await image.decode(); images.set(path, image);
-  }));
+  const simulation = new Game(game, initial.data, characters, initial.events, { skin, textMeasurer: new CanvasTextMeasurer(context), mapLoader: loader, commonEvents });
+  const images = loader.images;
   document.title = game.title;
   app.replaceChildren(canvas);
   const keyboard = new Keyboard(window);
-  const size = { width: map.width * map.tilewidth, height: map.height * map.tileheight };
   const resize = () => resizeCanvas(canvas); resize(); window.addEventListener('resize', resize);
   const stop = startLoop(new FixedTickLoop(input => simulation.tick(input), () => keyboard.consume(), () => {
     context.clearRect(0, 0, canvas.width, canvas.height);
     const snapshot = simulation.snapshot;
+    const map = simulation.map.data;
+    const size = { width: map.width * map.tilewidth, height: map.height * map.tileheight };
     const view = camera({ x: snapshot.player.pixelX + game.tileSize / 2,
-      y: snapshot.player.pixelY + game.tileSize / 2 }, size, game.screen);
+      y: snapshot.player.pixelY + game.tileSize / 2 }, size, game.screen, { x: snapshot.shake, y: 0 });
     drawTileMap(context, map, images, view, 'below');
     drawCharacters(context, snapshot.characters, images, game.tileSize, view);
     drawTileMap(context, map, images, view, 'over');
+    if (snapshot.fade > 0) {
+      context.save(); context.globalAlpha = snapshot.fade; context.fillStyle = skin.colors.fade;
+      context.fillRect(0, 0, canvas.width, canvas.height); context.restore();
+    }
     drawUi(context, snapshot, skin, images);
   }), error => { keyboard.dispose(); fail(error); });
   window.addEventListener('pagehide', () => { stop(); keyboard.dispose(); window.removeEventListener('resize', resize); }, { once: true });

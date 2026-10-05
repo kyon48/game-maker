@@ -1,0 +1,38 @@
+{
+  "name": "parallel NPC 배회 중에도 플레이어가 마을을 걸어 다닌다",
+  "steps": [
+    {
+      "hold": "down",
+      "frames": 16
+    },
+    {
+      "expect": {
+        "map": "village",
+        "x": 15,
+        "y": 11
+      }
+    },
+    {
+      "wait": 200
+    },
+    {
+      "expect": {
+        "map": "village",
+        "x": 15,
+        "y": 11
+      }
+    },
+    {
+      "walk": [
+        "up"
+      ]
+    },
+    {
+      "expect": {
+        "map": "village",
+        "x": 15,
+        "y": 10
+      }
+    }
+  ]
+}
