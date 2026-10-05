@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "type": "object",
+  "patternProperties": {
+    "^[a-z][a-z0-9_]*$": {
+      "anyOf": [
+        {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "placeholder"
+          ],
+          "properties": {
+            "placeholder": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "sheet": {
+              "not": {}
+            },
+            "moveTicks": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            }
+          }
+        },
+        {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "sheet",
+            "frameWidth",
+            "frameHeight"
+          ],
+          "properties": {
+            "sheet": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "placeholder": {
+              "not": {}
+            },
+            "frameWidth": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            },
+            "frameHeight": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            },
+            "moveTicks": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            },
+            "rows": {
+              "additionalProperties": false,
+              "type": "object",
+              "required": [
+                "down",
+                "left",
+                "right",
+                "up"
+              ],
+              "properties": {
+                "down": {
+                  "minimum": 0,
+                  "maximum": 9007199254740991,
+                  "type": "integer"
+                },
+                "left": {
+                  "minimum": 0,
+                  "maximum": 9007199254740991,
+                  "type": "integer"
+                },
+                "right": {
+                  "minimum": 0,
+                  "maximum": 9007199254740991,
+                  "type": "integer"
+                },
+                "up": {
+                  "minimum": 0,
+                  "maximum": 9007199254740991,
+                  "type": "integer"
+                }
+              }
+            },
+            "walkFrames": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "type": "integer"
+              }
+            },
+            "frameTicks": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

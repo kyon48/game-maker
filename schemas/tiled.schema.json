@@ -1,0 +1,255 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "type": "object",
+  "required": [
+    "orientation",
+    "infinite",
+    "width",
+    "height",
+    "tilewidth",
+    "tileheight",
+    "layers",
+    "tilesets"
+  ],
+  "properties": {
+    "orientation": {
+      "type": "string"
+    },
+    "infinite": {
+      "type": "boolean"
+    },
+    "width": {
+      "minimum": 1,
+      "maximum": 9007199254740991,
+      "type": "integer"
+    },
+    "height": {
+      "minimum": 1,
+      "maximum": 9007199254740991,
+      "type": "integer"
+    },
+    "tilewidth": {
+      "minimum": 1,
+      "maximum": 9007199254740991,
+      "type": "integer"
+    },
+    "tileheight": {
+      "minimum": 1,
+      "maximum": 9007199254740991,
+      "type": "integer"
+    },
+    "layers": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "additionalProperties": true,
+            "type": "object",
+            "required": [
+              "type",
+              "name",
+              "width",
+              "height",
+              "data"
+            ],
+            "properties": {
+              "type": {
+                "const": "tilelayer",
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "width": {
+                "minimum": 1,
+                "maximum": 9007199254740991,
+                "type": "integer"
+              },
+              "height": {
+                "minimum": 1,
+                "maximum": 9007199254740991,
+                "type": "integer"
+              },
+              "data": {
+                "type": "array",
+                "items": {
+                  "minimum": 0,
+                  "maximum": 4294967295,
+                  "type": "integer"
+                }
+              },
+              "visible": {
+                "type": "boolean"
+              },
+              "opacity": {
+                "minimum": 0,
+                "maximum": 1,
+                "type": "number"
+              },
+              "x": {
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "type": "integer"
+              },
+              "y": {
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "type": "integer"
+              },
+              "offsetx": {
+                "type": "number"
+              },
+              "offsety": {
+                "type": "number"
+              }
+            }
+          },
+          {
+            "additionalProperties": true,
+            "type": "object",
+            "required": [
+              "type",
+              "name",
+              "objects"
+            ],
+            "properties": {
+              "type": {
+                "const": "objectgroup",
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "objects": {
+                "type": "array",
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "required": [
+                    "name",
+                    "x",
+                    "y"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "point": {
+                      "type": "boolean"
+                    },
+                    "x": {
+                      "type": "number"
+                    },
+                    "y": {
+                      "type": "number"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "additionalProperties": true,
+            "type": "object",
+            "required": [
+              "type",
+              "name",
+              "layers"
+            ],
+            "properties": {
+              "type": {
+                "const": "group",
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "layers": {
+                "type": "array",
+                "items": {}
+              }
+            }
+          }
+        ]
+      }
+    },
+    "tilesets": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "additionalProperties": true,
+            "type": "object",
+            "required": [
+              "firstgid",
+              "source"
+            ],
+            "properties": {
+              "firstgid": {
+                "minimum": 1,
+                "maximum": 9007199254740991,
+                "type": "integer"
+              },
+              "source": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "additionalProperties": true,
+            "type": "object",
+            "required": [
+              "image",
+              "tilewidth",
+              "tileheight",
+              "tilecount",
+              "columns",
+              "firstgid"
+            ],
+            "properties": {
+              "image": {
+                "type": "string"
+              },
+              "tilewidth": {
+                "minimum": 1,
+                "maximum": 9007199254740991,
+                "type": "integer"
+              },
+              "tileheight": {
+                "minimum": 1,
+                "maximum": 9007199254740991,
+                "type": "integer"
+              },
+              "tilecount": {
+                "minimum": 1,
+                "maximum": 9007199254740991,
+                "type": "integer"
+              },
+              "columns": {
+                "minimum": 1,
+                "maximum": 9007199254740991,
+                "type": "integer"
+              },
+              "margin": {
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "type": "integer"
+              },
+              "spacing": {
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "type": "integer"
+              },
+              "firstgid": {
+                "minimum": 1,
+                "maximum": 9007199254740991,
+                "type": "integer"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

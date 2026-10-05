@@ -1,0 +1,26 @@
+{
+  "events": [
+    {
+      "id": "npc",
+      "x": 2,
+      "y": 2,
+      "pages": [
+        {
+          "trigger": "auto",
+          "character": "hero",
+          "through": true,
+          "when": {
+            "flag": "met",
+            "is": false
+          },
+          "commands": [
+            {
+              "cmd": "wait",
+              "frames": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

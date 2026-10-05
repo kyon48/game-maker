@@ -12,7 +12,6 @@ export class MessageState {
   private page = 0;
   private shown = 0;
   constructor(private readonly config: MessageConfig, private readonly measurer: TextMeasurer) {
-    if (!Number.isSafeInteger(config.rows) || config.rows < 1 || !Number.isSafeInteger(config.charsPerTick) || config.charsPerTick < 1) throw new Error('Invalid message configuration');
   }
   get opened(): boolean { return this.request !== undefined; }
   open(request: TextRequest): void {

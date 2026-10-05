@@ -7,8 +7,6 @@ export class GameState {
   constructor(initial: InitialState) {
     this.flags = new Map(Object.entries(initial.flags));
     this.vars = new Map(Object.entries(initial.vars));
-    for (const value of this.flags.values()) if (typeof value !== 'boolean') throw new Error('Invalid flag initial value');
-    for (const value of this.vars.values()) if (!Number.isSafeInteger(value)) throw new Error('Invalid variable initial value');
   }
   get dirty(): boolean { return this.changed; }
   clearDirty(): void { this.changed = false; }

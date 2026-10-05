@@ -8,7 +8,7 @@ import type { Command, Condition } from '../engine/data/events';
 import type { Action } from '../engine/sim/ports';
 const input = (...pressed: Action[]) => ({ held: new Set<Action>(), pressed: new Set(pressed) });
 function create(events: EventDefinition[], override: Partial<GameConfig> = {}) {
-  const config: GameConfig = { title: '', tileSize: 16, screen: { width: 320, height: 240 }, maps: ['map'], start: { map: 'map', x: 1, y: 1, dir: 'right' }, player: 'hero', state: { flags: { met: false }, vars: { gold: 0 } }, ...override };
+  const config: GameConfig = { id: 'test', version: '0.1.0', formatVersion: 1, plugins: [], labels: { continue: 'Continue', newGame: 'New' }, title: 'Test', tileSize: 16, screen: { width: 320, height: 240 }, maps: ['map'], start: { map: 'map', x: 1, y: 1, dir: 'right' }, player: 'hero', state: { flags: { met: false }, vars: { gold: 0 } }, ...override };
   return new Game(config, { width: 8, height: 8, tilewidth: 16, tileheight: 16, layers: [], tilesets: [], tileLookup: new Map() }, { hero: { placeholder: '#fff' }, a: { placeholder: '#123456' }, b: { placeholder: '#654321' } }, events);
 }
 const event = (id: string, x: number, y: number, commands: Command[] = [], through = false): EventDefinition => ({ id, x, y, pages: [{ trigger: 'action', character: 'a', commands, through }] });

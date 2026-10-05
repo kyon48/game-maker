@@ -1,0 +1,17 @@
+{
+  "hello": {
+    "commands": [
+      {
+        "cmd": "set_flag",
+        "flag": "met",
+        "value": true
+      },
+      {
+        "cmd": "set_var",
+        "var": "n",
+        "op": "add",
+        "value": 1
+      }
+    ]
+  }
+}

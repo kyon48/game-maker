@@ -16,8 +16,10 @@ export class Character {
   get routed(): boolean { return this.route !== undefined && !this.route.done; }
   setRoute(tokens: readonly string[]): { done: boolean } {
     if (this.route) this.route.done = true;
+    if (!this.active) return { done: true };
     this.route = { tokens: [...tokens], index: 0, wait: 0, done: false }; return this.route;
   }
+  cancelRoute(): void { if (this.route) this.route.done = true; this.route = undefined; }
   place(x: number, y: number, dir = this.dir): void {
     this.tileX = x; this.tileY = y; this.dir = dir; this.movement = undefined; this.walkingTicks = 0;
     if (this.route) this.route.done = true;
@@ -50,24 +52,14 @@ export class Character {
   get graphic(): CharacterDefinition | undefined { return this.appearance; }
   constructor(readonly id: string, x: number, y: number, dir: Dir,
     readonly tileSize: number, graphic?: CharacterDefinition) {
-    if (!Number.isSafeInteger(tileSize) || tileSize < 1) throw new Error(`Invalid tile size: ${id}`);
-    if (!Number.isInteger(x) || !Number.isInteger(y) || !directions.includes(dir)) throw new Error(`Invalid character placement: ${id}`);
     this.tileX = x; this.tileY = y; this.dir = dir;
     this.setGraphic(graphic);
   }
   protected setGraphic(graphic: CharacterDefinition | undefined): void {
-    const id = this.id;
-    if (graphic && (typeof graphic.sheet === 'string') === (typeof graphic.placeholder === 'string')) throw new Error(`Expected one character graphic: ${id}`);
     this.timing = graphic?.moveTicks ?? 16;
-    if (!Number.isSafeInteger(this.moveTicks) || this.moveTicks < 1) throw new Error(`Invalid moveTicks: ${id}`);
     if (graphic && 'sheet' in graphic && graphic.sheet !== undefined) {
       const frameTicks = graphic.frameTicks ?? 8, walkFrames = graphic.walkFrames ?? [0, 1, 0, 2];
       const rows = graphic.rows ?? { down: 0, left: 1, right: 2, up: 3 };
-      if (!Number.isSafeInteger(frameTicks) || frameTicks < 1 || !walkFrames.length
-        || !walkFrames.every(frame => Number.isSafeInteger(frame) && frame >= 0)
-        || !directions.every(dir => Number.isSafeInteger(rows[dir]) && rows[dir] >= 0)
-        || !Number.isSafeInteger(graphic.frameWidth) || graphic.frameWidth < 1
-        || !Number.isSafeInteger(graphic.frameHeight) || graphic.frameHeight < 1) throw new Error(`Invalid character sheet: ${id}`);
       this.appearance = { ...graphic, frameTicks, walkFrames: [...walkFrames], rows: { ...rows } };
     } else this.appearance = graphic && { ...graphic };
     this.walkingTicks = 0;

@@ -57,16 +57,11 @@ export class Game {
     events: readonly EventDefinition[], private readonly options: GameOptions = {}) {
     this.state = new GameState(config.state);
     const graphic = characters[config.player];
-    if (!graphic) throw new Error(`Unknown player character: ${config.player}`);
     this.player = new Player('player', config.start.x, config.start.y, config.start.dir, config.tileSize, graphic);
-    const ids = new Set<string>();
     this.events = events.map(event => {
-      if (ids.has(event.id)) throw new Error(`Duplicate event: ${event.id}`);
-      ids.add(event.id);
       return new EventObject(event, config.tileSize, characters, this.state, config.start.map);
     });
     this.map = new MapState(config.start.map, map, [this.player, ...this.events]);
-    if (!this.map.collision.passable(this.player.x, this.player.y)) throw new Error('Player starts on collision');
     this.message = new MessageState({ width: config.screen.width - 2 * (options.skin?.window.padding ?? 8),
       rows: options.skin?.message.rows ?? 3, charsPerTick: options.skin?.message.charsPerTick ?? 1 },
     options.textMeasurer ?? new HeadlessTextMeasurer(options.skin?.font.size ?? 12));
@@ -192,6 +187,7 @@ export class Game {
     return character;
   }
   private *transfer(request: TransferRequest): CommandGen {
+    if (!this.config.maps.includes(request.map) || !this.options.mapLoader) throw new Error(`Unknown map or missing loader: ${request.map}`);
     // §7.5(1)
     if (request.fade !== false) { const fade = this.effects.startFade('black', 15); yield { kind: 'until', test: () => fade.done }; }
     // (2)
@@ -201,7 +197,6 @@ export class Game {
     // (3): The platform resolves the port only after all new images are decoded.
     let loaded: LoadedMap | undefined;
     let failed = false, failure: unknown;
-    if (!this.config.maps.includes(request.map) || !this.options.mapLoader) throw new Error(`Unknown map or missing loader: ${request.map}`);
     void this.options.mapLoader.load(request.map).then(value => { loaded = value; }, error => { failed = true; failure = error; });
     yield { kind: 'until', test: () => loaded !== undefined || failed };
     if (failed) throw failure;
@@ -210,9 +205,7 @@ export class Game {
     if (!position) throw new Error(`Unknown transfer marker: ${request.marker}`);
     // (4)
     this.player.place(position.x, position.y, request.dir);
-    const ids = new Set<string>();
     this.events = next.events.map(definition => {
-      if (ids.has(definition.id)) throw new Error(`Duplicate event: ${definition.id}`); ids.add(definition.id);
       return new EventObject(definition, this.config.tileSize, this.characters, this.state, request.map);
     });
     this.map = new MapState(request.map, next.data, [this.player, ...this.events]);

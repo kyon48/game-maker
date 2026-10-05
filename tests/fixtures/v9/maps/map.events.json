@@ -1,0 +1,33 @@
+{
+  "events": [
+    {
+      "id": "npc",
+      "x": 2,
+      "y": 2,
+      "pages": [
+        {
+          "trigger": "action",
+          "character": "hero",
+          "through": true,
+          "when": {
+            "flag": "met",
+            "is": false
+          },
+          "commands": [
+            {
+              "cmd": "call",
+              "common": "hello"
+            },
+            {
+              "cmd": "transfer",
+              "map": "map",
+              "marker": "door",
+              "x": 1,
+              "y": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

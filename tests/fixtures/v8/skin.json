@@ -1,0 +1,22 @@
+{
+  "font": {
+    "family": "Fixture",
+    "src": "assets/font.woff2",
+    "size": 12,
+    "lineHeight": 16
+  },
+  "window": {
+    "slice": 8,
+    "padding": 8
+  },
+  "colors": {
+    "text": "#fff",
+    "speaker": "#fff",
+    "cursor": "#fff",
+    "fade": "#000"
+  },
+  "message": {
+    "rows": 3,
+    "charsPerTick": 1
+  }
+}
