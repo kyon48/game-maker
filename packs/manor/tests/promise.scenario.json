@@ -1,0 +1,63 @@
+{
+  "name": "결말 지켜진 약속: 단서와 신뢰를 바탕으로 비공개 전달",
+  "steps": [
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 1
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "finished",
+        "is": true
+      }
+    },
+    {
+      "expect": {
+        "flag": "ending_promise",
+        "is": true
+      }
+    },
+    {
+      "expect": {
+        "flag": "ending_truth",
+        "is": false
+      }
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "expect": {
+        "textContains": "지켜진 약속"
+      }
+    }
+  ],
+  "start": {
+    "map": "hall",
+    "x": 18,
+    "y": 19,
+    "dir": "down"
+  },
+  "state": {
+    "flags": {
+      "introduced": true,
+      "clue_clock": true,
+      "clue_seal": true,
+      "clue_letter": true,
+      "clue_ledger": true,
+      "clue_receipt": true,
+      "trusted_archivist": true
+    }
+  }
+}

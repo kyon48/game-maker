@@ -1,0 +1,51 @@
+{
+  "$schema": "../../schemas/game.schema.json",
+  "id": "manor",
+  "title": "빗소리 저택: 봉인된 약속",
+  "version": "0.1.0",
+  "formatVersion": 1,
+  "screen": {
+    "width": 480,
+    "height": 270
+  },
+  "tileSize": 16,
+  "maps": [
+    "hall",
+    "study",
+    "library",
+    "greenhouse"
+  ],
+  "start": {
+    "map": "hall",
+    "x": 18,
+    "y": 18,
+    "dir": "up"
+  },
+  "player": "investigator",
+  "plugins": [
+    "evidence"
+  ],
+  "labels": {
+    "continue": "조사 이어하기",
+    "newGame": "새 조사 시작"
+  },
+  "state": {
+    "flags": {
+      "introduced": false,
+      "met_steward": false,
+      "met_archivist": false,
+      "met_gardener": false,
+      "trusted_archivist": false,
+      "finished": false,
+      "ending_truth": false,
+      "ending_promise": false,
+      "ending_accusation": false,
+      "clue_clock": false,
+      "clue_seal": false,
+      "clue_letter": false,
+      "clue_ledger": false,
+      "clue_receipt": false
+    },
+    "vars": {}
+  }
+}

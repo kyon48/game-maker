@@ -1,0 +1,49 @@
+{
+  "name": "기록대 공통 이벤트의 저장과 단서 수첩",
+  "steps": [
+    {
+      "press": "ok"
+    },
+    {
+      "choose": 0
+    },
+    {
+      "choose": 0
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "choose": 1
+    },
+    {
+      "expect": {
+        "textContains": "단서 1/5"
+      }
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    }
+  ],
+  "start": {
+    "map": "hall",
+    "x": 24,
+    "y": 17,
+    "dir": "up"
+  },
+  "state": {
+    "flags": {
+      "introduced": true,
+      "clue_clock": true
+    }
+  }
+}

@@ -1,0 +1,246 @@
+{
+  "events": [
+    {
+      "id": "to_hall",
+      "x": 2,
+      "y": 12,
+      "pages": [
+        {
+          "trigger": "touch",
+          "commands": [
+            {
+              "cmd": "transfer",
+              "map": "hall",
+              "marker": "from_library",
+              "dir": "left"
+            }
+          ],
+          "through": true
+        }
+      ]
+    },
+    {
+      "id": "archivist",
+      "x": 22,
+      "y": 8,
+      "pages": [
+        {
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "face",
+              "target": "this",
+              "dir": "player"
+            },
+            {
+              "cmd": "text",
+              "text": "저는 기록관 해린이에요. 저택의 책과 서신을 정리했어요. 도윤 씨가 저를 의심하는 것도 알아요. 서재에서 나온 마지막 사람인 건 사실이니까요.",
+              "speaker": "해린"
+            },
+            {
+              "cmd": "choice",
+              "prompt": "해린에게 어떻게 말을 걸까?",
+              "options": [
+                {
+                  "label": "당신의 설명을 먼저 듣고 싶어요",
+                  "commands": [
+                    {
+                      "cmd": "set_flag",
+                      "flag": "trusted_archivist",
+                      "value": true
+                    },
+                    {
+                      "cmd": "text",
+                      "text": "고마워요. 그날 부인의 편지를 찾으러 서재에 갔어요. 금고를 열지는 않았죠. 가져온 것은 이미 맡아 둔 등사본을 끼울 편지철뿐이에요.",
+                      "speaker": "해린"
+                    },
+                    {
+                      "cmd": "text",
+                      "text": "말만으로 믿어 달라곤 하지 않을게요. 왼편 대출 장부를 보세요. 마지막 장은 부인이 직접 썼고, 서재 봉투에는 원본의 행선지가 남아 있을 거예요.",
+                      "speaker": "해린"
+                    }
+                  ]
+                },
+                {
+                  "label": "당신이 마지막 사람이잖아요",
+                  "commands": [
+                    {
+                      "cmd": "text",
+                      "text": "그것만으로 제가 훔쳤다고 하시면 설명할 길이 없네요. 하지만 기록은 남아 있어요. 왼쪽 장부와 서재의 봉투를 직접 확인해 주세요.",
+                      "speaker": "해린"
+                    }
+                  ]
+                }
+              ],
+              "cancel": null
+            },
+            {
+              "cmd": "set_flag",
+              "flag": "met_archivist",
+              "value": true
+            }
+          ],
+          "character": "archivist"
+        },
+        {
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "choice",
+              "prompt": "해린에게 다시 묻는다",
+              "options": [
+                {
+                  "label": "아까는 경솔했어요. 설명해 주세요",
+                  "commands": [
+                    {
+                      "cmd": "set_flag",
+                      "flag": "trusted_archivist",
+                      "value": true
+                    },
+                    {
+                      "cmd": "text",
+                      "text": "부인은 저택의 이름보다 책을 읽는 사람을 기억해 달라고 하셨어요. 그래서 원본은 공증인에게, 등사본은 아이들이 오는 이 방에 남기셨어요.",
+                      "speaker": "해린"
+                    },
+                    {
+                      "cmd": "text",
+                      "text": "편지를 읽고도 저를 믿을 수 없다면 어쩔 수 없겠지요. 다만 마지막 결론만은 눈으로 확인한 기록에 기대어 내려 주세요.",
+                      "speaker": "해린"
+                    }
+                  ]
+                },
+                {
+                  "label": "장부와 편지의 관계는 무엇인가요?",
+                  "commands": [
+                    {
+                      "cmd": "text",
+                      "text": "장부 마지막 장은 기부한 책과 공간을 적은 목록이에요. 편지에는 그 공간을 누구에게 맡길지가 적혀 있죠. 두 기록이 같은 날의 같은 약속이에요.",
+                      "speaker": "해린"
+                    }
+                  ]
+                }
+              ],
+              "cancel": null
+            }
+          ],
+          "character": "archivist",
+          "when": {
+            "flag": "met_archivist",
+            "is": true
+          }
+        },
+        {
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "call",
+              "common": "aftermath"
+            }
+          ],
+          "character": "archivist",
+          "when": {
+            "flag": "finished",
+            "is": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "ledger",
+      "x": 7,
+      "y": 6,
+      "pages": [
+        {
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "text",
+              "text": "대출 장부 마지막 장에는 다른 손글씨가 있다."
+            },
+            {
+              "cmd": "text",
+              "text": "부인의 서명 옆에 “도서실 사용권은 마을에 증여 완료. 해린은 관리만 맡는다”라고 적혀 있다. 재산을 차지할 권리와 관리할 책임은 다르다.",
+              "speaker": "윤서"
+            },
+            {
+              "cmd": "text",
+              "text": "장부 속 얇은 종이는 유언장의 등사본이다. 봉인이 없는 이유는 가짜여서가 아니라, 원본을 공증인이 보관하기 때문이다. 서재의 발송 기록과 맞춰 봐야 한다.",
+              "speaker": "윤서"
+            },
+            {
+              "cmd": "choice",
+              "prompt": "이 기록을 단서로 남길까?",
+              "options": [
+                {
+                  "label": "수첩에 기록한다",
+                  "commands": [
+                    {
+                      "cmd": "set_flag",
+                      "flag": "clue_ledger",
+                      "value": true
+                    },
+                    {
+                      "cmd": "set_self_flag",
+                      "name": "examined",
+                      "value": true
+                    },
+                    {
+                      "cmd": "call",
+                      "common": "remember"
+                    }
+                  ]
+                },
+                {
+                  "label": "지금은 내려놓는다",
+                  "commands": [
+                    {
+                      "cmd": "text",
+                      "text": "내용을 더 생각해 보고 다시 살펴보자."
+                    }
+                  ]
+                }
+              ],
+              "cancel": 1
+            }
+          ],
+          "character": "evidence",
+          "when": {
+            "self": "examined",
+            "is": false
+          }
+        },
+        {
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "text",
+              "text": "장부 단서: 도서실은 이미 마을에 증여되었고, 해린은 소유자가 아니라 관리인이다."
+            }
+          ],
+          "character": "record",
+          "when": {
+            "self": "examined",
+            "is": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "library_note",
+      "x": 15,
+      "y": 13,
+      "pages": [
+        {
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "text",
+              "text": "창가의 책갈피에는 부인의 말이 남아 있다. “누가 남겼는지보다, 누구에게 필요한지를 먼저 읽어 주세요.”"
+            }
+          ],
+          "character": "sign"
+        }
+      ]
+    }
+  ]
+}

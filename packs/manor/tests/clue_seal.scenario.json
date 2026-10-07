@@ -1,0 +1,88 @@
+{
+  "name": "단서 seal: 보류 후 기록·재조사해도 셀프 플래그 유지",
+  "steps": [
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 1
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "clue_seal",
+        "is": false
+      }
+    },
+    {
+      "expect": {
+        "self": "examined",
+        "map": "study",
+        "event": "seal",
+        "is": false
+      }
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 0
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "clue_seal",
+        "is": true
+      }
+    },
+    {
+      "expect": {
+        "self": "examined",
+        "map": "study",
+        "event": "seal",
+        "is": true
+      }
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "expect": {
+        "textContains": "봉인 단서"
+      }
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    }
+  ],
+  "start": {
+    "map": "study",
+    "x": 7,
+    "y": 7,
+    "dir": "up"
+  },
+  "state": {
+    "flags": {
+      "introduced": true
+    }
+  }
+}

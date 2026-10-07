@@ -1,0 +1,40 @@
+{
+  "name": "지목 확인에서 생각을 바꾸면 결말을 확정하지 않음",
+  "steps": [
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 2
+    },
+    {
+      "choose": 1
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "finished",
+        "is": false
+      }
+    }
+  ],
+  "start": {
+    "map": "hall",
+    "x": 18,
+    "y": 19,
+    "dir": "down"
+  },
+  "state": {
+    "flags": {
+      "introduced": true
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "name": "온실의 관리인이 배회하는 동안 이동과 조사 가능",
+  "steps": [
+    {
+      "wait": 180
+    },
+    {
+      "walk": [
+        "right",
+        "right"
+      ]
+    },
+    {
+      "expect": {
+        "map": "greenhouse",
+        "x": 18,
+        "y": 14,
+        "dir": "right"
+      }
+    },
+    {
+      "expect": {
+        "flag": "finished",
+        "is": false
+      }
+    }
+  ],
+  "start": {
+    "map": "greenhouse",
+    "x": 16,
+    "y": 14,
+    "dir": "up"
+  },
+  "state": {
+    "flags": {
+      "introduced": true
+    }
+  }
+}

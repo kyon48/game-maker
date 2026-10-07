@@ -1,0 +1,631 @@
+{
+  "name": "결말 열린 기록: 네 방 왕복·다섯 단서·세 인물·저장 후 공개",
+  "steps": [
+    {
+      "walk": [
+        "up",
+        "up",
+        "up",
+        "up",
+        "up"
+      ]
+    },
+    {
+      "press": "up"
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 0
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "met_steward",
+        "is": true
+      }
+    },
+    {
+      "walk": [
+        "left",
+        "up",
+        "up",
+        "up",
+        "up",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left"
+      ]
+    },
+    {
+      "press": "up"
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 0
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "clue_clock",
+        "is": true
+      }
+    },
+    {
+      "walk": [
+        "down",
+        "down",
+        "down",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left"
+      ]
+    },
+    {
+      "wait": 80
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "map": "study",
+        "x": 24,
+        "y": 13
+      }
+    },
+    {
+      "walk": [
+        "up",
+        "up",
+        "up",
+        "up",
+        "up",
+        "up",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left"
+      ]
+    },
+    {
+      "press": "up"
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 0
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "walk": [
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right"
+      ]
+    },
+    {
+      "press": "up"
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 0
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "walk": [
+        "down",
+        "down",
+        "down",
+        "down",
+        "down",
+        "down",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right"
+      ]
+    },
+    {
+      "wait": 80
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "map": "hall",
+        "x": 3,
+        "y": 10
+      }
+    },
+    {
+      "walk": [
+        "up",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "down",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right"
+      ]
+    },
+    {
+      "wait": 80
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "map": "library",
+        "x": 3,
+        "y": 12
+      }
+    },
+    {
+      "walk": [
+        "up",
+        "up",
+        "up",
+        "up",
+        "up",
+        "right",
+        "right",
+        "right",
+        "right"
+      ]
+    },
+    {
+      "press": "up"
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 0
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "walk": [
+        "down",
+        "down",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right"
+      ]
+    },
+    {
+      "press": "up"
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 0
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "trusted_archivist",
+        "is": true
+      }
+    },
+    {
+      "walk": [
+        "down",
+        "down",
+        "down",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left"
+      ]
+    },
+    {
+      "wait": 80
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "map": "hall",
+        "x": 32,
+        "y": 10
+      }
+    },
+    {
+      "walk": [
+        "up",
+        "up",
+        "up",
+        "up",
+        "up",
+        "up",
+        "up",
+        "up",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left"
+      ]
+    },
+    {
+      "wait": 80
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "map": "greenhouse",
+        "x": 16,
+        "y": 14
+      }
+    },
+    {
+      "walk": [
+        "up",
+        "up",
+        "up",
+        "up",
+        "up",
+        "up",
+        "up",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left"
+      ]
+    },
+    {
+      "press": "up"
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 0
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "walk": [
+        "down",
+        "down",
+        "down",
+        "down",
+        "down",
+        "down",
+        "down",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right"
+      ]
+    },
+    {
+      "press": "up"
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 1
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "walk": [
+        "down",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left"
+      ]
+    },
+    {
+      "wait": 80
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "map": "hall",
+        "x": 18,
+        "y": 3
+      }
+    },
+    {
+      "expect": {
+        "self": "examined",
+        "map": "hall",
+        "event": "clock",
+        "is": true
+      }
+    },
+    {
+      "walk": [
+        "down",
+        "down",
+        "down",
+        "down",
+        "down",
+        "down",
+        "right",
+        "down",
+        "down",
+        "down",
+        "down",
+        "down",
+        "down",
+        "down",
+        "down",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right"
+      ]
+    },
+    {
+      "press": "up"
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "choose": 0
+    },
+    {
+      "choose": 0
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "walk": [
+        "down",
+        "down",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left",
+        "left"
+      ]
+    },
+    {
+      "press": "down"
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 0
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "ending_truth",
+        "is": true
+      }
+    },
+    {
+      "expect": {
+        "flag": "finished",
+        "is": true
+      }
+    }
+  ],
+  "start": {
+    "map": "hall",
+    "x": 18,
+    "y": 16,
+    "dir": "up"
+  },
+  "state": {
+    "flags": {
+      "introduced": true
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "name": "결말 닫힌 문: 단서 없이 지목을 확정",
+  "steps": [
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 2
+    },
+    {
+      "choose": 0
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "finished",
+        "is": true
+      }
+    },
+    {
+      "expect": {
+        "flag": "ending_accusation",
+        "is": true
+      }
+    },
+    {
+      "expect": {
+        "flag": "ending_truth",
+        "is": false
+      }
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "expect": {
+        "textContains": "닫힌 문"
+      }
+    }
+  ],
+  "start": {
+    "map": "hall",
+    "x": 18,
+    "y": 19,
+    "dir": "down"
+  },
+  "state": {
+    "flags": {
+      "introduced": true
+    }
+  }
+}

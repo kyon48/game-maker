@@ -1,0 +1,48 @@
+{
+  "name": "네 단서와 핵심 기록만으로 공개 결말 가능",
+  "steps": [
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 0
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "ending_truth",
+        "is": true
+      }
+    },
+    {
+      "expect": {
+        "flag": "ending_promise",
+        "is": false
+      }
+    }
+  ],
+  "start": {
+    "map": "hall",
+    "x": 18,
+    "y": 19,
+    "dir": "down"
+  },
+  "state": {
+    "flags": {
+      "introduced": true,
+      "clue_clock": true,
+      "clue_seal": true,
+      "clue_letter": true,
+      "clue_ledger": true,
+      "clue_receipt": false
+    }
+  }
+}

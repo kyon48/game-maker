@@ -1,0 +1,205 @@
+{
+  "events": [
+    {
+      "id": "to_hall",
+      "x": 25,
+      "y": 13,
+      "pages": [
+        {
+          "trigger": "touch",
+          "commands": [
+            {
+              "cmd": "transfer",
+              "map": "hall",
+              "marker": "from_study",
+              "dir": "right"
+            }
+          ],
+          "through": true
+        }
+      ]
+    },
+    {
+      "id": "seal",
+      "x": 7,
+      "y": 6,
+      "pages": [
+        {
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "text",
+              "text": "서랍 안에 붉은 밀랍과 발송 봉투가 남아 있다."
+            },
+            {
+              "cmd": "text",
+              "text": "밀랍에는 부인의 문장인 세 잎 무늬가 찍혀 있다. 금고에 있던 유언장의 봉인과 같은 모양이다. 뜯긴 자국이 아니라 봉투를 새로 봉하면서 떨어진 조각이다.",
+              "speaker": "윤서"
+            },
+            {
+              "cmd": "text",
+              "text": "봉투의 수신인은 마을 공증인이다. 날짜는 부인이 돌아가시기 이틀 전. 원본은 누군가 훔친 것이 아니라, 부인 생전에 밖으로 발송되었을 수도 있다.",
+              "speaker": "윤서"
+            },
+            {
+              "cmd": "choice",
+              "prompt": "이 기록을 단서로 남길까?",
+              "options": [
+                {
+                  "label": "수첩에 기록한다",
+                  "commands": [
+                    {
+                      "cmd": "set_flag",
+                      "flag": "clue_seal",
+                      "value": true
+                    },
+                    {
+                      "cmd": "set_self_flag",
+                      "name": "examined",
+                      "value": true
+                    },
+                    {
+                      "cmd": "call",
+                      "common": "remember"
+                    }
+                  ]
+                },
+                {
+                  "label": "지금은 내려놓는다",
+                  "commands": [
+                    {
+                      "cmd": "text",
+                      "text": "내용을 더 생각해 보고 다시 살펴보자."
+                    }
+                  ]
+                }
+              ],
+              "cancel": 1
+            }
+          ],
+          "character": "evidence",
+          "when": {
+            "self": "examined",
+            "is": false
+          }
+        },
+        {
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "text",
+              "text": "봉인 단서: 부인의 문장이 찍힌 발송 봉투. 원본은 공증인에게 보내졌다."
+            }
+          ],
+          "character": "record",
+          "when": {
+            "self": "examined",
+            "is": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "letter",
+      "x": 20,
+      "y": 6,
+      "pages": [
+        {
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "text",
+              "text": "책상 편지철에 눌러 쓴 글씨가 비친다."
+            },
+            {
+              "cmd": "text",
+              "text": "연필로 종이 위를 가볍게 문지르자 문장이 드러난다. “도서실을 마을에 남긴다. 해린에게는 등사본을 맡겨 방문하는 아이들이 읽게 할 것.”",
+              "speaker": "윤서"
+            },
+            {
+              "cmd": "text",
+              "text": "마지막 줄은 더 작다. “도윤에게는 내 이름을 건 기부가 아니라 전해라. 그는 먼저 저택의 채무부터 걱정할 테니.” 부인은 공개하지 않은 이유까지 적어 두었다.",
+              "speaker": "윤서"
+            },
+            {
+              "cmd": "text",
+              "text": "편지 아래에 해린의 답장이 있다. “원본은 공증인에게 보냈습니다. 등사본은 장부 속에 보관하겠습니다.” 두 사람은 같은 약속을 나누고 있었다.",
+              "speaker": "윤서"
+            },
+            {
+              "cmd": "choice",
+              "prompt": "이 기록을 단서로 남길까?",
+              "options": [
+                {
+                  "label": "수첩에 기록한다",
+                  "commands": [
+                    {
+                      "cmd": "set_flag",
+                      "flag": "clue_letter",
+                      "value": true
+                    },
+                    {
+                      "cmd": "set_self_flag",
+                      "name": "examined",
+                      "value": true
+                    },
+                    {
+                      "cmd": "call",
+                      "common": "remember"
+                    }
+                  ]
+                },
+                {
+                  "label": "지금은 내려놓는다",
+                  "commands": [
+                    {
+                      "cmd": "text",
+                      "text": "내용을 더 생각해 보고 다시 살펴보자."
+                    }
+                  ]
+                }
+              ],
+              "cancel": 1
+            }
+          ],
+          "character": "evidence",
+          "when": {
+            "self": "examined",
+            "is": false
+          }
+        },
+        {
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "text",
+              "text": "편지 단서: 부인이 원본 발송을 지시하고, 해린에게 등사본과 도서실을 맡겼다."
+            }
+          ],
+          "character": "record",
+          "when": {
+            "self": "examined",
+            "is": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "study_note",
+      "x": 14,
+      "y": 14,
+      "pages": [
+        {
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "text",
+              "text": "서재의 금고는 비었지만 자물쇠는 손상되지 않았다. 책상 두 곳의 기록을 함께 읽어야 빈 금고의 의미를 알 수 있다."
+            }
+          ],
+          "character": "sign"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,419 @@
+{
+  "events": [
+    {
+      "id": "arrival",
+      "x": 18,
+      "y": 18,
+      "pages": [
+        {
+          "trigger": "auto",
+          "commands": [
+            {
+              "cmd": "fade",
+              "to": "black",
+              "frames": 8
+            },
+            {
+              "cmd": "move",
+              "target": "player",
+              "route": [
+                "up",
+                "up"
+              ],
+              "wait": true
+            },
+            {
+              "cmd": "fade",
+              "to": "clear",
+              "frames": 12
+            },
+            {
+              "cmd": "text",
+              "text": "빗소리 저택 — 봉인된 약속\n폭우가 길을 끊은 저녁, 조사원 윤서는 사라진 유언장을 찾으러 저택에 들어왔다."
+            },
+            {
+              "cmd": "text",
+              "text": "부인의 유언장이 금고에서 사라졌습니다. 해린 씨가 마지막으로 서재에 들어갔다지만, 증거도 없이 몰아세울 수는 없지요. 날이 밝기 전에 진실을 알려 주십시오.",
+              "speaker": "도윤"
+            },
+            {
+              "cmd": "text",
+              "text": "사람의 말과 물건의 기록을 함께 살펴볼게요. 부인께서 무엇을 남기려 했는지도 알아야겠죠.",
+              "speaker": "윤서"
+            },
+            {
+              "cmd": "text",
+              "text": "왼쪽 금빛 문은 서재, 오른쪽은 도서실, 위쪽은 온실입니다. 홀 왼편의 멈춘 시계도 살펴보십시오. 파란 기록대는 홀 오른쪽 아래에 있습니다.",
+              "speaker": "도윤"
+            },
+            {
+              "cmd": "text",
+              "text": "방향키 또는 WASD로 이동하고, 물건이나 사람을 바라본 뒤 Enter/Z로 조사한다. 창의 글이 모두 나온 뒤 확인 키를 누르면 계속된다. 선택지는 위·아래 키와 확인 키로 고른다."
+            },
+            {
+              "cmd": "set_flag",
+              "flag": "introduced",
+              "value": true
+            }
+          ],
+          "when": {
+            "flag": "introduced",
+            "is": false
+          },
+          "through": true
+        }
+      ]
+    },
+    {
+      "id": "to_study",
+      "x": 2,
+      "y": 10,
+      "pages": [
+        {
+          "trigger": "touch",
+          "commands": [
+            {
+              "cmd": "transfer",
+              "map": "study",
+              "marker": "entry",
+              "dir": "left"
+            }
+          ],
+          "through": true
+        }
+      ]
+    },
+    {
+      "id": "to_library",
+      "x": 33,
+      "y": 10,
+      "pages": [
+        {
+          "trigger": "touch",
+          "commands": [
+            {
+              "cmd": "transfer",
+              "map": "library",
+              "marker": "entry",
+              "dir": "right"
+            }
+          ],
+          "through": true
+        }
+      ]
+    },
+    {
+      "id": "to_greenhouse",
+      "x": 18,
+      "y": 2,
+      "pages": [
+        {
+          "trigger": "touch",
+          "commands": [
+            {
+              "cmd": "transfer",
+              "map": "greenhouse",
+              "marker": "entry",
+              "dir": "up"
+            }
+          ],
+          "through": true
+        }
+      ]
+    },
+    {
+      "id": "steward",
+      "x": 18,
+      "y": 10,
+      "pages": [
+        {
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "face",
+              "target": "this",
+              "dir": "player"
+            },
+            {
+              "cmd": "text",
+              "text": "집사 도윤입니다. 부인께서 돌아가신 지 일주일이 지났습니다. 남은 재산보다 도서실의 앞날을 더 걱정하셨는데, 그 뜻을 적은 유언장이 사라졌습니다.",
+              "speaker": "도윤"
+            },
+            {
+              "cmd": "choice",
+              "prompt": "어떤 이야기를 들을까?",
+              "options": [
+                {
+                  "label": "그날 밤의 시간",
+                  "commands": [
+                    {
+                      "cmd": "text",
+                      "text": "저녁 아홉 시 무렵, 온실로 가는 복도의 불이 꺼졌습니다. 저는 부엌에서 촛불을 챙겼지요. 홀의 시계는 그때부터 움직이지 않았습니다.",
+                      "speaker": "도윤"
+                    },
+                    {
+                      "cmd": "text",
+                      "text": "열 시쯤 해린 씨가 서재에서 나왔습니다. 저는 그 뒤에야 금고가 비었다는 사실을 알았습니다. 시간만으로 누가 무엇을 했는지 단정하진 말아 주십시오.",
+                      "speaker": "도윤"
+                    }
+                  ]
+                },
+                {
+                  "label": "부인이 남기려던 것",
+                  "commands": [
+                    {
+                      "cmd": "text",
+                      "text": "부인은 이 저택을 닫아 두는 것을 싫어하셨습니다. 도서실에서 아이들에게 책을 읽어 주셨고, 온실에선 씨앗을 나눠 주셨지요.",
+                      "speaker": "도윤"
+                    },
+                    {
+                      "cmd": "text",
+                      "text": "서재 왼편의 작은 서랍에 편지 봉인의 조각이 있습니다. 오른편 책상에는 부인이 쓰던 얇은 편지철이 남아 있을 겁니다.",
+                      "speaker": "도윤"
+                    }
+                  ]
+                }
+              ],
+              "cancel": null
+            },
+            {
+              "cmd": "set_flag",
+              "flag": "met_steward",
+              "value": true
+            }
+          ],
+          "character": "steward"
+        },
+        {
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "choice",
+              "prompt": "도윤에게 다시 묻는다",
+              "options": [
+                {
+                  "label": "왜 바로 말하지 않았나요?",
+                  "commands": [
+                    {
+                      "cmd": "text",
+                      "text": "제가 금고를 확인하지 않은 탓이라 여겼습니다. 혹시 제 실수를 숨기려 했던 건 아닐까요. 부끄럽지만, 그렇습니다.",
+                      "speaker": "도윤"
+                    },
+                    {
+                      "cmd": "text",
+                      "text": "잘못을 인정하는 일과 누군가를 범인으로 지목하는 일은 다릅니다. 기록을 다 읽을 때까지 기다리겠습니다.",
+                      "speaker": "도윤"
+                    }
+                  ]
+                },
+                {
+                  "label": "어디를 조사하면 좋을까요?",
+                  "commands": [
+                    {
+                      "cmd": "text",
+                      "text": "홀 왼편의 시계, 서재 두 책상, 도서실 왼쪽 장부, 온실 왼쪽 작업대를 살펴보세요. 오른쪽 아래 파란 기록대에서 내용을 정리할 수 있습니다.",
+                      "speaker": "도윤"
+                    }
+                  ]
+                }
+              ],
+              "cancel": null
+            }
+          ],
+          "character": "steward",
+          "when": {
+            "flag": "met_steward",
+            "is": true
+          }
+        },
+        {
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "call",
+              "common": "aftermath"
+            }
+          ],
+          "character": "steward",
+          "when": {
+            "flag": "finished",
+            "is": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "clock",
+      "x": 10,
+      "y": 6,
+      "pages": [
+        {
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "text",
+              "text": "홀의 시계는 아홉 시 십 분에 멈춰 있다."
+            },
+            {
+              "cmd": "text",
+              "text": "시계 아래 먼지 위에 작은 유리 조각이 있다. 태엽 덮개에는 번개처럼 갈라진 자국이 보인다. 누군가 시간을 조작한 흔적은 없다.",
+              "speaker": "윤서"
+            },
+            {
+              "cmd": "text",
+              "text": "옆의 수리 쪽지에는 “정전 때 떨어져 멈춤. 다음 날 태엽 교체 예정”이라고 적혀 있다. 멈춘 시간이 누군가의 출입 시간이라는 보장은 없다.",
+              "speaker": "윤서"
+            },
+            {
+              "cmd": "choice",
+              "prompt": "이 기록을 단서로 남길까?",
+              "options": [
+                {
+                  "label": "수첩에 기록한다",
+                  "commands": [
+                    {
+                      "cmd": "set_flag",
+                      "flag": "clue_clock",
+                      "value": true
+                    },
+                    {
+                      "cmd": "set_self_flag",
+                      "name": "examined",
+                      "value": true
+                    },
+                    {
+                      "cmd": "call",
+                      "common": "remember"
+                    }
+                  ]
+                },
+                {
+                  "label": "지금은 내려놓는다",
+                  "commands": [
+                    {
+                      "cmd": "text",
+                      "text": "내용을 더 생각해 보고 다시 살펴보자."
+                    }
+                  ]
+                }
+              ],
+              "cancel": 1
+            }
+          ],
+          "character": "evidence",
+          "when": {
+            "self": "examined",
+            "is": false
+          }
+        },
+        {
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "text",
+              "text": "시계의 수리 쪽지: 정전 때 떨어져 멈춤. 멈춘 시각만으로 범인을 정할 수 없다."
+            }
+          ],
+          "character": "record",
+          "when": {
+            "self": "examined",
+            "is": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "record_desk",
+      "x": 24,
+      "y": 16,
+      "pages": [
+        {
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "choice",
+              "prompt": "파란 조사 기록대",
+              "options": [
+                {
+                  "label": "여기까지 저장한다",
+                  "commands": [
+                    {
+                      "cmd": "call",
+                      "common": "save_investigation"
+                    }
+                  ]
+                },
+                {
+                  "label": "모은 단서를 다시 읽는다",
+                  "commands": [
+                    {
+                      "cmd": "x_review_clues"
+                    }
+                  ]
+                },
+                {
+                  "label": "돌아간다",
+                  "commands": []
+                }
+              ],
+              "cancel": 2
+            }
+          ],
+          "character": "record"
+        }
+      ]
+    },
+    {
+      "id": "guide",
+      "x": 8,
+      "y": 16,
+      "pages": [
+        {
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "text",
+              "text": "저택 안내\n왼쪽 금빛 문: 서재 / 오른쪽: 도서실 / 위쪽: 온실\n아래쪽 정문: 조사 결론 / 파란 기록대: 저장·단서 정리"
+            }
+          ],
+          "character": "sign"
+        }
+      ]
+    },
+    {
+      "id": "front_door",
+      "x": 18,
+      "y": 20,
+      "pages": [
+        {
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "call",
+              "common": "conclusion"
+            }
+          ],
+          "character": "sign"
+        },
+        {
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "call",
+              "common": "aftermath"
+            },
+            {
+              "cmd": "text",
+              "text": "조사는 끝났다. 다른 결론을 살펴보려면 새 조사를 시작하거나, 결론 전에 남긴 저장 기록으로 돌아오자."
+            }
+          ],
+          "character": "sign",
+          "when": {
+            "flag": "finished",
+            "is": true
+          }
+        }
+      ]
+    }
+  ]
+}

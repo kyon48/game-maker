@@ -1,0 +1,57 @@
+{
+  "name": "집사의 시간 증언과 재대화",
+  "steps": [
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 0
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "met_steward",
+        "is": true
+      }
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 0
+    },
+    {
+      "expect": {
+        "textContains": "제 실수"
+      }
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    }
+  ],
+  "start": {
+    "map": "hall",
+    "x": 18,
+    "y": 11,
+    "dir": "up"
+  },
+  "state": {
+    "flags": {
+      "introduced": true
+    }
+  }
+}

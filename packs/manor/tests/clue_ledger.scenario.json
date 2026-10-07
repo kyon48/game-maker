@@ -1,0 +1,88 @@
+{
+  "name": "단서 ledger: 보류 후 기록·재조사해도 셀프 플래그 유지",
+  "steps": [
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 1
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "clue_ledger",
+        "is": false
+      }
+    },
+    {
+      "expect": {
+        "self": "examined",
+        "map": "library",
+        "event": "ledger",
+        "is": false
+      }
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 0
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "clue_ledger",
+        "is": true
+      }
+    },
+    {
+      "expect": {
+        "self": "examined",
+        "map": "library",
+        "event": "ledger",
+        "is": true
+      }
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "expect": {
+        "textContains": "장부 단서"
+      }
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    }
+  ],
+  "start": {
+    "map": "library",
+    "x": 7,
+    "y": 7,
+    "dir": "up"
+  },
+  "state": {
+    "flags": {
+      "introduced": true
+    }
+  }
+}

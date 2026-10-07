@@ -1,0 +1,241 @@
+{
+  "events": [
+    {
+      "id": "to_hall",
+      "x": 16,
+      "y": 15,
+      "pages": [
+        {
+          "trigger": "touch",
+          "commands": [
+            {
+              "cmd": "transfer",
+              "map": "hall",
+              "marker": "from_greenhouse",
+              "dir": "down"
+            }
+          ],
+          "through": true
+        }
+      ]
+    },
+    {
+      "id": "gardener",
+      "x": 24,
+      "y": 13,
+      "pages": [
+        {
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "face",
+              "target": "this",
+              "dir": "player"
+            },
+            {
+              "cmd": "text",
+              "text": "정원사 무진입니다. 그날 번개가 치자 온실 유리가 깨졌어요. 복도까지 불이 꺼졌고, 시계도 떨어지는 소리가 났습니다.",
+              "speaker": "무진"
+            },
+            {
+              "cmd": "choice",
+              "prompt": "무진에게 무엇을 물을까?",
+              "options": [
+                {
+                  "label": "약 봉투는 누구 것인가요?",
+                  "commands": [
+                    {
+                      "cmd": "text",
+                      "text": "시든 동백을 살리려고 산 치료제예요. 사람에게 쓰는 약이 아닙니다. 왼편 작업대의 영수증에 품목과 날짜가 있을 거예요.",
+                      "speaker": "무진"
+                    },
+                    {
+                      "cmd": "text",
+                      "text": "부인께서는 오래 앓으셨어요. 마지막까지 동백이 피는 걸 보고 싶어 하셨죠. 약 봉투가 있다는 이유로 누군가 독을 썼다고 하면, 꽃도 억울할 겁니다.",
+                      "speaker": "무진"
+                    }
+                  ]
+                },
+                {
+                  "label": "부인이 남긴 부탁이 있나요?",
+                  "commands": [
+                    {
+                      "cmd": "text",
+                      "text": "부인은 봄에 아이들이 올 길을 넓혀 달라고 하셨어요. 누가 저택을 물려받느냐고 여쭈었더니, “이미 맡길 곳에 맡겼다”고만 하셨지요.",
+                      "speaker": "무진"
+                    },
+                    {
+                      "cmd": "text",
+                      "text": "기부한 것이 책뿐이었는지는 도서실 장부에 나올 겁니다. 제 말보다 부인이 쓴 것을 먼저 보세요.",
+                      "speaker": "무진"
+                    }
+                  ]
+                }
+              ],
+              "cancel": null
+            },
+            {
+              "cmd": "set_flag",
+              "flag": "met_gardener",
+              "value": true
+            }
+          ],
+          "character": "gardener"
+        },
+        {
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "text",
+              "text": "시계, 약 봉투, 서재 기록은 서로 다른 이야기가 아닙니다. 폭풍우가 멈춘 시간과 부인이 남긴 약속을 섞지 않으면 답이 보일 거예요.",
+              "speaker": "무진"
+            }
+          ],
+          "character": "gardener",
+          "when": {
+            "flag": "met_gardener",
+            "is": true
+          }
+        },
+        {
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "call",
+              "common": "aftermath"
+            }
+          ],
+          "character": "gardener",
+          "when": {
+            "flag": "finished",
+            "is": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "receipt",
+      "x": 7,
+      "y": 6,
+      "pages": [
+        {
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "text",
+              "text": "작업대에는 약 봉투와 영수증이 놓여 있다."
+            },
+            {
+              "cmd": "text",
+              "text": "영수증 품목은 “동백 잎곰팡이 치료제”. 구매자는 무진, 구매일은 사흘 전이다. 부인의 임종일보다 뒤이므로 사라진 유언장과도 맞지 않는다.",
+              "speaker": "윤서"
+            },
+            {
+              "cmd": "text",
+              "text": "봉투 뒷면에는 온실 작업 날짜가 적혀 있다. 소문에서 말한 수상한 약은 식물용이었다. 사람의 죽음과 물건의 이름을 함부로 이어 붙여서는 안 된다.",
+              "speaker": "윤서"
+            },
+            {
+              "cmd": "choice",
+              "prompt": "이 기록을 단서로 남길까?",
+              "options": [
+                {
+                  "label": "수첩에 기록한다",
+                  "commands": [
+                    {
+                      "cmd": "set_flag",
+                      "flag": "clue_receipt",
+                      "value": true
+                    },
+                    {
+                      "cmd": "set_self_flag",
+                      "name": "examined",
+                      "value": true
+                    },
+                    {
+                      "cmd": "call",
+                      "common": "remember"
+                    }
+                  ]
+                },
+                {
+                  "label": "지금은 내려놓는다",
+                  "commands": [
+                    {
+                      "cmd": "text",
+                      "text": "내용을 더 생각해 보고 다시 살펴보자."
+                    }
+                  ]
+                }
+              ],
+              "cancel": 1
+            }
+          ],
+          "character": "evidence",
+          "when": {
+            "self": "examined",
+            "is": false
+          }
+        },
+        {
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "text",
+              "text": "영수증 단서: 무진의 약은 임종 뒤 구입한 식물 치료제. 독살 소문과 맞지 않는다."
+            }
+          ],
+          "character": "record",
+          "when": {
+            "self": "examined",
+            "is": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "watering",
+      "x": 10,
+      "y": 13,
+      "pages": [
+        {
+          "trigger": "parallel",
+          "commands": [
+            {
+              "cmd": "move",
+              "target": "this",
+              "route": [
+                "up",
+                "wait:40",
+                "down",
+                "right",
+                "wait:40",
+                "left"
+              ],
+              "wait": true
+            },
+            {
+              "cmd": "wait",
+              "frames": 40
+            }
+          ],
+          "character": "attendant",
+          "when": {
+            "flag": "finished",
+            "is": false
+          },
+          "through": true
+        },
+        {
+          "trigger": "none",
+          "commands": [],
+          "character": "attendant",
+          "when": {
+            "flag": "finished",
+            "is": true
+          }
+        }
+      ]
+    }
+  ]
+}

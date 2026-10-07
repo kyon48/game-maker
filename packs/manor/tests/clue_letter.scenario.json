@@ -1,0 +1,88 @@
+{
+  "name": "단서 letter: 보류 후 기록·재조사해도 셀프 플래그 유지",
+  "steps": [
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 1
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "clue_letter",
+        "is": false
+      }
+    },
+    {
+      "expect": {
+        "self": "examined",
+        "map": "study",
+        "event": "letter",
+        "is": false
+      }
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 0
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "clue_letter",
+        "is": true
+      }
+    },
+    {
+      "expect": {
+        "self": "examined",
+        "map": "study",
+        "event": "letter",
+        "is": true
+      }
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "expect": {
+        "textContains": "편지 단서"
+      }
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    }
+  ],
+  "start": {
+    "map": "study",
+    "x": 20,
+    "y": 7,
+    "dir": "up"
+  },
+  "state": {
+    "flags": {
+      "introduced": true
+    }
+  }
+}
