@@ -1,3 +1,4 @@
+import { nodePluginRuntime } from '../tools/loadPlugins';
 import { fixtureSource, ruleChanges } from './fixtureSource';
 import { expect, it } from 'vitest';
 import { validatePack } from '../engine/data/validator/validate';
@@ -99,6 +100,7 @@ it.each(['keeper', 'elder'])('checks targets after a common event transfer in th
       return value;
     }, exists: (path: string) => base.exists(path), listFiles: () => base.listFiles(),
   };
-  const { diagnostics } = await validatePack(source, 'demo', options);
+  const runtime = await nodePluginRuntime(base, 'packs/demo');
+  const { diagnostics } = await validatePack(source, 'demo', runtime.validationOptions);
   expect(diagnostics.some(result => result.code === 'V3')).toBe(target === 'elder');
 });

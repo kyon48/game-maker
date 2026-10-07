@@ -19,7 +19,9 @@
     "dir": "down"
   },
   "player": "hero",
-  "plugins": [],
+  "plugins": [
+    "greetings"
+  ],
   "labels": {
     "continue": "이어하기",
     "newGame": "처음부터"
@@ -31,7 +33,8 @@
       "rested": false
     },
     "vars": {
-      "gold": 0
+      "gold": 0,
+      "greetings": 0
     }
   }
 }
