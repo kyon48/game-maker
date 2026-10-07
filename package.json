@@ -1,6 +1,6 @@
 {
   "name": "game-maker",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,13 +8,15 @@
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.sim.json",
     "lint": "eslint .",
     "test": "vitest run",
-    "check": "npm run typecheck && npm run lint && npm run test && npm run schemas -- --check && npm run validate -- --all && npm run scenarios -- --all",
+    "check": "npm run typecheck && npm run lint && npm run test && npm run schemas -- --check && npm run validate -- --all && npm run scenarios -- --all && npm run build:all",
     "tiles": "tsx tools/generate-tiles.ts",
     "characters": "node --import tsx tools/generate-character.ts",
     "fonts": "node --import tsx tools/copy-fonts.ts",
     "validate": "node --import tsx tools/validate.ts",
     "schemas": "node --import tsx tools/schemas.ts",
-    "scenarios": "node --import tsx tools/scenarios.ts"
+    "scenarios": "node --import tsx tools/scenarios.ts",
+    "build": "node --import tsx tools/build.ts",
+    "build:all": "node --import tsx tools/build.ts --all"
   },
   "dependencies": {
     "@sinclair/typebox": "^0.34.41"

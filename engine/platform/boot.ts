@@ -1,3 +1,8 @@
+import runtime from 'virtual:pack-runtime';
+import { packLocation } from './packLocation';
+import { SaveStorage } from './storage';
+import { readSave, restoreSave } from '../sim/state/loadSave';
+import { chooseStart } from './startChoice';
 import { builtinCatalog } from '../sim/commands';
 import { PackValidationError, showError } from './errorScreen';
 import './style.css';
@@ -18,13 +23,14 @@ import { drawUi } from './renderer/ui';
 import { CanvasTextMeasurer } from './textMeasurer';
 import type { Skin } from '../data/skin';
 const app = document.querySelector<HTMLElement>('#app')!;
+let cleanup = () => {};
 function fail(error: unknown): void {
-  showError(app, error);
+  cleanup(); showError(app, error, runtime.buildInfo);
 }
 async function boot(): Promise<void> {
-  const id = new URLSearchParams(location.search).get('pack');
-  if (!id || !/^[a-z][a-z0-9_]*$/.test(id)) throw new Error('Specify ?pack=<packId>');
-  const source = new FetchSource(`/packs/${id}/`, import.meta.env.DEV ? `/__pack-files?pack=${id}` : undefined);
+  const locationInfo = packLocation(runtime, location.href);
+  const { id } = locationInfo;
+  const source = new FetchSource(locationInfo.root, locationInfo.inventory, locationInfo.cacheKey);
   if (import.meta.env.DEV) {
     const { validatePack } = await import('../data/validator/validate');
     const { diagnostics } = await validatePack(source, id, { commands: builtinCatalog() });
@@ -42,19 +48,32 @@ async function boot(): Promise<void> {
   const font = new FontFace(skin.font.family, `url(${JSON.stringify(source.url(skin.font.src))})`);
   document.fonts.add(await font.load());
   await document.fonts.ready;
-  const initial = await loader.load(game.start.map);
+  const storage = new SaveStorage(localStorage, { packId: game.id, gameVersion: game.version, engineVersion: runtime.engineVersion });
+  const candidate = readSave(storage.read(), game.id);
+  const savedMap = typeof candidate.data?.map === 'string' && game.maps.includes(candidate.data.map) ? candidate.data.map : game.start.map;
+  const savedData = candidate.data ? await loader.load(savedMap) : undefined;
+  const restored = restoreSave(candidate, game, new Map(entries), new Map(savedData ? [[savedMap, savedData.data]] : []));
+  for (const warning of restored.warnings) console.warn(warning);
   const playerGraphic = characters[game.player];
   if (playerGraphic?.sheet) await loader.image(playerGraphic.sheet);
   if (skin.window.image) await loader.image(skin.window.image);
   const canvas = document.createElement('canvas'); canvas.width = game.screen.width; canvas.height = game.screen.height;
   const context = canvas.getContext('2d'); if (!context) throw new Error('Canvas 2D unavailable');
   context.font = `${skin.font.size}px ${JSON.stringify(skin.font.family)}`;
-  const simulation = new Game(game, initial.data, characters, initial.events, { skin, textMeasurer: new CanvasTextMeasurer(context), mapLoader: loader, commonEvents });
   const images = loader.images;
   document.title = game.title;
   app.replaceChildren(canvas);
   const keyboard = new Keyboard(window);
   const resize = () => resizeCanvas(canvas); resize(); window.addEventListener('resize', resize);
+  cleanup = () => { keyboard.dispose(); window.removeEventListener('resize', resize); };
+  const continued = restored.state && await chooseStart(context, skin, images, keyboard, [game.labels.continue, game.labels.newGame]) === 0;
+  const state = continued ? restored.state! : null;
+  const start = state ? { map: state.map, x: state.x, y: state.y, dir: state.dir } : game.start;
+  const initial = await loader.load(start.map);
+  const simulation = new Game({ ...game, start, state: state ? { flags: state.flags, vars: state.vars } : game.state }, initial.data, characters, initial.events, {
+    skin, textMeasurer: new CanvasTextMeasurer(context), mapLoader: loader, commonEvents,
+    selfFlags: state?.selfFlags, save: value => storage.write(value),
+  });
   const stop = startLoop(new FixedTickLoop(input => simulation.tick(input), () => keyboard.consume(), () => {
     context.clearRect(0, 0, canvas.width, canvas.height);
     const snapshot = simulation.snapshot;
@@ -71,6 +90,7 @@ async function boot(): Promise<void> {
     }
     drawUi(context, snapshot, skin, images);
   }), error => { keyboard.dispose(); fail(error); });
-  window.addEventListener('pagehide', () => { stop(); keyboard.dispose(); window.removeEventListener('resize', resize); }, { once: true });
+  cleanup = () => { stop(); keyboard.dispose(); window.removeEventListener('resize', resize); };
+  window.addEventListener('pagehide', () => cleanup(), { once: true });
 }
 void boot().catch(fail);

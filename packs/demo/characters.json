@@ -27,5 +27,8 @@
     "frameWidth": 16,
     "frameHeight": 24,
     "moveTicks": 20
+  },
+  "checkpoint": {
+    "placeholder": "#75d6c8"
   }
 }

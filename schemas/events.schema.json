@@ -118,6 +118,19 @@
         {
           "additionalProperties": false,
           "type": "object",
+          "properties": {
+            "cmd": {
+              "const": "save",
+              "type": "string"
+            }
+          },
+          "required": [
+            "cmd"
+          ]
+        },
+        {
+          "additionalProperties": false,
+          "type": "object",
           "required": [
             "map",
             "cmd"
@@ -561,19 +574,6 @@
               "type": "string"
             }
           }
-        },
-        {
-          "additionalProperties": false,
-          "type": "object",
-          "properties": {
-            "cmd": {
-              "const": "save",
-              "type": "string"
-            }
-          },
-          "required": [
-            "cmd"
-          ]
         }
       ]
     },

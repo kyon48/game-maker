@@ -1,3 +1,6 @@
 import { Type } from '@sinclair/typebox';
-// Pack schema only in M5; runtime handler is implemented in M6.
+import type { CommandRegistry } from '../event/CommandRegistry';
 export const argsSchema = Type.Object({}, { additionalProperties: false });
+export function registerSave(registry: CommandRegistry): void {
+  registry.register('save', { args: argsSchema, parallelSafe: false, run(_args, ctx) { ctx.save(); } });
+}
