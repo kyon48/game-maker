@@ -1,5 +1,5 @@
 import type { Plugin } from 'vite';
-import { readdir, readFile } from 'node:fs/promises';
+import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { FsSource } from './fsSource';
 import type { BuildInfo, PackRuntime } from '../engine/data/buildInfo';
@@ -19,8 +19,16 @@ export function packRuntimePlugin(info?: BuildInfo): Plugin {
           try { const game = JSON.parse(await readFile(path.join(root, 'packs', pack, 'game.json'), 'utf8')) as { plugins?: unknown };
             if (Array.isArray(game.plugins)) names = game.plugins.filter((name): name is string => typeof name === 'string' && /^[a-z][a-z0-9_]*$/.test(name));
           } catch { /* The shared validator reports malformed pack JSON. */ }
-          const imports = names.map(name => `import(${JSON.stringify(path.join(root, 'packs', pack, 'plugins', name + '.ts'))}).then(m => m.default)`);
-          return `${JSON.stringify(pack)}: () => Promise.all([${imports.join(',')}])`;
+          const missing = [];
+          const present: string[] = [];
+          for (const [index, name] of names.entries()) {
+            if (await stat(path.join(root, 'packs', pack, 'plugins', name + '.ts')).then(item => item.isFile(), () => false)) present.push(name);
+            else missing.push({ level: 'error', code: 'V3', file: 'game.json', pointer: `/plugins/${index}`, message: `Missing plugin: plugins/${name}.ts` });
+          }
+          const imports = present.map(name => `import(${JSON.stringify(path.join(root, 'packs', pack, 'plugins', name + '.ts'))}).then(m => m.default)`);
+          return missing.length
+            ? `${JSON.stringify(pack)}: () => Promise.reject(Object.assign(new Error("Plugin load failed"), {diagnostics: ${JSON.stringify(missing)}}))`
+            : `${JSON.stringify(pack)}: () => Promise.all([${imports.join(',')}])`;
         }));
         return `export default {${entries.join(',')}};`;
       }

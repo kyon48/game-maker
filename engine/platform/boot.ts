@@ -41,7 +41,10 @@ async function boot(): Promise<void> {
   const { id } = locationInfo;
   const source = new FetchSource(locationInfo.root, locationInfo.inventory, locationInfo.cacheKey);
   const game = await source.readJson('game.json') as GameConfig;
-  const modules = await pluginLoaders[id]?.() ?? [];
+  const modules = await (pluginLoaders[id]?.() ?? Promise.resolve([])).catch(error => {
+    if (error && Array.isArray(error.diagnostics)) throw new PackValidationError(error.diagnostics);
+    throw error;
+  });
   const plugins = new PluginRuntime(runtime.engineVersion, modules.map((module, index) => ({ name: game.plugins[index]!, module })));
   if (plugins.diagnostics.length) throw new PackValidationError(plugins.diagnostics);
   if (import.meta.env.DEV) {

@@ -20,6 +20,10 @@ export async function coreRules(context: ValidationContext) {
   if (game.formatVersion !== CURRENT_FORMAT_VERSION) report('V2', 'game.json', '/formatVersion', 'Unsupported format version');
   for (const plugin of options.plugins ?? []) if (plugin.apiVersion !== API_VERSION) report('V2', `plugins/${plugin.id}.ts`, '/apiVersion', 'Unsupported plugin API version');
   context.diagnostics.push(...options.pluginDiagnostics ?? []);
+  for (const [index, name] of game.plugins.entries()) {
+    const pointer = `/plugins/${index}`;
+    if (!await source.exists(`plugins/${name}.ts`) && !context.diagnostics.some(item => item.code === 'V3' && item.file === 'game.json' && item.pointer === pointer)) report('V3', 'game.json', pointer, `Missing plugin: plugins/${name}.ts`);
+  }
   if (skin.window.padding * 2 >= game.screen.width) report('V9', 'skin.json', '/window/padding', 'Message inner width must be positive');
   return { game, characters, skin, common };
 }

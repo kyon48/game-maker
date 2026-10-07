@@ -48,7 +48,12 @@ export function restoreSave(candidate: SaveCandidate, game: GameConfig, events: 
   }
   const fromGameVersion = candidate.fromGameVersion ?? (typeof data.gameVersion === 'string' ? data.gameVersion : '');
   let state: PersistentState = { ...position, flags, vars, selfFlags };
-  if (options.loadSave) state = options.loadSave(state, fromGameVersion);
+  if (options.loadSave) {
+    const changed = options.loadSave(state, fromGameVersion);
+    // Repeat steps 3–5 only; a hook must never run recursively.
+    const normalized = restoreSave({ data: { ...changed }, warnings: [], fromGameVersion }, game, events, maps);
+    state = normalized.state!; warnings.push(...normalized.warnings);
+  }
   return { state, fromGameVersion, warnings };
 }
 export function loadSave(raw: string | null, game: GameConfig, events: ReadonlyMap<string, readonly EventDefinition[]>, maps: ReadonlyMap<string, TileMapData>, options: LoadOptions = {}): LoadedSave {
