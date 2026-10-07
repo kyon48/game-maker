@@ -1,3 +1,4 @@
+import { fixtureSource, ruleChanges } from './fixtureSource';
 import { expect, it } from 'vitest';
 import { validatePack } from '../engine/data/validator/validate';
 import { FsSource } from '../tools/fsSource';
@@ -11,8 +12,8 @@ it('accepts the valid base pack without warnings', async () => {
   const result = await validatePack(new FsSource('tests/fixtures/base'), 'base', options);
   expect(result.diagnostics).toEqual([]); expect(result.pack).toBeDefined();
 });
-it.each(Array.from({ length: 12 }, (_, i) => i + 1))('detects V%s in its intentionally broken pack with location and severity', async n => {
-  const { diagnostics, pack } = await validatePack(new FsSource(`tests/fixtures/v${n}`), `v${n}`, options);
+it.each(Array.from({ length: 12 }, (_, i) => i + 1))('detects V%s in its base pack variant with location and severity', async n => {
+  const { diagnostics, pack } = await validatePack(await fixtureSource(ruleChanges[n]!), 'base', options);
   const errors = diagnostics.filter(result => result.code === `V${n}`);
   expect(errors.length).toBeGreaterThan(0);
   for (const result of errors) {
