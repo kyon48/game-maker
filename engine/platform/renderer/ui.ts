@@ -20,7 +20,7 @@ function windowBox(context: CanvasRenderingContext2D, skin: Skin, images: Readon
     context.strokeStyle = '#ffffff'; context.lineWidth = 1; context.strokeRect(x + 0.5, y + 0.5, width - 1, height - 1);
   }
 }
-export function drawUi(context: CanvasRenderingContext2D, snapshot: GameSnapshot, skin: Skin,
+export function drawUi(context: CanvasRenderingContext2D, snapshot: Pick<GameSnapshot, 'message' | 'choice'>, skin: Skin,
   images: ReadonlyMap<string, CanvasImageSource>): void {
   context.save(); context.imageSmoothingEnabled = false;
   context.font = `${skin.font.size}px ${JSON.stringify(skin.font.family)}`;

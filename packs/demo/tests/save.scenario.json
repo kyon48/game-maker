@@ -1,0 +1,33 @@
+{
+  "name": "기록 지점에서 저장 후 다음 대화를 실행한다",
+  "start": {
+    "map": "village",
+    "x": 15,
+    "y": 11,
+    "dir": "down"
+  },
+  "steps": [
+    {
+      "press": "ok"
+    },
+    {
+      "expect": {
+        "textContains": "여행 기록을 남겼다."
+      }
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "map": "village",
+        "x": 15,
+        "y": 11,
+        "dir": "down"
+      }
+    }
+  ]
+}

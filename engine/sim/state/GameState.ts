@@ -8,6 +8,9 @@ export class GameState {
     this.flags = new Map(Object.entries(initial.flags));
     this.vars = new Map(Object.entries(initial.vars));
   }
+  snapshot(): { flags: Record<string, boolean>; vars: Record<string, number>; selfFlags: Record<string, boolean> } {
+    return { flags: Object.fromEntries(this.flags), vars: Object.fromEntries(this.vars), selfFlags: Object.fromEntries(this.selfFlags) };
+  }
   get dirty(): boolean { return this.changed; }
   clearDirty(): void { this.changed = false; }
   getFlag(name: string): boolean {

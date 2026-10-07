@@ -30,6 +30,6 @@ it('check rejects outdated and extra files without overwriting or deleting them'
 });
 it('schemas --check CLI exits with 1 on missing schemas and leaves the cwd untouched', async () => {
   const cwd = await mkdtemp(path.join(tmpdir(), 'schema-cli-'));
-  await expect(promisify(execFile)(process.execPath, ['--import', createRequire(path.resolve('package.json')).resolve('tsx'), path.resolve('tools/schemas.ts'), '--check'], { cwd })).rejects.toMatchObject({ code: 1, stderr: expect.stringContaining('Missing schema: game.schema.json') });
+  await expect(promisify(execFile)(process.execPath, ['--import', createRequire(path.resolve('package.json')).resolve('tsx'), path.resolve('tools/schemas.ts'), '--check'], { cwd })).rejects.toMatchObject({ code: 1, stderr: expect.stringMatching(/Missing schema: game.schema.json[\s\S]*npm run schemas 를 실행해 다시 생성하세요\n$/) });
   expect(await readdir(cwd)).toEqual([]);
 });

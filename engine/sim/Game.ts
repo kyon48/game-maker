@@ -1,3 +1,4 @@
+import type { PersistentState } from './state/loadSave';
 import type { GameConfig, EventDefinition } from '../data/game';
 import type { Characters } from '../data/characters';
 import type { Skin } from '../data/skin';
@@ -35,6 +36,7 @@ export interface GameSnapshot {
   readonly choice: ChoiceSnapshot | null;
 }
 export interface GameOptions {
+  save?: (state: PersistentState) => void; selfFlags?: Readonly<Record<string, boolean>>;
   skin?: Skin; textMeasurer?: TextMeasurer; mapLoader?: MapLoader;
   commonEvents?: Readonly<Record<string, { commands: readonly Command[] }>>;
   hooks?: { mapLeave?: (id: string) => void; mapEnter?: (id: string) => void; tick?: () => void };
@@ -56,6 +58,10 @@ export class Game {
   constructor(private readonly config: GameConfig, map: TileMapData, private readonly characters: Characters,
     events: readonly EventDefinition[], private readonly options: GameOptions = {}) {
     this.state = new GameState(config.state);
+    for (const [key, value] of Object.entries(options.selfFlags ?? {})) {
+      const [map, event, name] = key.split(':'); this.state.setSelf(map!, event!, name!, value);
+    }
+    this.state.clearDirty();
     const graphic = characters[config.player];
     this.player = new Player('player', config.start.x, config.start.y, config.start.dir, config.tileSize, graphic);
     this.events = events.map(event => {
@@ -136,6 +142,10 @@ export class Game {
     const mapId = () => this.map.id;
     const scope = { mapId: this.map.id, id: event.id };
     return {
+      save: () => {
+        if (!this.options.save) throw new Error('Save port unavailable');
+        this.options.save({ map: this.map.id, x: this.player.x, y: this.player.y, dir: this.player.dir, ...this.state.snapshot() });
+      },
       state: this.state, thisEvent: scope,
       get player() { return { mapId: mapId(), x: player.x, y: player.y, dir: player.dir }; },
       evaluate: condition => evaluate(condition, this.state, scope),

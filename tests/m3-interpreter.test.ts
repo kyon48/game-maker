@@ -11,7 +11,7 @@ function fixture() {
   const registry = new CommandRegistry(); registerBuiltins(registry);
   const state = new GameState({ flags: { met: false }, vars: { gold: 0 } });
   const host: CommandHost = {
-    transfer: function* () {}, move: () => ({ done: true }), fade: () => ({ done: true }), shake: () => ({ done: true }), showCharacter: () => {}, common: () => [],
+    save: () => {}, transfer: function* () {}, move: () => ({ done: true }), fade: () => ({ done: true }), shake: () => ({ done: true }), showCharacter: () => {}, common: () => [],
     state, thisEvent: { mapId: 'map', id: 'event' }, player: { mapId: 'map', x: 0, y: 0, dir: 'down' },
     waitFrames: n => ({ kind: 'frames', n }), waitUntil: test => ({ kind: 'until', test }),
     evaluate: condition => evaluate(condition, state, { mapId: 'map', id: 'event' }), face: () => {},

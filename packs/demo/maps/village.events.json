@@ -175,6 +175,26 @@
           ]
         }
       ]
+    },
+    {
+      "id": "checkpoint",
+      "x": 15,
+      "y": 12,
+      "pages": [
+        {
+          "trigger": "action",
+          "character": "checkpoint",
+          "commands": [
+            {
+              "cmd": "save"
+            },
+            {
+              "cmd": "text",
+              "text": "여행 기록을 남겼다."
+            }
+          ]
+        }
+      ]
     }
   ]
 }
