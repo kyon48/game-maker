@@ -36,7 +36,7 @@ export default tseslint.config(
   { ignores: ['node_modules/**', 'dist/**', '.omc/**', 'docs/**'] },
   ...tseslint.configs.recommended,
   { plugins: { architecture: { rules: { boundary: resolvedBoundary } } }, rules: { 'architecture/boundary': 'error' } },
-  { files: ['**/engine/sim/**/*.ts'], rules: {
+  { files: ['**/engine/sim/**/*.ts', '**/packs/*/plugins/**/*.ts'], rules: {
     'no-restricted-properties': ['error', { object: 'Math', property: 'random' }, { object: 'Date', property: 'now' }, { object: 'performance', property: 'now' }],
   } },
 );

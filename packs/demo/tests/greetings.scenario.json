@@ -1,0 +1,59 @@
+{
+  "name": "집주인 인사 플러그인으로 방문 횟수가 늘고 다음 인사가 바뀐다",
+  "start": {
+    "map": "house",
+    "x": 6,
+    "y": 5,
+    "dir": "up"
+  },
+  "state": {
+    "flags": {
+      "visited_house": true
+    }
+  },
+  "steps": [
+    {
+      "press": "ok"
+    },
+    {
+      "expect": {
+        "var": "greetings",
+        "op": "==",
+        "value": 1
+      }
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "expect": {
+        "textContains": "또 오셨군요"
+      }
+    },
+    {
+      "expect": {
+        "var": "greetings",
+        "op": "==",
+        "value": 2
+      }
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "rested",
+        "is": true
+      }
+    }
+  ]
+}

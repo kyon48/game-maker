@@ -3,7 +3,8 @@ import { packLocation } from './packLocation';
 import { SaveStorage } from './storage';
 import { readSave, restoreSave } from '../sim/state/loadSave';
 import { chooseStart } from './startChoice';
-import { builtinCatalog } from '../sim/commands';
+import pluginLoaders from 'virtual:pack-plugins';
+import { PluginRuntime } from '../sim/plugins/PluginRuntime';
 import { PackValidationError, showError } from './errorScreen';
 import './style.css';
 import { MapCache } from '../data/loader/MapCache';
@@ -28,16 +29,27 @@ function fail(error: unknown): void {
   cleanup(); showError(app, error, runtime.buildInfo);
 }
 async function boot(): Promise<void> {
+  if (import.meta.env.DEV && !new URL(location.href).searchParams.has('pack')) {
+    const list = document.createElement('nav');
+    for (const id of Object.keys(runtime.roots)) {
+      const link = document.createElement('a'), url = new URL(location.href); url.searchParams.set('pack', id);
+      link.href = url.href; link.textContent = id; list.append(link, document.createElement('br'));
+    }
+    app.replaceChildren(list); return;
+  }
   const locationInfo = packLocation(runtime, location.href);
   const { id } = locationInfo;
   const source = new FetchSource(locationInfo.root, locationInfo.inventory, locationInfo.cacheKey);
+  const game = await source.readJson('game.json') as GameConfig;
+  const modules = await pluginLoaders[id]?.() ?? [];
+  const plugins = new PluginRuntime(runtime.engineVersion, modules.map((module, index) => ({ name: game.plugins[index]!, module })));
+  if (plugins.diagnostics.length) throw new PackValidationError(plugins.diagnostics);
   if (import.meta.env.DEV) {
     const { validatePack } = await import('../data/validator/validate');
-    const { diagnostics } = await validatePack(source, id, { commands: builtinCatalog() });
+    const { diagnostics } = await validatePack(source, id, plugins.validationOptions);
     for (const warning of diagnostics.filter(item => item.level === 'warning')) console.warn(`${warning.file}${warning.pointer} ${warning.code}: ${warning.message}`);
     if (diagnostics.some(item => item.level === 'error')) throw new PackValidationError(diagnostics);
   }
-  const game = await source.readJson('game.json') as GameConfig;
   const [characters, entries, skin, commonEvents] = await Promise.all([
     source.readJson('characters.json') as Promise<Characters>,
     Promise.all(game.maps.map(async id => [id, (await source.readJson(`maps/${id}.events.json`) as { events: EventDefinition[] }).events] as const)),
@@ -48,7 +60,7 @@ async function boot(): Promise<void> {
   const font = new FontFace(skin.font.family, `url(${JSON.stringify(source.url(skin.font.src))})`);
   document.fonts.add(await font.load());
   await document.fonts.ready;
-  const storage = new SaveStorage(localStorage, { packId: game.id, gameVersion: game.version, engineVersion: runtime.engineVersion });
+  const storage = new SaveStorage(() => localStorage, { packId: game.id, gameVersion: game.version, engineVersion: runtime.engineVersion });
   const candidate = readSave(storage.read(), game.id);
   const savedMap = typeof candidate.data?.map === 'string' && game.maps.includes(candidate.data.map) ? candidate.data.map : game.start.map;
   const savedData = candidate.data ? await loader.load(savedMap) : undefined;
@@ -67,11 +79,13 @@ async function boot(): Promise<void> {
   const resize = () => resizeCanvas(canvas); resize(); window.addEventListener('resize', resize);
   cleanup = () => { keyboard.dispose(); window.removeEventListener('resize', resize); };
   const continued = restored.state && await chooseStart(context, skin, images, keyboard, [game.labels.continue, game.labels.newGame]) === 0;
-  const state = continued ? restored.state! : null;
+  const state = continued ? restoreSave(candidate, game, new Map(entries), new Map(savedData ? [[savedMap, savedData.data]] : []), {
+    loadSave: (state, from) => plugins.loadSave(state, candidate.data!, from),
+  }).state! : null;
   const start = state ? { map: state.map, x: state.x, y: state.y, dir: state.dir } : game.start;
   const initial = await loader.load(start.map);
   const simulation = new Game({ ...game, start, state: state ? { flags: state.flags, vars: state.vars } : game.state }, initial.data, characters, initial.events, {
-    skin, textMeasurer: new CanvasTextMeasurer(context), mapLoader: loader, commonEvents,
+    plugins, skin, textMeasurer: new CanvasTextMeasurer(context), mapLoader: loader, commonEvents,
     selfFlags: state?.selfFlags, save: value => storage.write(value),
   });
   const stop = startLoop(new FixedTickLoop(input => simulation.tick(input), () => keyboard.consume(), () => {

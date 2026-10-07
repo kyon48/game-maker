@@ -5,10 +5,7 @@ import type { TileMapData } from '../../data/loader/tiled';
 import { Collision } from '../world/Collision';
 import { migrateSave, SAVE_VERSION, saveMigrations } from './saveMigrations';
 import type { SaveMigration } from './saveMigrations';
-export interface PersistentState {
-  map: string; x: number; y: number; dir: Dir;
-  flags: Record<string, boolean>; vars: Record<string, number>; selfFlags: Record<string, boolean>;
-}
+export type PersistentState = Pick<import('../../data/saveData').SaveData, 'map' | 'x' | 'y' | 'dir' | 'flags' | 'vars' | 'selfFlags'>;
 export interface SaveCandidate { data: Record<string, unknown> | null; warnings: string[]; fromGameVersion?: string }
 export interface LoadedSave { state: PersistentState | null; fromGameVersion: string; warnings: string[] }
 export interface LoadOptions {

@@ -1,3 +1,4 @@
+import { nodePluginRuntime } from '../tools/loadPlugins';
 import { Value } from '@sinclair/typebox/value';
 import { InitialStateSchema } from '../engine/data/schema/game';
 import { describe, expect, it, vi } from 'vitest';
@@ -148,7 +149,7 @@ it('demo starts with player-first stable y sort and cannot walk through elder or
   const config = await source.readJson('game.json'), characters = await source.readJson('characters.json');
   const events = await source.readJson('maps/village.events.json');
   const data = await loadTiled(source, 'maps/village.tmj', 16);
-  const game = new Game(config, data, characters, events.events), twin = new Game(config, data, characters, events.events);
+  const game = new Game(config, data, characters, events.events, { plugins: await nodePluginRuntime(source, 'packs/demo') }), twin = new Game(config, data, characters, events.events, { plugins: await nodePluginRuntime(source, 'packs/demo') });
   expect(game.snapshot.characters.map(character => character.id)).toEqual(['to_house', 'player', 'elder', 'chest', 'flower', 'checkpoint', 'walker']);
   const initial = game.snapshot;
   for (let i = 0; i < 64; i++) { game.tick(input('right')); twin.tick(input('right')); }

@@ -50,3 +50,14 @@
 - 2026-10-07 / M6 / 배포 파일 요청에 gameVersion-commit 쿼리를 붙이고 빌드 정보는 JSON 파일과 같은 값을 번들에도 포함 / 오류가 첫 팩 로딩에서 나도 실제 build-info 표시; 개발은 development 표시와 갱신 가능한 요청 유지.
 - 2026-10-07 / M6 / build:all을 check에 추가하고 빌드는 명시적으로 DEV=false로 번들링 / 모든 팩 검증 선행, 테스트 프로세스의 NODE_ENV와 무관하게 프로덕션 검증기 제외.
 - 2026-10-07 / M6 / 엔진 버전을 0.2.0으로 증가 / §13.2에 따라 저장·로드·팩별 빌드 기능 추가를 minor 변경으로 기록; 팩 formatVersion·saveVersion·API 버전은 변경 없음.
+- 2026-10-07 / M6 리뷰 / SaveStorage의 저장소 획득·읽기·쓰기를 예외 처리하고 실패한 읽기는 세이브 없음, 쓰기는 경고만 반환 / 저장소가 차단돼도 게임 시작과 save 이후 커맨드 진행 유지.
+- 2026-10-07 / M6 리뷰 / dev 서버의 팩 목록은 서버 시작 시 결정되므로 새 팩 폴더 추가 후 재시작 필요 / Vite 가상 모듈의 팩 목록과 링크 목록을 서버 설정 완료 시 고정.
+- 2026-10-07 / M7 / 검증기를 기본 파일·맵/에셋·이벤트·사용 여부 규칙으로 분리하고 공통 읽기·진단 문맥을 공유 / 플러그인 통합 전에 기존 V1~V12 테스트로 동작 유지 확인.
+- 2026-10-07 / M7 / 공개 CommandContext는 §9.1만 가진 객체로 감싸고 GameStateAccess·ReadonlyGameState는 메서드 래퍼로 제공 / 내부 GameState·evaluate·face·save 등에 대한 타입·실행 접근 차단, 내장은 내부 확장과 같은 register 경로 유지.
+- 2026-10-07 / M7 / SaveData 타입을 DOM 없는 data로 이동하고 API에서 export / loadSave 공개 훅이 전체 저장 형식을 받게 하면서 platform·sim import 경계 유지.
+- 2026-10-07 / M7 / virtual:pack-plugins는 game.json 목록 순서로 모듈을 로드하고 Node는 tsx의 tsImport로 같은 파일을 로드 / dev는 전체 팩, 배포는 대상 팩만 import; schemas는 요청대로 플러그인 로딩 제외.
+- 2026-10-07 / M7 / 플러그인 등록과 훅은 동기 호출만 허용하고 mapEnter는 최초 배치에도 호출 / 대기 가능한 반환값을 런타임에서 거부하며 loadSave는 이어하기 선택 후 restoreSave 6단계에서만 호출.
+- 2026-10-07 / M7 / migrate-pack --all에 packs/와 tests/fixtures/base를 함께 포함 / 실제 포맷 변경 시 기준 테스트 팩도 갱신; 실제 마이그레이션 목록은 비우고 가짜 1→2로 파일 생성·삭제·포맷·키 순서 검증.
+- 2026-10-07 / M7 / 빌드 루트는 realpath로 정규화 / macOS 임시 경로의 /var와 /private/var 별칭 차이로 HTML 출력 이름이 잘못되는 재현 사례 수정.
+- 2026-10-07 / M7 / 데모 집주인 인사에 x_greet와 x_greeted를 사용하고 greetings 변수를 팩에 선언 / 새 게임에 그대로 복사할 수 있는 방문 횟수·재방문 인사 예시 제공.
+- 2026-10-07 / M7 / 엔진 버전을 0.3.0으로 증가하고 API_VERSION은 1, formatVersion은 1 유지 / 플러그인 API·로딩·마이그레이션 기능의 minor 추가이며 실제 팩 형식 변경 없음.

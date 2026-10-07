@@ -1,3 +1,6 @@
+import type { PluginRuntime } from './plugins/PluginRuntime';
+import { stateAccess } from './plugins/context';
+import type { HookContext } from '@engine/api';
 import type { PersistentState } from './state/loadSave';
 import type { GameConfig, EventDefinition } from '../data/game';
 import type { Characters } from '../data/characters';
@@ -36,6 +39,7 @@ export interface GameSnapshot {
   readonly choice: ChoiceSnapshot | null;
 }
 export interface GameOptions {
+  plugins?: PluginRuntime;
   save?: (state: PersistentState) => void; selfFlags?: Readonly<Record<string, boolean>>;
   skin?: Skin; textMeasurer?: TextMeasurer; mapLoader?: MapLoader;
   commonEvents?: Readonly<Record<string, { commands: readonly Command[] }>>;
@@ -49,14 +53,17 @@ export class Game {
   readonly effects = new Effects();
   private readonly parallels = new Map<EventObject, Interpreter>();
   private leaving = false;
-  readonly commands = new CommandRegistry();
-  readonly main = new Interpreter(this.commands);
+  readonly commands: CommandRegistry;
+  readonly main: Interpreter;
   readonly message: MessageState;
   readonly choice = new ChoiceState();
   private readonly triggers = new TriggerSlot();
   private current: GameSnapshot;
   constructor(private readonly config: GameConfig, map: TileMapData, private readonly characters: Characters,
     events: readonly EventDefinition[], private readonly options: GameOptions = {}) {
+    this.commands = options.plugins?.commands ?? new CommandRegistry();
+    if (!options.plugins) registerBuiltins(this.commands);
+    this.main = new Interpreter(this.commands);
     this.state = new GameState(config.state);
     for (const [key, value] of Object.entries(options.selfFlags ?? {})) {
       const [map, event, name] = key.split(':'); this.state.setSelf(map!, event!, name!, value);
@@ -65,13 +72,13 @@ export class Game {
     const graphic = characters[config.player];
     this.player = new Player('player', config.start.x, config.start.y, config.start.dir, config.tileSize, graphic);
     this.events = events.map(event => {
-      return new EventObject(event, config.tileSize, characters, this.state, config.start.map);
+      return new EventObject(event, config.tileSize, characters, this.state, config.start.map, options.plugins ? this.pluginCondition : undefined);
     });
     this.map = new MapState(config.start.map, map, [this.player, ...this.events]);
     this.message = new MessageState({ width: config.screen.width - 2 * (options.skin?.window.padding ?? 8),
       rows: options.skin?.message.rows ?? 3, charsPerTick: options.skin?.message.charsPerTick ?? 1 },
     options.textMeasurer ?? new HeadlessTextMeasurer(options.skin?.font.size ?? 12));
-    registerBuiltins(this.commands);
+    this.options.plugins?.mapEnter(this.hookContext());
     this.current = this.capture();
   }
   tick(input: InputFrame): void {
@@ -133,10 +140,21 @@ export class Game {
       character.advanceRoute(this.map);
     }
     this.effects.advance(); // (7)
+    this.options.plugins?.tick(this.hookContext());
     this.options.hooks?.tick?.(); // (8), registration is M7.
     this.current = this.capture();
   }
   get snapshot(): GameSnapshot { return this.current; }
+  private readonly pluginCondition = (name: string, args: unknown, state: GameState): boolean => {
+    if (!this.options.plugins) throw new Error(`Unknown plugin condition: ${name}`);
+    return this.options.plugins.evaluate(name, args, state);
+  };
+  evaluate(condition: import('../data/events').Condition, scope: import('./event/conditions').EventScope | null): boolean {
+    return evaluate(condition, this.state, scope, this.options.plugins ? this.pluginCondition : undefined);
+  }
+  private hookContext(): HookContext {
+    return Object.freeze({ state: stateAccess(this.state), player: Object.freeze({ mapId: this.map.id, x: this.player.x, y: this.player.y, dir: this.player.dir }), mapId: this.map.id });
+  }
   private host(event: EventObject, parallel = false): CommandHost {
     const { message, choice, player } = this;
     const mapId = () => this.map.id;
@@ -148,7 +166,7 @@ export class Game {
       },
       state: this.state, thisEvent: scope,
       get player() { return { mapId: mapId(), x: player.x, y: player.y, dir: player.dir }; },
-      evaluate: condition => evaluate(condition, this.state, scope),
+      evaluate: condition => evaluate(condition, this.state, scope, this.pluginCondition),
       waitFrames: n => {
         if (!Number.isSafeInteger(n) || n < 1) throw new Error('Invalid frame wait');
         return { kind: 'frames', n };
@@ -203,6 +221,7 @@ export class Game {
     // (2)
     for (const interpreter of this.parallels.values()) interpreter.abort();
     this.parallels.clear(); this.leaving = true;
+    this.options.plugins?.mapLeave(this.hookContext());
     this.options.hooks?.mapLeave?.(this.map.id);
     // (3): The platform resolves the port only after all new images are decoded.
     let loaded: LoadedMap | undefined;
@@ -216,11 +235,12 @@ export class Game {
     // (4)
     this.player.place(position.x, position.y, request.dir);
     this.events = next.events.map(definition => {
-      return new EventObject(definition, this.config.tileSize, this.characters, this.state, request.map);
+      return new EventObject(definition, this.config.tileSize, this.characters, this.state, request.map, this.options.plugins ? this.pluginCondition : undefined);
     });
     this.map = new MapState(request.map, next.data, [this.player, ...this.events]);
     if (!this.map.collision.passable(position.x, position.y)) throw new Error('Transfer arrives on collision');
     this.triggers.take(); this.leaving = false;
+    this.options.plugins?.mapEnter(this.hookContext());
     this.options.hooks?.mapEnter?.(this.map.id);
     // (5); the generator resumes its original caller and command list in (6).
     if (request.fade !== false) { const fade = this.effects.startFade('clear', 15); yield { kind: 'until', test: () => fade.done }; }

@@ -1,3 +1,4 @@
+import type { PluginCondition } from '../event/conditions';
 import { Character } from './Character';
 import type { EventDefinition, EventPage } from '../../data/game';
 import type { Characters } from '../../data/characters';
@@ -6,7 +7,7 @@ import { evaluate } from '../event/conditions';
 export class EventObject extends Character {
   private selected = -2;
   constructor(private readonly definition: EventDefinition, tileSize: number,
-    private readonly characters: Characters, state: GameState, readonly mapId: string) {
+    private readonly characters: Characters, state: GameState, readonly mapId: string, private readonly pluginCondition?: PluginCondition) {
     super(definition.id, definition.x, definition.y, 'down', tileSize);
     this.refresh(state);
   }
@@ -16,7 +17,7 @@ export class EventObject extends Character {
     let selected = -1;
     for (let i = this.definition.pages.length - 1; i >= 0; i--) {
       const page = this.definition.pages[i]!;
-      if (page.when === undefined || evaluate(page.when, state, { mapId: this.mapId, id: this.id })) { selected = i; break; }
+      if (page.when === undefined || evaluate(page.when, state, { mapId: this.mapId, id: this.id }, this.pluginCondition)) { selected = i; break; }
     }
     if (selected === this.selected) return;
     this.selected = selected;

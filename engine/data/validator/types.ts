@@ -7,6 +7,7 @@ import type { TileMapData } from '../loader/tiled';
 export interface Diagnostic { level: 'error' | 'warning'; file: string; pointer: string; code: string; message: string }
 export type CommandCatalog = ReadonlyMap<string, { args: TSchema; parallelSafe: boolean }>;
 export interface ValidationOptions {
+  pluginDiagnostics?: readonly Diagnostic[];
   commands: CommandCatalog;
   conditions?: ReadonlyMap<string, TSchema>;
   plugins?: readonly { id: string; apiVersion: number }[];

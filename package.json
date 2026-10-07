@@ -1,6 +1,6 @@
 {
   "name": "game-maker",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -16,7 +16,8 @@
     "schemas": "node --import tsx tools/schemas.ts",
     "scenarios": "node --import tsx tools/scenarios.ts",
     "build": "node --import tsx tools/build.ts",
-    "build:all": "node --import tsx tools/build.ts --all"
+    "build:all": "node --import tsx tools/build.ts --all",
+    "migrate-pack": "node --import tsx tools/migrate-pack.ts"
   },
   "dependencies": {
     "@sinclair/typebox": "^0.34.41"

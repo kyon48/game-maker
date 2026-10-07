@@ -1,16 +1,18 @@
+import { nodePluginRuntime } from '../tools/loadPlugins';
 import { expect, it } from 'vitest';
 import { FsSource } from '../tools/fsSource';
 import { builtinCatalog } from '../tools/catalog';
 import { validatePack } from '../engine/data/validator/validate';
 import { runScenario } from '../engine/data/scenarios/run';
-import { scenarioGame } from '../tools/scenarioGame';
+import { scenarioGame, scenarioGameWithPlugins } from '../tools/scenarioGame';
 it('runs all demo scenarios with the production headless runner', async () => {
   const source = new FsSource('packs/demo');
-  const { diagnostics, pack } = await validatePack(source, 'demo', { commands: builtinCatalog() });
+  const runtime = await nodePluginRuntime(source, 'packs/demo');
+  const { diagnostics, pack } = await validatePack(source, 'demo', runtime.validationOptions);
   expect(diagnostics).toEqual([]); expect(pack).toBeDefined();
   const files = (await source.listFiles()).filter(file => file.endsWith('.scenario.json'));
   expect(files.length).toBeGreaterThanOrEqual(3);
-  for (const file of files) await runScenario(pack!, await source.readJson(file), scenarioGame);
+  for (const file of files) await runScenario(pack!, await source.readJson(file), scenarioGameWithPlugins(await nodePluginRuntime(source, 'packs/demo')));
 });
 it('reports scenario name, step and current game state on failure', async () => {
   const { pack } = await validatePack(new FsSource('tests/fixtures/base'), 'base', { commands: builtinCatalog() });

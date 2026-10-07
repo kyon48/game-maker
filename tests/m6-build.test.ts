@@ -18,14 +18,14 @@ it('build emits pack data, real metadata and custom base, excluding tests/plugin
   const root = await mkdtemp(path.join(tmpdir(), 'valid-build-')), outDir = path.join(root, 'out');
   const info = await buildPack('demo', { outDir, base: '/subdir/' });
   expect(JSON.parse(await readFile(path.join(outDir, 'build-info.json'), 'utf8'))).toEqual(info);
-  expect(info).toMatchObject({ gameId: 'demo', gameVersion: '0.1.0', engineVersion: '0.2.0', formatVersion: 1, apiVersion: 1 });
+  expect(info).toMatchObject({ gameId: 'demo', gameVersion: '0.1.0', engineVersion: '0.3.0', formatVersion: 1, apiVersion: 1 });
   expect(info.commit).toMatch(/^[0-9a-f]+$/); expect(Number.isNaN(Date.parse(info.builtAt))).toBe(false);
   expect(await readFile(path.join(outDir, 'index.html'), 'utf8')).toContain('/subdir/assets/');
   expect(await readFile(path.join(outDir, 'pack/game.json'), 'utf8')).toBe(await readFile('packs/demo/game.json', 'utf8'));
   for (const folder of ['tests', 'plugins']) await expect(stat(path.join(outDir, 'pack', folder))).rejects.toMatchObject({ code: 'ENOENT' });
   const files = await import('node:fs/promises').then(fs => fs.readdir(path.join(outDir, 'assets')));
   expect(files.some(name => name.startsWith('validate-'))).toBe(false);
-  const js = await readFile(path.join(outDir, 'assets', files.find(name => name.endsWith('.js'))!), 'utf8');
+  const js = (await Promise.all(files.filter(name => name.endsWith('.js')).map(name => readFile(path.join(outDir, 'assets', name), 'utf8')))).join('\n');
   expect(js).not.toContain('Auto page may repeat indefinitely'); expect(js).not.toContain('CREDITS.md is required');
 });
 it('path resolution uses dev manifest/base or pack-local production data, fixing the pack and versioning every file URL', () => {
