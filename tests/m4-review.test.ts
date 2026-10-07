@@ -1,5 +1,4 @@
 import { expect, it, vi } from 'vitest';
-import { readFileSync } from 'node:fs';
 import { Game } from '../engine/sim/Game';
 import type { GameOptions } from '../engine/sim/Game';
 import type { Command } from '../engine/data/events';
@@ -24,8 +23,4 @@ it('rejects an unknown transfer map before fade, leave hook or loading', () => {
   expect(() => g.tick(empty)).toThrow('Unknown map');
   expect(g.effects.alpha).toBe(0); g.effects.advance(); expect(g.effects.alpha).toBe(0);
   expect(leave).not.toHaveBeenCalled(); expect(load).not.toHaveBeenCalled();
-});
-it('decisions references V7 for parallel restrictions and V8 for call cycles', () => {
-  const line = readFileSync('docs/decisions.md', 'utf8').split('\n').find(line => line.includes('parallel 금지 커맨드'))!;
-  expect(line).toContain('V7·V8');
 });

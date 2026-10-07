@@ -8,7 +8,7 @@
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.sim.json",
     "lint": "eslint .",
     "test": "vitest run",
-    "check": "npm run typecheck && npm run lint && npm run test && npm run schemas && git diff --exit-code -- schemas/ && npm run validate -- --all && npm run scenarios -- --all",
+    "check": "npm run typecheck && npm run lint && npm run test && npm run schemas -- --check && npm run validate -- --all && npm run scenarios -- --all",
     "tiles": "tsx tools/generate-tiles.ts",
     "characters": "node --import tsx tools/generate-character.ts",
     "fonts": "node --import tsx tools/copy-fonts.ts",

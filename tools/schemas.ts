@@ -1,5 +1,8 @@
-import { mkdir, writeFile } from 'node:fs/promises';
 import { packSchemas } from '../engine/data/schema/export';
 import { builtinCatalog } from './catalog';
-await mkdir('schemas', { recursive: true });
-for (const [name, schema] of packSchemas(builtinCatalog())) await writeFile(`schemas/${name}`, JSON.stringify(schema, null, 2) + '\n');
+import { syncSchemaFiles } from './schemaFiles';
+const args = process.argv.slice(2);
+if (args.length > 1 || args.some(arg => arg !== '--check')) throw new Error('Usage: schemas [--check]');
+const diagnostics = await syncSchemaFiles('schemas', packSchemas(builtinCatalog()), args.includes('--check'));
+for (const diagnostic of diagnostics) console.error(diagnostic);
+if (diagnostics.length) process.exitCode = 1;
