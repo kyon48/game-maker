@@ -4,6 +4,7 @@ import { validationContext, createUsage } from './context';
 import { coreRules } from './coreRules';
 import { mapRules } from './mapRules';
 import { eventRules } from './eventRules';
+import { filmRules } from './filmRules';
 import { finishRules } from './finishRules';
 export async function validatePack(source: PackSource, id: string, options: ValidationOptions): Promise<{ diagnostics: Diagnostic[]; pack?: ValidatedPack }> {
   const context = validationContext(source, id, options), { diagnostics } = context;
@@ -14,5 +15,6 @@ export async function validatePack(source: PackSource, id: string, options: Vali
   const checks = await mapRules(context, basics);
   eventRules(context, basics, checks, usage);
   await finishRules(context, basics, usage);
+  await filmRules(context, basics, checks);
   return { diagnostics, pack: diagnostics.some(result => result.level === 'error') ? undefined : { ...basics, events: checks.events, maps: checks.maps } };
 }

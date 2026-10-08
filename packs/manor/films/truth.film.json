@@ -1,0 +1,363 @@
+{
+  "name": "빗소리 저택 — 열린 기록",
+  "fps": 30,
+  "steps": [
+    {
+      "chapter": "저택에 도착하다"
+    },
+    {
+      "pause": 1.5
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "introduced",
+        "is": true
+      }
+    },
+    {
+      "walkTo": {
+        "event": "steward"
+      }
+    },
+    {
+      "pause": 0.35
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "choose": 0,
+      "dwell": 0.4
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "settle": true
+    },
+    {
+      "chapter": "사라진 기록을 찾다"
+    },
+    {
+      "walkTo": {
+        "event": "clock"
+      }
+    },
+    {
+      "pause": 0.35
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "choose": 0,
+      "dwell": 0.4
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "settle": true
+    },
+    {
+      "walkTo": {
+        "event": "to_study"
+      }
+    },
+    {
+      "walkTo": {
+        "x": 2,
+        "y": 10
+      }
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "map": "study"
+      }
+    },
+    {
+      "pause": 0.5
+    },
+    {
+      "walkTo": {
+        "event": "seal"
+      }
+    },
+    {
+      "pause": 0.35
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "choose": 0,
+      "dwell": 0.4
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "settle": true
+    },
+    {
+      "walkTo": {
+        "event": "letter"
+      }
+    },
+    {
+      "pause": 0.35
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "choose": 0,
+      "dwell": 0.4
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "settle": true
+    },
+    {
+      "walkTo": {
+        "x": 25,
+        "y": 13
+      }
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "map": "hall"
+      }
+    },
+    {
+      "walkTo": {
+        "event": "to_library"
+      }
+    },
+    {
+      "walkTo": {
+        "x": 33,
+        "y": 10
+      }
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "map": "library"
+      }
+    },
+    {
+      "pause": 0.5
+    },
+    {
+      "walkTo": {
+        "event": "ledger"
+      }
+    },
+    {
+      "pause": 0.35
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "choose": 0,
+      "dwell": 0.4
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "settle": true
+    },
+    {
+      "walkTo": {
+        "event": "archivist"
+      }
+    },
+    {
+      "pause": 0.35
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "choose": 0,
+      "dwell": 0.4
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "settle": true
+    },
+    {
+      "walkTo": {
+        "x": 2,
+        "y": 12
+      }
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "map": "hall"
+      }
+    },
+    {
+      "walkTo": {
+        "event": "to_greenhouse"
+      }
+    },
+    {
+      "walkTo": {
+        "x": 18,
+        "y": 2
+      }
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "map": "greenhouse"
+      }
+    },
+    {
+      "pause": 0.5
+    },
+    {
+      "walkTo": {
+        "event": "receipt"
+      }
+    },
+    {
+      "pause": 0.35
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "choose": 0,
+      "dwell": 0.4
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "settle": true
+    },
+    {
+      "walkTo": {
+        "event": "gardener"
+      }
+    },
+    {
+      "pause": 0.35
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "choose": 1,
+      "dwell": 0.4
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "settle": true
+    },
+    {
+      "walkTo": {
+        "x": 16,
+        "y": 15
+      }
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "map": "hall"
+      }
+    },
+    {
+      "chapter": "약속을 함께 읽다"
+    },
+    {
+      "walkTo": {
+        "event": "front_door"
+      }
+    },
+    {
+      "pause": 0.35
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "choose": 0,
+      "dwell": 0.4
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "ending_truth",
+        "is": true
+      }
+    },
+    {
+      "pause": 1.5
+    }
+  ]
+}

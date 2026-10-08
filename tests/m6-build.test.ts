@@ -22,7 +22,7 @@ it('build emits pack data, real metadata and custom base, excluding tests/plugin
   expect(info.commit).toMatch(/^[0-9a-f]+$/); expect(Number.isNaN(Date.parse(info.builtAt))).toBe(false);
   expect(await readFile(path.join(outDir, 'index.html'), 'utf8')).toContain('/subdir/assets/');
   expect(await readFile(path.join(outDir, 'pack/game.json'), 'utf8')).toBe(await readFile('packs/demo/game.json', 'utf8'));
-  for (const folder of ['tests', 'plugins']) await expect(stat(path.join(outDir, 'pack', folder))).rejects.toMatchObject({ code: 'ENOENT' });
+  for (const folder of ['tests', 'plugins', 'films']) await expect(stat(path.join(outDir, 'pack', folder))).rejects.toMatchObject({ code: 'ENOENT' });
   const files = await import('node:fs/promises').then(fs => fs.readdir(path.join(outDir, 'assets')));
   expect(files.some(name => name.startsWith('validate-'))).toBe(false);
   const js = (await Promise.all(files.filter(name => name.endsWith('.js')).map(name => readFile(path.join(outDir, 'assets', name), 'utf8')))).join('\n');

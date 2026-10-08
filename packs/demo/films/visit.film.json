@@ -1,0 +1,54 @@
+{
+  "name": "작은 마을 — 촌장과 인사",
+  "fps": 30,
+  "start": {
+    "map": "village",
+    "x": 12,
+    "y": 8,
+    "dir": "up"
+  },
+  "steps": [
+    {
+      "chapter": "촌장을 찾아서"
+    },
+    {
+      "pause": 0.2
+    },
+    {
+      "walkTo": {
+        "event": "elder"
+      }
+    },
+    {
+      "chapter": "첫 인사"
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": "press"
+    },
+    {
+      "choose": 0,
+      "dwell": 0.1
+    },
+    {
+      "advanceText": "press"
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "met_elder",
+        "is": true
+      }
+    },
+    {
+      "chapter": "다음 여행"
+    },
+    {
+      "pause": 0.5
+    }
+  ]
+}

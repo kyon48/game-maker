@@ -1,6 +1,6 @@
 {
   "name": "game-maker",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,7 +8,7 @@
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.sim.json",
     "lint": "eslint .",
     "test": "vitest run",
-    "check": "npm run typecheck && npm run lint && npm run test && npm run schemas -- --check && npm run validate -- --all && npm run scenarios -- --all && npm run build:all",
+    "check": "npm run typecheck && npm run lint && npm run test && npm run schemas -- --check && npm run validate -- --all && npm run scenarios -- --all && npm run films -- --all && npm run build:all",
     "tiles": "tsx tools/generate-tiles.ts",
     "characters": "node --import tsx tools/generate-character.ts",
     "fonts": "node --import tsx tools/copy-fonts.ts",
@@ -17,7 +17,10 @@
     "scenarios": "node --import tsx tools/scenarios.ts",
     "build": "node --import tsx tools/build.ts",
     "build:all": "node --import tsx tools/build.ts --all",
-    "migrate-pack": "node --import tsx tools/migrate-pack.ts"
+    "migrate-pack": "node --import tsx tools/migrate-pack.ts",
+    "films": "node --import tsx tools/films.ts",
+    "film": "node --import tsx tools/film.ts",
+    "film:verify": "node --import tsx tools/film/verify.ts"
   },
   "dependencies": {
     "@sinclair/typebox": "^0.34.41"
@@ -25,7 +28,9 @@
   "devDependencies": {
     "@types/node": "^22.18.10",
     "eslint": "^9.37.0",
+    "ffmpeg-static": "^5.3.0",
     "galmuri": "^2.40.3",
+    "playwright": "^1.64.0",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.0",

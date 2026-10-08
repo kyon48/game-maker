@@ -3,6 +3,7 @@ import { GameSchema } from './game';
 import { CharactersSchema } from './characters';
 import { SkinSchema } from './skin';
 import { EventsSchema, CommonEventsSchema, ConditionSchema } from './events';
+import { FilmSchema } from './film';
 import { ScenarioSchema } from './scenario';
 import { TiledSchema, TilesetSchema } from './tiled';
 /** JSON output uses precisely the registered args, including nested command references. */
@@ -14,6 +15,6 @@ export function packSchemas(catalog: CommandCatalog): ReadonlyMap<string, unknow
     return value;
   };
   const definitions = { Command: normalize(command), Condition: normalize(ConditionSchema) };
-  return new Map(Object.entries({ game: GameSchema, characters: CharactersSchema, skin: SkinSchema, events: EventsSchema, 'common-events': CommonEventsSchema, tiled: TiledSchema, tileset: TilesetSchema, scenario: ScenarioSchema })
-    .map(([name, schema]) => [`${name}.schema.json`, { $schema: 'https://json-schema.org/draft/2020-12/schema', ...normalize(schema) as object, ...(['events', 'common-events', 'scenario'].includes(name) ? { $defs: definitions } : {}) }]));
+  return new Map(Object.entries({ game: GameSchema, characters: CharactersSchema, skin: SkinSchema, events: EventsSchema, 'common-events': CommonEventsSchema, tiled: TiledSchema, tileset: TilesetSchema, scenario: ScenarioSchema, film: FilmSchema })
+    .map(([name, schema]) => [`${name}.schema.json`, { $schema: 'https://json-schema.org/draft/2020-12/schema', ...normalize(schema) as object, ...(['events', 'common-events', 'scenario', 'film'].includes(name) ? { $defs: definitions } : {}) }]));
 }

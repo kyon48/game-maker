@@ -33,7 +33,7 @@ const resolvedBoundary = {
   },
 };
 export default tseslint.config(
-  { ignores: ['node_modules/**', 'dist/**', '.omc/**', 'docs/**'] },
+  { ignores: ['node_modules/**', 'dist/**', '.omc/**', 'docs/**', 'out/**'] },
   ...tseslint.configs.recommended,
   { plugins: { architecture: { rules: { boundary: resolvedBoundary } } }, rules: { 'architecture/boundary': 'error' } },
   { files: ['**/engine/sim/**/*.ts', '**/packs/*/plugins/**/*.ts'], rules: {
