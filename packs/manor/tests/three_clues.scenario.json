@@ -1,0 +1,50 @@
+{
+  "name": "세 단서만으로는 기록 결론이 열리지 않아 조사를 계속",
+  "steps": [
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 3
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "finished",
+        "is": false
+      }
+    },
+    {
+      "expect": {
+        "not": {
+          "plugin": "x_enough_clues",
+          "args": {
+            "minimum": 4
+          }
+        }
+      }
+    }
+  ],
+  "start": {
+    "map": "hall",
+    "x": 18,
+    "y": 19,
+    "dir": "down"
+  },
+  "state": {
+    "flags": {
+      "introduced": true,
+      "clue_clock": true,
+      "clue_letter": true,
+      "clue_ledger": true
+    }
+  }
+}

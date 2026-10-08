@@ -18,7 +18,7 @@ it('build emits pack data, real metadata and custom base, excluding tests/plugin
   const root = await mkdtemp(path.join(tmpdir(), 'valid-build-')), outDir = path.join(root, 'out');
   const info = await buildPack('demo', { outDir, base: '/subdir/' });
   expect(JSON.parse(await readFile(path.join(outDir, 'build-info.json'), 'utf8'))).toEqual(info);
-  expect(info).toMatchObject({ gameId: 'demo', gameVersion: '0.1.0', engineVersion: '0.3.0', formatVersion: 1, apiVersion: 1 });
+  expect(info).toMatchObject({ gameId: 'demo', gameVersion: '0.1.0', engineVersion: JSON.parse(await readFile('package.json', 'utf8')).version, formatVersion: 1, apiVersion: 1 });
   expect(info.commit).toMatch(/^[0-9a-f]+$/); expect(Number.isNaN(Date.parse(info.builtAt))).toBe(false);
   expect(await readFile(path.join(outDir, 'index.html'), 'utf8')).toContain('/subdir/assets/');
   expect(await readFile(path.join(outDir, 'pack/game.json'), 'utf8')).toBe(await readFile('packs/demo/game.json', 'utf8'));

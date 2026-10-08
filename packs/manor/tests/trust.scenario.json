@@ -1,0 +1,64 @@
+{
+  "name": "해린을 의심한 뒤 설명을 듣고 신뢰를 회복",
+  "steps": [
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 1
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "met_archivist",
+        "is": true
+      }
+    },
+    {
+      "expect": {
+        "flag": "trusted_archivist",
+        "is": false
+      }
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 0
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "trusted_archivist",
+        "is": true
+      }
+    }
+  ],
+  "start": {
+    "map": "library",
+    "x": 22,
+    "y": 9,
+    "dir": "up"
+  },
+  "state": {
+    "flags": {
+      "introduced": true
+    }
+  }
+}

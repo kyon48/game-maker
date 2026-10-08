@@ -1,0 +1,42 @@
+{
+  "name": "정원사의 약 봉투 설명",
+  "steps": [
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 0
+    },
+    {
+      "expect": {
+        "textContains": "치료제"
+      }
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "met_gardener",
+        "is": true
+      }
+    }
+  ],
+  "start": {
+    "map": "greenhouse",
+    "x": 24,
+    "y": 14,
+    "dir": "up"
+  },
+  "state": {
+    "flags": {
+      "introduced": true
+    }
+  }
+}

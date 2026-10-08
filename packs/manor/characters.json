@@ -1,0 +1,33 @@
+{
+  "investigator": {
+    "sheet": "assets/characters/investigator.png",
+    "frameWidth": 16,
+    "frameHeight": 24,
+    "moveTicks": 12
+  },
+  "steward": {
+    "placeholder": "#819bb8",
+    "moveTicks": 18
+  },
+  "archivist": {
+    "placeholder": "#bc89af",
+    "moveTicks": 18
+  },
+  "gardener": {
+    "placeholder": "#80aa82",
+    "moveTicks": 20
+  },
+  "evidence": {
+    "placeholder": "#e4c88e"
+  },
+  "record": {
+    "placeholder": "#b2c7d4"
+  },
+  "sign": {
+    "placeholder": "#c4ab88"
+  },
+  "attendant": {
+    "placeholder": "#a3b881",
+    "moveTicks": 20
+  }
+}

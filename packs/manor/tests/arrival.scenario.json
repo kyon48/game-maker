@@ -1,0 +1,33 @@
+{
+  "name": "480×270 새 조사의 자동 입장 연출과 이동",
+  "steps": [
+    {
+      "wait": 65
+    },
+    {
+      "expect": {
+        "textContains": "봉인된 약속"
+      }
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "introduced",
+        "is": true
+      }
+    },
+    {
+      "expect": {
+        "map": "hall",
+        "x": 18,
+        "y": 16,
+        "dir": "up"
+      }
+    }
+  ]
+}

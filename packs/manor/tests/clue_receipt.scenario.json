@@ -1,0 +1,88 @@
+{
+  "name": "단서 receipt: 보류 후 기록·재조사해도 셀프 플래그 유지",
+  "steps": [
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 1
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "clue_receipt",
+        "is": false
+      }
+    },
+    {
+      "expect": {
+        "self": "examined",
+        "map": "greenhouse",
+        "event": "receipt",
+        "is": false
+      }
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 0
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "clue_receipt",
+        "is": true
+      }
+    },
+    {
+      "expect": {
+        "self": "examined",
+        "map": "greenhouse",
+        "event": "receipt",
+        "is": true
+      }
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "expect": {
+        "textContains": "영수증 단서"
+      }
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    }
+  ],
+  "start": {
+    "map": "greenhouse",
+    "x": 7,
+    "y": 7,
+    "dir": "up"
+  },
+  "state": {
+    "flags": {
+      "introduced": true
+    }
+  }
+}
