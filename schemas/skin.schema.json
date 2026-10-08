@@ -84,6 +84,12 @@
         },
         "fade": {
           "type": "string"
+        },
+        "mapNameText": {
+          "type": "string"
+        },
+        "mapNameBackground": {
+          "type": "string"
         }
       }
     },

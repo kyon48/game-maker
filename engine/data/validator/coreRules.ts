@@ -16,6 +16,7 @@ export async function coreRules(context: ValidationContext) {
   const common = await read('common-events.json', CommonEventsSchema) as Record<string, { commands: Command[] }> | undefined;
   if (!await source.exists('CREDITS.md')) report('V12', 'CREDITS.md', '', 'CREDITS.md is required');
   if (!game || !characters || !skin || !common) return null;
+  for (const name of Object.keys(game.mapNames ?? {})) if (!game.maps.includes(name)) report('V3', 'game.json', `/mapNames/${name}`, 'Unknown map name key');
   if (game.id !== id) report('V2', 'game.json', '/id', 'Game id must match pack directory');
   if (game.formatVersion !== CURRENT_FORMAT_VERSION) report('V2', 'game.json', '/formatVersion', 'Unsupported format version');
   for (const plugin of options.plugins ?? []) if (plugin.apiVersion !== API_VERSION) report('V2', `plugins/${plugin.id}.ts`, '/apiVersion', 'Unsupported plugin API version');

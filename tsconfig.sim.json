@@ -10,6 +10,7 @@
     "engine/sim/**/*.ts",
     "engine/data/**/*.ts",
     "engine/api/**/*.ts",
-    "packs/*/plugins/**/*.ts"
+    "packs/*/plugins/**/*.ts",
+    "engine/film/**/*.ts"
   ]
 }

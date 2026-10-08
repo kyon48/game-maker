@@ -17,6 +17,8 @@ import type { CharacterSnapshot, Dir } from './entity/Character';
 import type { CommandHost } from './event/types';
 import type { MessageSnapshot } from './ui/MessageState';
 import type { ChoiceSnapshot } from './ui/ChoiceState';
+import { MapNameState } from './ui/MapNameState';
+import type { MapNameSnapshot } from './ui/MapNameState';
 import { GameState } from './state/GameState';
 import { Player } from './entity/Player';
 import { EventObject } from './entity/EventObject';
@@ -31,6 +33,7 @@ import { MessageState } from './ui/MessageState';
 import { ChoiceState } from './ui/ChoiceState';
 export interface GameSnapshot {
   readonly mapId: string;
+  readonly mapName: MapNameSnapshot | null;
   readonly fade: number;
   readonly shake: number;
   readonly player: CharacterSnapshot;
@@ -50,6 +53,8 @@ export class Game {
   readonly player: Player;
   map: MapState;
   events: readonly EventObject[];
+  readonly mapName = new MapNameState();
+  private nameShownThisTick = false;
   readonly effects = new Effects();
   private readonly parallels = new Map<EventObject, Interpreter>();
   private leaving = false;
@@ -78,10 +83,12 @@ export class Game {
     this.message = new MessageState({ width: config.screen.width - 2 * (options.skin?.window.padding ?? 8),
       rows: options.skin?.message.rows ?? 3, charsPerTick: options.skin?.message.charsPerTick ?? 1 },
     options.textMeasurer ?? new HeadlessTextMeasurer(options.skin?.font.size ?? 12));
+    this.showMapName();
     this.options.plugins?.mapEnter(this.hookContext());
     this.current = this.capture();
   }
   tick(input: InputFrame): void {
+    this.nameShownThisTick = false;
     // §7.1(1): 페이지 재계산은 직전 틱에서 변경된 상태에만 적용.
     if (this.state.dirty) {
       for (const event of this.events) {
@@ -138,7 +145,9 @@ export class Game {
         if (event) this.triggers.enqueue(event);
       }
       character.advanceRoute(this.map);
+      if (character instanceof EventObject) character.advanceWander(this.map, this.leaving || this.main.running || this.message.opened || this.choice.opened);
     }
+    if (!this.nameShownThisTick) this.mapName.update();
     this.effects.advance(); // (7)
     this.options.plugins?.tick(this.hookContext());
     this.options.hooks?.tick?.(); // (8), registration is M7.
@@ -160,6 +169,7 @@ export class Game {
     const mapId = () => this.map.id;
     const scope = { mapId: this.map.id, id: event.id };
     return {
+      showMapName: () => this.showMapName(),
       save: () => {
         if (!this.options.save) throw new Error('Save port unavailable');
         this.options.save({ map: this.map.id, x: this.player.x, y: this.player.y, dir: this.player.dir, ...this.state.snapshot() });
@@ -240,15 +250,17 @@ export class Game {
     this.map = new MapState(request.map, next.data, [this.player, ...this.events]);
     if (!this.map.collision.passable(position.x, position.y)) throw new Error('Transfer arrives on collision');
     this.triggers.take(); this.leaving = false;
+    this.showMapName();
     this.options.plugins?.mapEnter(this.hookContext());
     this.options.hooks?.mapEnter?.(this.map.id);
     // (5); the generator resumes its original caller and command list in (6).
     if (request.fade !== false) { const fade = this.effects.startFade('clear', 15); yield { kind: 'until', test: () => fade.done }; }
   }
+  private showMapName(): void { this.mapName.show(this.config.mapNames?.[this.map.id]); this.nameShownThisTick = true; }
   private capture(): GameSnapshot {
     const characters = this.map.characters.map(character => character.snapshot());
     const player = characters[0]!;
     characters.sort((a, b) => a.pixelY - b.pixelY);
-    return { mapId: this.map.id, fade: this.effects.alpha, shake: this.effects.offset, player, characters, message: this.message.snapshot, choice: this.choice.snapshot };
+    return { mapId: this.map.id, mapName: this.mapName.snapshot, fade: this.effects.alpha, shake: this.effects.offset, player, characters, message: this.message.snapshot, choice: this.choice.snapshot };
   }
 }

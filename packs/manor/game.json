@@ -47,5 +47,11 @@
       "clue_receipt": false
     },
     "vars": {}
+  },
+  "mapNames": {
+    "hall": "현관홀",
+    "study": "서재",
+    "library": "도서실",
+    "greenhouse": "온실"
   }
 }

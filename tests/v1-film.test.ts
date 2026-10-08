@@ -1,10 +1,10 @@
 import { expect, it } from 'vitest';
-import { FilmDriver } from '../tools/film/driver';
-import { pathTo } from '../tools/film/path';
-import type { FilmView } from '../tools/film/view';
-import { TimelineObserver, frameOf } from '../tools/film/timeline';
+import { FilmDriver } from '../engine/film/driver';
+import { pathTo } from '../engine/film/path';
+import type { FilmView } from '../engine/film/view';
+import { TimelineObserver, frameOf } from '../engine/film/timeline';
 import { artifacts, croppedEvents } from '../tools/film/artifacts';
-import type { FramedEvent } from '../tools/film/timeline';
+import type { FramedEvent } from '../engine/film/timeline';
 import { createRecorder } from '../engine/platform/recorder';
 import { Game } from '../engine/sim/Game';
 import { videoFilter } from '../tools/film/video';

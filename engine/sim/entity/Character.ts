@@ -5,6 +5,7 @@ export const directions: readonly Dir[] = ['up', 'down', 'left', 'right'];
 const delta: Readonly<Record<Dir, { x: number; y: number }>> = {
   up: { x: 0, y: -1 }, down: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 },
 };
+interface Route { tokens: readonly string[]; index: number; wait: number; done: boolean }
 interface Movement { readonly x: number; readonly y: number; elapsed: number; readonly duration: number }
 export interface CharacterSnapshot {
   readonly id: string; readonly graphic: CharacterDefinition | undefined;
@@ -12,7 +13,14 @@ export interface CharacterSnapshot {
   readonly active: boolean; readonly visible: boolean;
 }
 export class Character {
-  private route: { tokens: readonly string[]; index: number; wait: number; done: boolean } | undefined;
+  private route: Route | undefined;
+  private wander: Route | undefined;
+  protected setWander(tokens?: readonly string[]): void { this.wander = tokens?.length ? { tokens: [...tokens], index: 0, wait: 0, done: false } : undefined; }
+  advanceWander(map: MapState, paused: boolean): void {
+    if (paused || this.routed || !this.wander || !this.active || this.moving) { if (paused) this.stand(); return; }
+    if (this.wander.done) { this.wander.index = 0; this.wander.wait = 0; this.wander.done = false; }
+    this.advancePath(this.wander, map);
+  }
   get routed(): boolean { return this.route !== undefined && !this.route.done; }
   setRoute(tokens: readonly string[]): { done: boolean } {
     if (this.route) this.route.done = true;
@@ -26,7 +34,9 @@ export class Character {
     this.route = undefined;
   }
   advanceRoute(map: MapState): void {
-    const route = this.route;
+    if (this.route) this.advancePath(this.route, map);
+  }
+  private advancePath(route: Route, map: MapState): void {
     if (!route || route.done || this.moving || !this.active) return;
     if (route.wait > 0 && --route.wait > 0) return;
     while (route.index < route.tokens.length) {

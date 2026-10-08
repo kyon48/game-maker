@@ -80,7 +80,13 @@
               "value": true
             }
           ],
-          "character": "gardener"
+          "character": "gardener",
+          "wander": [
+            "wait:120",
+            "left",
+            "wait:120",
+            "right"
+          ]
         },
         {
           "trigger": "action",
@@ -95,7 +101,13 @@
           "when": {
             "flag": "met_gardener",
             "is": true
-          }
+          },
+          "wander": [
+            "wait:120",
+            "left",
+            "wait:120",
+            "right"
+          ]
         },
         {
           "trigger": "action",

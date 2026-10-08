@@ -1,4 +1,4 @@
-import type { FramedEvent } from './timeline';
+import type { FramedEvent } from '../../engine/film/timeline';
 export function timestamp(frame: number, fps: number, milliseconds = false): string {
   const ms = Math.floor(frame * 1000 / fps), seconds = Math.floor(ms / 1000);
   const pad = (n: number, width = 2) => String(n).padStart(width, '0');

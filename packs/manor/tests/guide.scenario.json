@@ -1,0 +1,33 @@
+{
+  "name": "안내판에서 현재 방 이름 다시 표시",
+  "start": {
+    "map": "hall",
+    "x": 8,
+    "y": 17,
+    "dir": "up"
+  },
+  "state": {
+    "flags": {
+      "introduced": true
+    }
+  },
+  "steps": [
+    {
+      "wait": 100
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "expect": {
+        "textContains": "저택 안내"
+      }
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    }
+  ]
+}

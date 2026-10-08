@@ -294,6 +294,11 @@
       "pause": 0.35
     },
     {
+      "walkTo": {
+        "event": "gardener"
+      }
+    },
+    {
       "press": "ok"
     },
     {

@@ -17,6 +17,7 @@ export class Interpreter {
     this.stopRequested = false; this.depth = 0;
     const isStopped = () => this.stopRequested;
     const context: CommandContext = {
+      showMapName: () => host.showMapName(),
       save: host.save, state: host.state, thisEvent: host.thisEvent,
       get player() { return host.player; },
       waitFrames: host.waitFrames, waitUntil: host.waitUntil,

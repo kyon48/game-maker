@@ -27,6 +27,19 @@
           "type": "object",
           "properties": {
             "cmd": {
+              "const": "show_map_name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "cmd"
+          ]
+        },
+        {
+          "additionalProperties": false,
+          "type": "object",
+          "properties": {
+            "cmd": {
               "const": "save",
               "type": "string"
             }

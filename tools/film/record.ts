@@ -7,25 +7,30 @@ import { buildPack } from '../buildPack';
 import { prepareFilm, rehearse } from './rehearse';
 import { encoder } from './video';
 import { artifacts, croppedEvents } from './artifacts';
-import type { FramedEvent } from './timeline';
+import type { FramedEvent } from '../../engine/film/timeline';
 // Structural bridge only: tools must not import platform.
 interface Frame { rgba: string | null; events: FramedEvent[]; frame: number; done: boolean }
-export interface RecordOptions { fps?: 30 | 60; chapter?: string; out?: string; hashes?: boolean; build?: boolean }
+export interface RecordOptions { fps?: 30 | 60; chapter?: string; out?: string; hashes?: boolean; build?: boolean; signal?: AbortSignal }
 export async function recordFilm(packId: string, filmId: string, options: RecordOptions = {}) {
   const { pack, film, plugins } = await prepareFilm(packId, filmId);
   await rehearse(pack, film, plugins);
   if (options.chapter && !film.steps.some(step => 'chapter' in step && step.chapter === options.chapter)) throw new Error(`Unknown chapter: ${options.chapter}`);
   const fps = options.fps ?? film.fps ?? 30, out = options.out ?? path.join('out', packId, filmId);
-  if (options.build !== false) await buildPack(packId);
+  if (options.build !== false) await buildPack(packId, { recording: true });
   await mkdir(out, { recursive: true });
-  const server = await preview({ configFile: false, root: process.cwd(), build: { outDir: path.resolve('dist', packId) }, preview: { host: '127.0.0.1', port: 0 } });
-  const address = server.httpServer.address();
-  if (!address || typeof address === 'string') throw new Error('Static server failed');
+  let server: Awaited<ReturnType<typeof preview>> | undefined;
   let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined, video: ReturnType<typeof encoder> | undefined;
+  const interrupt = () => { void browser?.close().catch(() => {}); };
   const hashes: string[] = [], events: FramedEvent[] = [];
   let start = options.chapter ? -1 : 0, end = Infinity, count = 0;
   try {
+    options.signal?.throwIfAborted();
+    options.signal?.addEventListener('abort', interrupt);
+    server = await preview({ configFile: false, root: process.cwd(), build: { outDir: path.resolve('dist', packId) }, preview: { host: '127.0.0.1', port: 0 } });
+    const address = server.httpServer.address();
+    if (!address || typeof address === 'string') throw new Error('Static server failed');
     browser = await chromium.launch({ channel: 'chromium', headless: true });
+    options.signal?.throwIfAborted();
     const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
     const errors: string[] = [];
     page.on('pageerror', error => errors.push(String(error)));
@@ -35,6 +40,7 @@ export async function recordFilm(packId: string, filmId: string, options: Record
     if (await page.locator('[role=alert]').count()) throw new Error(await page.locator('[role=alert]').innerText());
     video = encoder(pack.game.screen.width, pack.game.screen.height, fps, path.join(out, 'video.mp4'));
     while (true) {
+      options.signal?.throwIfAborted();
       if (errors.length) throw new Error(errors.join('\n'));
       const frame = await page.evaluate(capture => (window as unknown as { __recorder: { next(options: { capture: boolean }): Promise<Frame> } }).__recorder.next({ capture }), start >= 0) as Frame;
       events.push(...frame.events);
@@ -66,7 +72,11 @@ export async function recordFilm(packId: string, filmId: string, options: Record
     console.log(`${out}: ${count} frames, ${(count / fps).toFixed(3)}s, ${fps}fps, 1920×1080`);
     return { frames: count, fps, hashes, out, events: selected, startFrame: start };
   } finally {
-    video?.abort(); await browser?.close();
-    await new Promise<void>((resolve, reject) => server.httpServer.close(error => error ? reject(error) : resolve()));
+    options.signal?.removeEventListener('abort', interrupt);
+    try { await video?.abort(); } finally {
+      try { await browser?.close(); } finally {
+        if (server) await new Promise<void>((resolve, reject) => server!.httpServer.close(error => error ? reject(error) : resolve()));
+      }
+    }
   }
 }

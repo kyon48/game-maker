@@ -1,3 +1,4 @@
+import { registerShowMapName } from './show_map_name';
 import { registerSave } from './save';
 import { CommandRegistry as Registry } from '../event/CommandRegistry';
 import { registerTransfer } from './transfer';
@@ -17,6 +18,7 @@ import { registerIf } from './if';
 import { registerChoice } from './choice';
 import type { CommandRegistry } from '../event/CommandRegistry';
 export function registerBuiltins(registry: CommandRegistry): void {
+  registerShowMapName(registry);
   registerSave(registry);
   registerTransfer(registry);
   registerShowCharacter(registry);
