@@ -27,7 +27,7 @@ export async function buildPack(id: string, options: { base?: string; root?: str
     resolve: { alias: { '@engine/api': fileURLToPath(new URL('../engine/api/index.ts', import.meta.url)) } }, build: { outDir, emptyOutDir: true } });
   const destination = path.join(outDir, 'pack'); await mkdir(destination, { recursive: true });
   for (const entry of await readdir(packRoot, { withFileTypes: true })) {
-    if (entry.name === 'plugins' || entry.name === 'tests') continue;
+    if (entry.name === 'plugins' || entry.name === 'tests' || entry.name === 'films') continue;
     await cp(path.join(packRoot, entry.name), path.join(destination, entry.name), { recursive: true });
   }
   await writeFile(path.join(outDir, 'build-info.json'), JSON.stringify(info, null, 2) + '\n');
