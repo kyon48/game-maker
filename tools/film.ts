@@ -1,4 +1,7 @@
 import { recordFilm } from './film/record';
+const controller = new AbortController();
+const interrupt = () => controller.abort();
+process.on('SIGINT', interrupt); process.on('SIGTERM', interrupt);
 try {
   const [pack, name, ...args] = process.argv.slice(2);
   if (!pack || !name) throw new Error('Usage: film <packId> <film> [--fps 30|60] [--chapter title] [--out dir]');
@@ -11,5 +14,5 @@ try {
     else if (key === '--out') options.out = value;
     else throw new Error(`Invalid option: ${key} ${value}`);
   }
-  await recordFilm(pack, name, options);
-} catch (error) { console.error(String(error)); process.exitCode = 1; }
+  await recordFilm(pack, name, { ...options, signal: controller.signal });
+} catch (error) { console.error(String(error)); process.exitCode = 1; } finally { process.off('SIGINT', interrupt); process.off('SIGTERM', interrupt); }

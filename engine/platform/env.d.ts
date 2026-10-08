@@ -7,3 +7,5 @@ declare module 'virtual:pack-plugins' {
   const plugins: Record<string, () => Promise<import('../api').PluginModule[]>>;
   export default plugins;
 }
+
+declare const __RECORDING__: boolean;

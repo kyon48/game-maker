@@ -26,6 +26,6 @@ export function encoder(width: number, height: number, fps: number, output: stri
       if (failed) throw failed;
     },
     async finish() { process.stdin.end(); await completion; },
-    abort() { process.kill(); },
+    async abort() { process.kill(); await completion.catch(() => {}); },
   };
 }

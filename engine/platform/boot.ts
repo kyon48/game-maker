@@ -19,7 +19,6 @@ import { resizeCanvas } from './scale';
 import type { GameConfig, EventDefinition } from '../data/game';
 import type { Characters } from '../data/characters';
 import { Game } from '../sim/Game';
-import { createRecorder } from './recorder';
 import type { Film } from '../data/schema/film';
 import { drawCharacters } from './renderer/characters';
 import { drawUi } from './renderer/ui';
@@ -39,7 +38,7 @@ async function boot(): Promise<void> {
     }
     app.replaceChildren(list); return;
   }
-  const recordName = new URL(location.href).searchParams.get('record');
+  const recordName = (import.meta.env.DEV || __RECORDING__) ? new URL(location.href).searchParams.get('record') : null;
   if (recordName && !/^[a-z][a-z0-9_]*$/.test(recordName)) throw new Error('Invalid film id');
   const locationInfo = packLocation(runtime, location.href);
   const { id } = locationInfo;
@@ -115,7 +114,8 @@ async function boot(): Promise<void> {
     }
     drawUi(context, snapshot, skin, images);
   };
-  if (film) {
+  if ((import.meta.env.DEV || __RECORDING__) && film) {
+    const { createRecorder } = await import('./recorder');
     window.__recorder = createRecorder(simulation, film, window.__filmRequest?.fps ?? film.fps ?? 30, context, render);
     render(); return;
   }

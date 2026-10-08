@@ -9,8 +9,8 @@ import { Collision } from '../../engine/sim/world/Collision';
 import type { PluginRuntime } from '../../engine/sim/plugins/PluginRuntime';
 import { FsSource } from '../fsSource';
 import { nodePluginRuntime } from '../loadPlugins';
-import { FilmSession } from './session';
-import type { TimelineEvent } from './timeline';
+import { FilmSession } from '../../engine/film/session';
+import type { TimelineEvent } from '../../engine/film/timeline';
 export const filmId = (id: string): boolean => /^[a-z][a-z0-9_]*$/.test(id);
 export function asFilm(value: unknown): Film {
   if (!Value.Check(FilmSchema, [ConditionSchema, CommandSchema], value)) throw new Error('Invalid film schema');

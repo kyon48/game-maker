@@ -1,5 +1,5 @@
-import type { Game } from '../../engine/sim/Game';
-import type { Film } from '../../engine/data/schema/film';
+import type { Game } from '../sim/Game';
+import type { Film } from '../data/schema/film';
 import { FilmDriver } from './driver';
 import { observeGame, checkExpect } from './view';
 import { TimelineObserver } from './timeline';

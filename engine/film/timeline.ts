@@ -1,4 +1,4 @@
-import type { InputFrame } from '../../engine/api';
+import type { InputFrame } from '../api';
 import type { FilmView } from './view';
 interface TextFields { tick: number; id: number; text: string; speaker?: string }
 export type TimelineEvent =

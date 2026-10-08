@@ -1,8 +1,8 @@
 import type { Game } from '../sim/Game';
 import type { Film } from '../data/schema/film';
-import { FilmSession } from '../../tools/film/session';
-import { frameOf } from '../../tools/film/timeline';
-import type { FramedEvent } from '../../tools/film/timeline';
+import { FilmSession } from '../film/session';
+import { frameOf } from '../film/timeline';
+import type { FramedEvent } from '../film/timeline';
 export interface RecordedFrame { rgba: string | null; events: FramedEvent[]; frame: number; done: boolean }
 export interface Recorder {
   readonly done: boolean; readonly width: number; readonly height: number; readonly fps: 30 | 60;

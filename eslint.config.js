@@ -7,10 +7,11 @@ const resolvedBoundary = {
   meta: { type: 'problem', schema: [], messages: { boundary: '명세 §4.2 import 경계 위반: {{source}}' } },
   create(context) {
     const origin = projectPath(context.filename, context.cwd);
-    const layer = origin.match(/^engine\/(sim|data|api)\//)?.[1];
+    const layer = origin.match(/^engine\/(sim|data|api|film)\//)?.[1];
     const plugin = /^packs\/[^/]+\/plugins\//.test(origin);
+    const engine = origin.startsWith('engine/');
     const tool = origin.startsWith('tools/');
-    if (!layer && !plugin && !tool) return {};
+    if (!layer && !plugin && !tool && !engine) return {};
     function check(node) {
       const source = node.source?.value ?? node.argument?.value;
       if (typeof source !== 'string') return;
@@ -22,10 +23,13 @@ const resolvedBoundary = {
       const targetLayer = target.match(/^engine\/(sim|data|api)(?:\/|$)/)?.[1];
       const typebox = /^@sinclair\/typebox(?:\/|$)/.test(source);
       let allowed = typebox;
+      if (engine && /^tools(?:\/|$)/.test(target)) { context.report({ node, messageId: 'boundary', data: { source } }); return; }
       if (plugin) allowed ||= source === '@engine/api';
       else if (tool) allowed = !/^engine\/platform(?:\/|$)/.test(target);
       else if (layer === 'sim') allowed ||= targetLayer === 'sim' || targetLayer === 'data' || (targetLayer === 'api' && typeOnly);
       else if (layer === 'data') allowed ||= targetLayer === 'data' || (targetLayer === 'api' && typeOnly);
+      else if (layer === 'film') allowed ||= /^engine\/(film|sim|data|api)(?:\/|$)/.test(target);
+      else if (!layer && engine) allowed = true;
       else if (layer === 'api') allowed ||= ['sim', 'data', 'api'].includes(targetLayer);
       if (!allowed) context.report({ node, messageId: 'boundary', data: { source } });
     }

@@ -1,9 +1,9 @@
-import type { Game } from '../../engine/sim/Game';
-import type { MessageSnapshot } from '../../engine/sim/ui/MessageState';
-import type { ChoiceSnapshot } from '../../engine/sim/ui/ChoiceState';
-import type { Dir } from '../../engine/api';
-import type { FilmExpect } from '../../engine/data/schema/film';
-import type { Condition } from '../../engine/data/events';
+import type { Game } from '../sim/Game';
+import type { MessageSnapshot } from '../sim/ui/MessageState';
+import type { ChoiceSnapshot } from '../sim/ui/ChoiceState';
+import type { Dir } from '../api';
+import type { FilmExpect } from '../data/schema/film';
+import type { Condition } from '../data/events';
 export interface FilmView {
   mapId: string; width: number; height: number; blocked: Readonly<Uint8Array>;
   player: { x: number; y: number; dir: Dir; moving: boolean };

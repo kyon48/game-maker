@@ -27,6 +27,8 @@ it('build emits pack data, real metadata and custom base, excluding tests/plugin
   expect(files.some(name => name.startsWith('validate-'))).toBe(false);
   const js = (await Promise.all(files.filter(name => name.endsWith('.js')).map(name => readFile(path.join(outDir, 'assets', name), 'utf8')))).join('\n');
   expect(js).not.toContain('Auto page may repeat indefinitely'); expect(js).not.toContain('CREDITS.md is required');
+  expect(js).not.toContain('Film expectation failed');
+  expect(js).not.toContain('Concurrent recorder.next calls');
 });
 it('path resolution uses dev manifest/base or pack-local production data, fixing the pack and versioning every file URL', () => {
   const runtime: PackRuntime = { fixedPackId: null, roots: { example: '/nested/packs/example/' }, inventory: '/nested/__pack-files', cacheKey: null, buildInfo: null, engineVersion: '1' };

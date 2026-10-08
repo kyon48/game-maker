@@ -1,4 +1,4 @@
-import type { Dir } from '../../engine/api';
+import type { Dir } from '../api';
 import type { FilmView } from './view';
 export const directions: readonly [Dir, number, number][] = [['up', 0, -1], ['down', 0, 1], ['left', -1, 0], ['right', 1, 0]];
 export interface Point { x: number; y: number; facing?: Dir }

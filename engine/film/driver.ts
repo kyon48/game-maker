@@ -1,5 +1,5 @@
-import type { Action, InputFrame, Dir } from '../../engine/api';
-import type { Film, FilmStep, FilmExpect } from '../../engine/data/schema/film';
+import type { Action, InputFrame, Dir } from '../api';
+import type { Film, FilmStep, FilmExpect } from '../data/schema/film';
 import type { FilmView } from './view';
 import { directions, pathTo } from './path';
 export interface ChapterMark { tick: number; title: string }
