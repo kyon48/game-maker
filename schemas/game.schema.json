@@ -147,6 +147,16 @@
         }
       }
     },
+    "mapNames": {
+      "additionalProperties": false,
+      "type": "object",
+      "patternProperties": {
+        "^[a-z][a-z0-9_]*$": {
+          "minLength": 1,
+          "type": "string"
+        }
+      }
+    },
     "state": {
       "additionalProperties": false,
       "type": "object",

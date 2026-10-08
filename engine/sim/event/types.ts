@@ -9,6 +9,7 @@ export interface TextRequest { text: string; speaker?: string }
 export interface ChoiceRequest { prompt?: string; labels: (string | null)[]; cancelIndex: number | null }
 export interface TransferRequest { map: string; marker?: string; x?: number; y?: number; dir?: Dir; fade?: boolean }
 export interface CommandContext {
+  showMapName(): void;
   save(): void;
   state: GameState;
   thisEvent: EventScope | null;

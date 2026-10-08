@@ -1,6 +1,7 @@
 import { schemaErrors } from '../validator/schemaErrors';
 import type { Static } from '@sinclair/typebox';
 import { ScenarioSchema } from '../schema/scenario';
+import type { SaveExpect } from '../schema/scenario';
 import { ConditionSchema, CommandSchema } from '../schema/events';
 import type { ValidatedPack } from '../validator/types';
 import type { InputFrame, Action } from '@engine/api';
@@ -13,6 +14,8 @@ export interface ScenarioGame {
   readonly message: { readonly opened: boolean };
   readonly choice: { readonly opened: boolean; readonly snapshot: { options: readonly { index: number }[]; selected: number } | null };
   readonly snapshot: { readonly message: { text: string } | null };
+  reload?(): void;
+  expectSave?(condition: SaveExpect): boolean;
   tick(input: InputFrame): void;
   evaluate(condition: Condition, scope: { mapId: string; id: string } | null): boolean;
 }
@@ -51,6 +54,8 @@ export async function runScenario(pack: ValidatedPack, value: unknown, factory: 
         while (game.choice.snapshot?.selected !== step.choose && count++ < 6) await press('down');
         assert(game.choice.snapshot?.selected === step.choose, 'Unable to select choice'); await press('ok');
       }
+      else if ('reload' in step) { if (!game.reload) throw new Error('Reload session unavailable'); game.reload(); }
+      else if ('expectSave' in step) { if (!game.expectSave) throw new Error('Save session unavailable'); assert(game.expectSave(step.expectSave), 'Saved condition false'); }
       else if ('settle' in step) {
         let count = 0;
         while ((game.main.running || game.message.opened || game.choice.opened) && count++ < 600) await tick();

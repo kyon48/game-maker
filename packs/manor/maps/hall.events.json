@@ -372,6 +372,9 @@
           "trigger": "action",
           "commands": [
             {
+              "cmd": "show_map_name"
+            },
+            {
               "cmd": "text",
               "text": "저택 안내\n왼쪽 금빛 문: 서재 / 오른쪽: 도서실 / 위쪽: 온실\n아래쪽 정문: 조사 결론 / 파란 기록대: 저장·단서 정리"
             }

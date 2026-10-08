@@ -1,4 +1,5 @@
 import type { TSchema } from '@sinclair/typebox';
+import { RouteTokenSchema } from '../schema/routes';
 import { ConditionSchema } from '../schema/events';
 import type { Condition, Command } from '../events';
 import { markers } from '../loader/tiled';
@@ -95,6 +96,7 @@ export function eventRules(context: ValidationContext, basics: PackBasics, check
   for (const [name, event] of Object.entries(common)) list(event.commands, 'common-events.json', `/${escapePointer(name)}/commands`, undefined, false, name, [name]);
   for (const [mapId, definitions] of events) definitions.forEach((event, ei) => event.pages.forEach((page, pi) => {
     const file = `maps/${mapId}.events.json`, p = `/events/${ei}/pages/${pi}`;
+    for (const [index, token] of (page.wander ?? []).entries()) if (schemaErrors(RouteTokenSchema, [], token).length || (token.startsWith('wait:') && !Number.isSafeInteger(Number(token.slice(5))))) report('V9', file, `${p}/wander/${index}`, 'Invalid wander route token');
     if (page.character) characterReference(page.character, file, p + '/character');
     if (page.when) condition(page.when, file, p + '/when', true);
     const changes = list(page.commands ?? [], file, p + '/commands', mapId, page.trigger === 'parallel');

@@ -1,7 +1,9 @@
 import type { Action, InputFrame, Dir } from '../api';
 import type { Film, FilmStep, FilmExpect } from '../data/schema/film';
+import type { SaveExpect } from '../data/schema/scenario';
 import type { FilmView } from './view';
 import { directions, pathTo } from './path';
+export interface FilmSaveControl { reload(): FilmView; expectSave(e: SaveExpect): boolean }
 export interface ChapterMark { tick: number; title: string }
 const empty = (): InputFrame => ({ held: new Set(), pressed: new Set() });
 const input = (action: Action, pressed = true): InputFrame => ({ held: new Set([action]), pressed: new Set(pressed ? [action] : []) });
@@ -10,12 +12,13 @@ export class FilmDriver {
   ticks = 0; done = false; stepIndex = 0;
   readonly chapters: ChapterMark[] = [];
   private view!: FilmView;
+  private saveControl?: FilmSaveControl;
   private evaluate!: (e: FilmExpect) => boolean;
   private readonly program: Generator<InputFrame, void, void>;
   constructor(readonly film: Film) { this.program = this.run(); }
-  next(view: FilmView, evaluate: (e: FilmExpect) => boolean): InputFrame | null {
+  next(view: FilmView, evaluate: (e: FilmExpect) => boolean, saveControl?: FilmSaveControl): InputFrame | null {
     if (this.done) return null;
-    this.view = view; this.evaluate = evaluate;
+    this.view = view; this.evaluate = evaluate; this.saveControl = saveControl;
     try {
       const result = this.program.next();
       if (result.done) { this.done = true; return null; }
@@ -81,6 +84,8 @@ export class FilmDriver {
     for (const [index, step] of this.film.steps.entries()) {
       this.stepIndex = index;
       if ('chapter' in step) this.chapters.push({ tick: this.ticks, title: step.chapter });
+      else if ('reload' in step) { if (!this.saveControl) throw new Error('Film reload session unavailable'); this.view = this.saveControl.reload(); }
+      else if ('expectSave' in step) { if (!this.saveControl) throw new Error('Film save session unavailable'); if (!this.saveControl.expectSave(step.expectSave)) throw new Error('Saved condition false'); }
       else if ('expect' in step) { if (!this.evaluate(step.expect)) throw new Error('Film expectation failed'); }
       else if ('pause' in step) yield* this.wait(Math.ceil(step.pause * 60));
       else if ('wait' in step) yield* this.wait(step.wait);

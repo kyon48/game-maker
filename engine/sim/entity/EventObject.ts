@@ -22,6 +22,7 @@ export class EventObject extends Character {
     if (selected === this.selected) return;
     this.selected = selected;
     const page = this.page;
+    this.setWander(page?.wander);
     const graphic = page?.character === undefined ? undefined : this.characters[page.character];
     if (!page) this.cancelRoute();
     this.active = page !== undefined; this.through = page?.through ?? false;

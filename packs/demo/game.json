@@ -36,5 +36,9 @@
       "gold": 0,
       "greetings": 0
     }
+  },
+  "mapNames": {
+    "village": "마을",
+    "house": "집"
   }
 }

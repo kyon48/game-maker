@@ -19,8 +19,11 @@ import { resizeCanvas } from './scale';
 import type { GameConfig, EventDefinition } from '../data/game';
 import type { Characters } from '../data/characters';
 import { Game } from '../sim/Game';
+import type { GameOptions } from '../sim/Game';
+import type { GameSession } from '../sim/state/GameSession';
 import type { Film } from '../data/schema/film';
 import { drawCharacters } from './renderer/characters';
+import { drawMapName } from './renderer/mapName';
 import { drawUi } from './renderer/ui';
 import { CanvasTextMeasurer } from './textMeasurer';
 import type { Skin } from '../data/skin';
@@ -94,14 +97,20 @@ async function boot(): Promise<void> {
   }).state! : null;
   const start = film?.start ?? (state ? { map: state.map, x: state.x, y: state.y, dir: state.dir } : game.start);
   const initial = await loader.load(start.map);
-  const simulation = new Game({ ...game, start, state: film ? { flags: { ...game.state.flags, ...film.state?.flags }, vars: { ...game.state.vars, ...film.state?.vars } } : state ? { flags: state.flags, vars: state.vars } : game.state }, initial.data, characters, initial.events, {
+  const options: GameOptions = {
     plugins, skin, textMeasurer: new CanvasTextMeasurer(context), mapLoader: prepared ? { load: id => { const map = prepared.get(id); return map ? Promise.resolve(map) : Promise.reject(new Error(`Unknown map: ${id}`)); } } : loader, commonEvents,
     selfFlags: state?.selfFlags, save: value => { if (!film) storage.write(value); },
-  });
-  const render = () => {
+  };
+  let saveSession: GameSession | undefined;
+  if ((import.meta.env.DEV || __RECORDING__) && film && prepared) {
+    const { GameSession } = await import('../sim/state/GameSession');
+    saveSession = new GameSession({ game, characters, skin, common: commonEvents, events: new Map(entries), maps: new Map([...prepared].map(([id, map]) => [id, map.data])) }, options, start, { flags: { ...game.state.flags, ...film.state?.flags }, vars: { ...game.state.vars, ...film.state?.vars } });
+  }
+  const simulation = saveSession?.game ?? new Game({ ...game, start, state: film ? { flags: { ...game.state.flags, ...film.state?.flags }, vars: { ...game.state.vars, ...film.state?.vars } } : state ? { flags: state.flags, vars: state.vars } : game.state }, initial.data, characters, initial.events, options);
+  const render = (active = simulation) => {
     context.clearRect(0, 0, canvas.width, canvas.height);
-    const snapshot = simulation.snapshot;
-    const map = simulation.map.data;
+    const snapshot = active.snapshot;
+    const map = active.map.data;
     const size = { width: map.width * map.tilewidth, height: map.height * map.tileheight };
     const view = camera({ x: snapshot.player.pixelX + game.tileSize / 2,
       y: snapshot.player.pixelY + game.tileSize / 2 }, size, game.screen, { x: snapshot.shake, y: 0 });
@@ -112,11 +121,12 @@ async function boot(): Promise<void> {
       context.save(); context.globalAlpha = snapshot.fade; context.fillStyle = skin.colors.fade;
       context.fillRect(0, 0, canvas.width, canvas.height); context.restore();
     }
+    drawMapName(context, snapshot.mapName, skin);
     drawUi(context, snapshot, skin, images);
   };
   if ((import.meta.env.DEV || __RECORDING__) && film) {
     const { createRecorder } = await import('./recorder');
-    window.__recorder = createRecorder(simulation, film, window.__filmRequest?.fps ?? film.fps ?? 30, context, render);
+    window.__recorder = createRecorder(simulation, film, window.__filmRequest?.fps ?? film.fps ?? 30, context, render, saveSession);
     render(); return;
   }
   const stop = startLoop(new FixedTickLoop(input => simulation.tick(input), () => keyboard!.consume(), render), error => { keyboard?.dispose(); fail(error); });

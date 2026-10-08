@@ -1,0 +1,196 @@
+{
+  "name": "저장 기록으로 재부팅 후 이어하기",
+  "steps": [
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 1
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "clue_clock",
+        "is": false
+      }
+    },
+    {
+      "expect": {
+        "self": "examined",
+        "map": "hall",
+        "event": "clock",
+        "is": false
+      }
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 0
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "clue_clock",
+        "is": true
+      }
+    },
+    {
+      "expect": {
+        "self": "examined",
+        "map": "hall",
+        "event": "clock",
+        "is": true
+      }
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "expect": {
+        "textContains": "시계의 수리 쪽지"
+      }
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "walk": [
+        "down",
+        "down",
+        "down",
+        "down",
+        "down",
+        "down",
+        "down",
+        "down",
+        "down",
+        "down",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right",
+        "right"
+      ]
+    },
+    {
+      "press": "up"
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "choose": 0
+    },
+    {
+      "choose": 0
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expectSave": {
+        "flag": "clue_clock",
+        "is": true
+      }
+    },
+    {
+      "expectSave": {
+        "self": "examined",
+        "map": "hall",
+        "event": "clock",
+        "is": true
+      }
+    },
+    {
+      "walk": [
+        "left",
+        "left"
+      ]
+    },
+    {
+      "reload": true
+    },
+    {
+      "expect": {
+        "self": "examined",
+        "map": "hall",
+        "event": "clock",
+        "is": true
+      }
+    },
+    {
+      "expect": {
+        "map": "hall",
+        "x": 24,
+        "y": 17,
+        "dir": "up"
+      }
+    },
+    {
+      "expect": {
+        "flag": "clue_clock",
+        "is": true
+      }
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "choose": 1
+    },
+    {
+      "expect": {
+        "textContains": "단서 1/5"
+      }
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    }
+  ],
+  "start": {
+    "map": "hall",
+    "x": 10,
+    "y": 7,
+    "dir": "up"
+  },
+  "state": {
+    "flags": {
+      "introduced": true
+    }
+  }
+}

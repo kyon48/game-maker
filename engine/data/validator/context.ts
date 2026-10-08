@@ -17,7 +17,10 @@ export function validationContext(source: PackSource, id: string, options: Valid
   };
   const check = (schema: TSchema, value: unknown, file: string, pointer = '') => {
     const errors = schemaErrors(schema, references, value);
-    for (const error of errors) report('V1', file, pointer + error.path, error.message);
+    for (const error of errors) {
+      report('V1', file, pointer + error.path, error.message);
+      if (/\/wander\/\d+$/.test(error.path)) report('V9', file, pointer + error.path, 'Invalid wander token');
+    }
     return errors.length === 0;
   };
   const read = async (file: string, schema: TSchema): Promise<unknown> => {

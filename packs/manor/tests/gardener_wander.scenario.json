@@ -1,0 +1,45 @@
+{
+  "name": "배회한 정원사를 찾아 대화",
+  "steps": [
+    {
+      "wait": 160
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "choose": 0
+    },
+    {
+      "expect": {
+        "textContains": "치료제"
+      }
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "met_gardener",
+        "is": true
+      }
+    }
+  ],
+  "start": {
+    "map": "greenhouse",
+    "x": 23,
+    "y": 14,
+    "dir": "up"
+  },
+  "state": {
+    "flags": {
+      "introduced": true
+    }
+  }
+}

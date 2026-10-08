@@ -72,6 +72,13 @@
                 "through": {
                   "type": "boolean"
                 },
+                "wander": {
+                  "type": "array",
+                  "items": {
+                    "pattern": "^(up|down|left|right|face:(up|down|left|right)|wait:[1-9][0-9]*)$",
+                    "type": "string"
+                  }
+                },
                 "when": {
                   "$ref": "#/$defs/Condition"
                 },
@@ -115,6 +122,19 @@
   "$defs": {
     "Command": {
       "anyOf": [
+        {
+          "additionalProperties": false,
+          "type": "object",
+          "properties": {
+            "cmd": {
+              "const": "show_map_name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "cmd"
+          ]
+        },
         {
           "additionalProperties": false,
           "type": "object",

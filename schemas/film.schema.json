@@ -257,6 +257,207 @@
             "additionalProperties": false,
             "type": "object",
             "required": [
+              "reload"
+            ],
+            "properties": {
+              "reload": {
+                "const": true,
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "expectSave"
+            ],
+            "properties": {
+              "expectSave": {
+                "anyOf": [
+                  {
+                    "anyOf": [
+                      {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "flag",
+                          "is"
+                        ],
+                        "properties": {
+                          "flag": {
+                            "pattern": "^[a-z][a-z0-9_]*$",
+                            "type": "string"
+                          },
+                          "is": {
+                            "type": "boolean"
+                          }
+                        }
+                      },
+                      {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "var",
+                          "op",
+                          "value"
+                        ],
+                        "properties": {
+                          "var": {
+                            "pattern": "^[a-z][a-z0-9_]*$",
+                            "type": "string"
+                          },
+                          "op": {
+                            "anyOf": [
+                              {
+                                "const": "==",
+                                "type": "string"
+                              },
+                              {
+                                "const": "!=",
+                                "type": "string"
+                              },
+                              {
+                                "const": ">",
+                                "type": "string"
+                              },
+                              {
+                                "const": ">=",
+                                "type": "string"
+                              },
+                              {
+                                "const": "<",
+                                "type": "string"
+                              },
+                              {
+                                "const": "<=",
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "value": {
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991,
+                            "type": "integer"
+                          }
+                        }
+                      },
+                      {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "self",
+                          "is"
+                        ],
+                        "properties": {
+                          "self": {
+                            "pattern": "^[a-z][a-z0-9_]*$",
+                            "type": "string"
+                          },
+                          "is": {
+                            "type": "boolean"
+                          }
+                        }
+                      },
+                      {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "all"
+                        ],
+                        "properties": {
+                          "all": {
+                            "type": "array",
+                            "items": {
+                              "$ref": "#/$defs/Condition"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "any"
+                        ],
+                        "properties": {
+                          "any": {
+                            "type": "array",
+                            "items": {
+                              "$ref": "#/$defs/Condition"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "not"
+                        ],
+                        "properties": {
+                          "not": {
+                            "$ref": "#/$defs/Condition"
+                          }
+                        }
+                      },
+                      {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "plugin",
+                          "args"
+                        ],
+                        "properties": {
+                          "plugin": {
+                            "pattern": "^x_[a-z0-9_]+$",
+                            "type": "string"
+                          },
+                          "args": {
+                            "type": "object",
+                            "patternProperties": {
+                              "^(.*)$": {}
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "self",
+                      "is",
+                      "map",
+                      "event"
+                    ],
+                    "properties": {
+                      "self": {
+                        "pattern": "^[a-z][a-z0-9_]*$",
+                        "type": "string"
+                      },
+                      "is": {
+                        "type": "boolean"
+                      },
+                      "map": {
+                        "pattern": "^[a-z][a-z0-9_]*$",
+                        "type": "string"
+                      },
+                      "event": {
+                        "pattern": "^[a-z][a-z0-9_]*$",
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
               "expect"
             ],
             "properties": {
@@ -649,6 +850,19 @@
   "$defs": {
     "Command": {
       "anyOf": [
+        {
+          "additionalProperties": false,
+          "type": "object",
+          "properties": {
+            "cmd": {
+              "const": "show_map_name",
+              "type": "string"
+            }
+          },
+          "required": [
+            "cmd"
+          ]
+        },
         {
           "additionalProperties": false,
           "type": "object",
