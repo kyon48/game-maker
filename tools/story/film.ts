@@ -19,50 +19,63 @@ export async function generateFilm(stories: readonly Story[], pack: ValidatedPac
   const locations = stories.flatMap(s => s.locations), common = new Map(stories.flatMap(s => s.common.map(c => [c.id, c.statements] as const)));
   let source: Scene | Event = stories.flatMap(s => s.scenes)[0]!;
   let total = 0;
-  const tick = async (input: InputFrame) => {
-    if (++total > 216000) compileError(source, 'S032', '촬영 경로가 216000틱을 초과했습니다');
-    const action = [...input.held][0];
-    const last = scenario.at(-1);
+  const appendInput = (list: ScenarioStep[], input: InputFrame) => {
+    const action = [...input.held][0], last = list.at(-1);
     if (!action) {
       if (last && 'wait' in last) last.wait++;
-      else scenario.push({ wait: 1 });
+      else list.push({ wait: 1 });
     } else if (!input.pressed.size && last && 'hold' in last && last.hold === action) last.frames++;
-    else if (input.pressed.has(action)) scenario.push({ hold: action, frames: 1 });
+    else if (input.pressed.has(action)) list.push({ hold: action, frames: 1 });
     else compileError(source, 'S032', '시나리오로 표현할 수 없는 입력 이력');
+  };
+  const tick = async (input: InputFrame) => {
+    if (++total > 216000) compileError(source, 'S032', '촬영 경로가 216000틱을 초과했습니다');
+    appendInput(scenario, input);
     runtime.game.tick(input); await Promise.resolve();
   };
   const emit = async (step: FilmStep) => {
+    const previous = steps.at(-1);
+    if ('walkTo' in step && previous && 'walkTo' in previous && JSON.stringify(previous.walkTo) === JSON.stringify(step.walkTo)) return;
+    const position = steps.length, map = runtime.game.map.id, inputs: ScenarioStep[] = [];
     steps.push(step);
     const driver = new FilmDriver({ name, steps: [step] });
     for (;;) {
       const input = driver.next(observeGame(runtime.game), e => checkExpect(runtime.game, e));
       if (!input) break;
+      appendInput(inputs, input);
       await tick(input);
+      if ('advanceText' in step && runtime.game.map.id !== map) {
+        // An unbounded advance could consume the destination auto dialogue during replay.
+        steps.splice(position, 1, ...inputs);
+        break;
+      }
     }
     if ('expect' in step) scenario.push({ expect: step.expect });
   };
-  const waitReady = async (initial = false) => {
+  const waitReady = async (initial = false, boundary?: string, auto = false) => {
     let count = 0;
     if (initial) { await tick(empty()); count++; }
-    while (!runtime.game.message.opened && !runtime.game.choice.opened && (runtime.game.main.running || runtime.game.player.moving)) {
+    while ((!boundary || runtime.game.map.id === boundary) && !runtime.game.message.opened && !runtime.game.choice.opened && (runtime.game.main.running || runtime.game.player.moving || (auto && pendingAuto()))) {
       if (++count > 36000) compileError(source, 'S032', '메시지/이벤트 완료 대기 시간 초과');
       await tick(empty());
     }
     if (count) steps.push({ wait: count });
   };
   const drain = async (choices: number[], initial = false) => {
-    await waitReady(initial);
+    const map = runtime.game.map.id;
+    await waitReady(initial, map, initial);
     let selected = 0;
-    while (runtime.game.main.running || runtime.game.message.opened || runtime.game.choice.opened) {
+    while (runtime.game.map.id === map && (runtime.game.main.running || runtime.game.message.opened || runtime.game.choice.opened)) {
       if (runtime.game.choice.opened) {
         const index = choices[selected++];
         if (index === undefined) compileError(source, 'S031', '원고 경로에 없는 선택지가 열렸습니다 (@cmd 내부 선택지는 지원하지 않음)');
         await emit({ choose: index, dwell: 0.4 });
       } else if (runtime.game.message.opened) await emit({ advanceText: 'auto' });
-      await waitReady();
+      await waitReady(false, map, initial);
     }
     if (selected !== choices.length) compileError(source, 'S031', '예상 선택지가 실행되지 않았습니다');
   };
+  const pendingAuto = () => runtime.game.events.some(e => e.active && e.page?.trigger === 'auto');
   const condition = (value: Condition, flags: Record<string, boolean>, vars: Record<string, number>): boolean => {
     if (value.kind === 'flag') return flags[value.name] === value.enabled;
     if (value.kind === 'variable') { const a = vars[value.name]!, b = value.value; return ({ '==': a === b, '!=': a !== b, '<': a < b, '<=': a <= b, '>': a > b, '>=': a >= b })[value.op]; }
@@ -102,8 +115,7 @@ export async function generateFilm(stories: readonly Story[], pack: ValidatedPac
       await emit({ walkTo: { event: door.id } }); await stepInto(door.id);
       await waitReady();
       // A destination auto event belongs to its scene, never to a door's choice queue.
-      const pendingAuto = stories.flatMap(s => s.scenes).filter(s => s.location === runtime.game.map.id).flatMap(s => s.items).some(e => e.kind === 'event' && e.trigger === 'auto' && (!e.once || !runtime.game.state.getSelf(runtime.game.map.id, e.id, 'story_once')));
-      if (!pendingAuto && !runtime.game.message.opened && !runtime.game.choice.opened) await emit({ settle: true });
+      if (!pendingAuto() && !runtime.game.message.opened && !runtime.game.choice.opened) await emit({ settle: true });
     }
   };
   const hints = async (nodes: readonly Statement[], map: string) => {
@@ -112,6 +124,7 @@ export async function generateFilm(stories: readonly Story[], pack: ValidatedPac
       if (node.kind === 'filmWalkTo') {
         const p = anchorPoints(locations.find(l => l.id === map)!).get(node.anchor)!;
         const event = stories.flatMap(s => s.scenes).filter(s => s.location === map).flatMap(s => s.items).find((e): e is Event => e.kind === 'event' && anchorPoints(locations.find(l => l.id === map)!).get(e.anchor)?.name === p.name);
+        if (event?.film === 'skip') continue;
         await emit(event ? { walkTo: { event: event.id } } : { walkTo: { x: p.x, y: p.y } });
       }
     }
@@ -128,10 +141,16 @@ export async function generateFilm(stories: readonly Story[], pack: ValidatedPac
       if (item.kind === 'narration') narration.push(item.text, '');
       else if (item.kind === 'filmPause' || item.kind === 'filmWalkTo') await hints([item], scene.location);
       else if (item.kind === 'event') {
+        if (item.film === 'skip') continue;
         source = item;
         const state = runtime.game.state.snapshot();
-        let page = item.pages[0]!;
-        for (const candidate of item.pages.slice(1)) if (candidate.condition && condition(candidate.condition, state.flags, state.vars)) page = candidate;
+        const completed = runtime.game.state.getSelf(scene.location, item.id, 'story_once');
+        const page = [...item.pages].reverse().find(candidate => {
+          const index = item.pages.indexOf(candidate);
+          const onceAllows = !item.once || (index === 0 ? !completed : completed);
+          return onceAllows && (!candidate.condition || condition(candidate.condition, state.flags, state.vars));
+        });
+        if (!page) continue;
         const choices: number[] = [];
         const selected = pathStatements(page.statements, state.flags, state.vars, choices, expected);
         for (const node of selected) if (node.kind === 'narration') narration.push(node.text, '');
@@ -140,9 +159,9 @@ export async function generateFilm(stories: readonly Story[], pack: ValidatedPac
           await emit({ walkTo: { event: item.id } }); await emit({ pause: 0.35 });
           if (item.trigger === 'action') await emit({ press: 'ok' }); else await stepInto(item.id);
         }
-        await drain(choices, item.trigger === 'auto' && !runtime.game.main.running && !runtime.game.message.opened);
+        await drain(choices, item.trigger === 'auto');
         if (item.trigger === 'auto') await hints(selected, runtime.game.map.id);
-        await emit({ settle: true });
+        if (!pendingAuto() && !runtime.game.message.opened && !runtime.game.choice.opened) await emit({ settle: true });
       }
     }
     for (const [flag, is] of expected) { await emit({ expect: { flag, is } }); finalFlags.set(flag, is); }

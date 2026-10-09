@@ -724,6 +724,20 @@
         },
         {
           "id": 4,
+          "name": "sailor_spot",
+          "point": true,
+          "x": 80,
+          "y": 176
+        },
+        {
+          "id": 5,
+          "name": "keeper_spot",
+          "point": true,
+          "x": 208,
+          "y": 160
+        },
+        {
+          "id": 6,
           "name": "to_tower",
           "point": true,
           "x": 368,

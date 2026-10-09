@@ -5,6 +5,8 @@
 @character elder "촌장" art=base voice=elder
 @character lamp "등대 불씨"
 @character sign "안내판"
+@character sailor "뱃사공"
+@character keeper "옛 등대지기"
 @flag met_elder
 @flag lamp_lit
 @flag ending_public
@@ -23,14 +25,16 @@
 #......................#
 #......................#
 #......b...............#
-#......................#
-#......................#
+#............k.........#
+#....n.................#
 #......................#
 ########################
 @end
 @anchor s = start
 @anchor e = elder_spot
 @anchor b = board
+@anchor n = sailor_spot
+@anchor k = keeper_spot
 @anchor x = to_tower -> tower:entry
 
 @location tower "등대"
@@ -102,6 +106,10 @@ x......................#
   : 위쪽의 촌장을 바라보고 Enter 또는 Z로 대화하자. 오른쪽 금빛 문은 등대 입구다.
 @end
 
+@event sailor at sailor_spot trigger=action character=sailor film=skip
+  뱃사공: 밀물이 들 때까지 배를 손보고 있어요. 등대가 밝아지면 밤길도 덜 걱정되겠지요.
+@end
+
 ### 촌장의 열쇠 @ pier
 @film walkTo elder_spot
 @event elder at elder_spot trigger=action character=elder
@@ -164,6 +172,10 @@ x......................#
 
 ## 3장. 선착장의 기록
 ### 약속을 남기다 @ pier
+@event keeper at keeper_spot trigger=action character=keeper when=any(ending_public,ending_kept)
+  옛 등대지기: 창에 다시 불이 보이더구나. 누가 지키든 오늘의 약속을 오래 기억해 주렴.
+@end
+
 @event record at board trigger=action character=sign
   @if any(ending_public,ending_kept)
     : 등대의 불은 다시 켜졌다. 선착장에는 오늘의 약속을 적은 쪽지가 걸렸다.

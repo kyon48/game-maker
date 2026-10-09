@@ -26,7 +26,7 @@ export type Statement = Source & (
 );
 export interface Option extends Source { label: string; chosen: boolean; statements: Statement[] }
 export interface Page extends Source { condition?: Condition; statements: Statement[] }
-export interface Event extends Source { kind: 'event'; id: string; anchor: string; trigger: 'action' | 'auto' | 'touch'; once: boolean; character?: string; wander?: string[]; pages: Page[] }
+export interface Event extends Source { kind: 'event'; id: string; anchor: string; trigger: 'action' | 'auto' | 'touch'; once: boolean; character?: string; wander?: string[]; film?: 'skip'; pages: Page[] }
 export interface Scene extends Source { title: string; location: string; chapter?: string; items: (Event | Statement)[] }
 export interface Anchor extends Source { character: string; name: string; destination?: Destination }
 export interface Location extends Source { id: string; name: string; layout?: { file: string; line: number; rows: (Source & { text: string })[] }; anchors: Anchor[] }

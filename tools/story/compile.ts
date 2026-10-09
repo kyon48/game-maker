@@ -68,7 +68,8 @@ export function compileStories(stories: readonly Story[], gameValue: unknown, ti
     const attrs = { trigger: event.trigger, ...(event.character ? { character: event.character } : {}), ...(event.wander ? { wander: [...event.wander] } : {}), through: !event.character || event.trigger === 'touch' };
     const pages: unknown[] = event.pages.map((page, index) => {
       const when = page.condition ? engineCondition(page.condition) : undefined;
-      const condition = event.once ? index === 0 ? { self: 'story_once', is: false } : { all: [{ self: 'story_once', is: true }, ...(when ? [when] : [])] } : when;
+      const selfCondition = { self: 'story_once', is: index !== 0 };
+      const condition = !event.once ? when : when ? { all: [selfCondition, when] } : selfCondition;
       const prefix: unknown[] = event.character && event.trigger === 'action' ? [{ cmd: 'face', target: 'this', dir: 'player' }] : [];
       if (event.once && index === 0) prefix.push({ cmd: 'set_self_flag', name: 'story_once', value: true });
       return { ...attrs, ...(condition ? { when: condition } : {}), commands: [...prefix, ...commands(page.statements)] };

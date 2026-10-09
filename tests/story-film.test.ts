@@ -1,5 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { describe, it, expect } from 'vitest';
+import { GameSession } from '../engine/sim/state/GameSession';
+import { lintStories } from '../tools/story/lint';
 import { parseStory } from '../tools/story/parser';
 import { compileStories } from '../tools/story/compile';
 import { planFilm } from '../tools/story/film-project';
@@ -26,9 +28,65 @@ async function generate(text = baseline) {
   const film = asFilm(JSON.parse(outputs.get('films/main.film.json')!) as unknown);
   const replay = await rehearse(result.pack!, film, plugins);
   await runScenario(result.pack!, JSON.parse(outputs.get('tests/story_main.scenario.json')!) as unknown, scenarioGameWithPlugins(await nodePluginRuntime(source, fs.root)));
-  return { outputs, film, replay };
+  return { outputs, film, replay, pack: result.pack!, compilation, story: parsed.story };
 }
 describe('story film generation (one baseline, memory mutations)', () => {
+  it('compiles base when, combines once, and keeps successor conditions independent', async () => {
+    const text = baseline.replace('trigger=action character=elder', 'trigger=action character=elder once when=all(!met_elder,trust>=0)');
+    const { compilation, pack } = await generate(text);
+    const events = JSON.parse(compilation.files.get('maps/pier.events.json')!) as { events: { id: string; pages: { when?: unknown }[] }[] };
+    const pages = events.events.find(e => e.id === 'elder')!.pages;
+    expect(pages[0]?.when).toEqual({ all: [{ self: 'story_once', is: false }, { all: [{ flag: 'met_elder', is: false }, { var: 'trust', op: '>=', value: 0 }] }] });
+    expect(pages[1]?.when).toEqual({ all: [{ self: 'story_once', is: true }, { flag: 'met_elder', is: true }] });
+    const runtime = new GameSession(pack);
+    runtime.game.state.setFlag('met_elder', true);
+    runtime.game.state.setSelf('pier', 'elder', 'story_once', true);
+    const elder = runtime.game.events.find(e => e.id === 'elder')!;
+    elder.refresh(runtime.game.state);
+    expect(elder.pageIndex).toBe(1);
+    expect(elder.active).toBe(true);
+  });
+  it('parses spaced nested appearance conditions with following options', () => {
+    const parsed = parseStory(baseline.replace('trigger=action character=elder', 'trigger=action when=all(!met_elder, trust >= 0) character=elder once'));
+    expect(parsed.diagnostics).toEqual([]);
+    const event = parsed.story.scenes.flatMap(s => s.items).find(e => e.kind === 'event' && e.id === 'elder');
+    expect(event).toMatchObject({ character: 'elder', once: true, pages: [{ condition: { kind: 'all', conditions: [{ kind: 'flag', name: 'met_elder', enabled: false }, { kind: 'variable', name: 'trust', op: '>=', value: 0 }] } }, {}] });
+  });
+  it('makes an event inactive with no matching base or successor page', async () => {
+    const { compilation, pack } = await generate(baseline.replace('trigger=action character=elder', 'trigger=action character=elder when=met_elder').replace('@film walkTo elder_spot\n', ''));
+    const data = JSON.parse(compilation.files.get('maps/pier.events.json')!) as { events: { id: string; pages: { when?: unknown }[] }[] };
+    expect(data.events.find(e => e.id === 'elder')!.pages[0]?.when).toEqual({ flag: 'met_elder', is: true });
+    const runtime = new GameSession(pack);
+    const elder = runtime.game.events.find(e => e.id === 'elder')!;
+    expect(elder.active).toBe(false);
+    expect(elder.pageIndex).toBe(-1);
+    runtime.game.state.setFlag('met_elder', true); elder.refresh(runtime.game.state);
+    expect(elder.active).toBe(true);
+  });
+  it('lints undeclared appearance flags/variables and rejects unsupported film values', () => {
+    const parsed = parseStory(baseline.replace('trigger=action character=elder', 'trigger=action character=elder when=all(unknown_flag,unknown_var>=1)'), 'main.story.md');
+    const diagnostics = lintStories([parsed.story]);
+    expect(diagnostics).toContainEqual(expect.objectContaining({ code: 'S002', level: 'error' }));
+    expect(diagnostics).toContainEqual(expect.objectContaining({ code: 'S003', level: 'error' }));
+    expect(parseStory(baseline.replace('trigger=action character=elder', 'trigger=action character=elder film=other')).diagnostics).toContainEqual(expect.objectContaining({ code: 'S001' }));
+  });
+  it('keeps skipped events in the game while omitting visits/expect and warning about nested flag changes', async () => {
+    const text = baseline.replace('@flag met_elder', '@flag background_seen\n@flag met_elder').replace('### 촌장의 열쇠 @ pier', '@event background at board character=sign film=skip\n  @if !met_elder\n    @set background_seen\n  @end\n  : 지나가는 배를 기다리고 있어요.\n@end\n\n### 촌장의 열쇠 @ pier');
+    const { film, compilation, story, replay } = await generate(text);
+    expect(compilation.files.get('maps/pier.events.json')).toContain('background_seen');
+    expect(film.steps.some(s => 'walkTo' in s && 'event' in s.walkTo && s.walkTo.event === 'background')).toBe(false);
+    expect(film.steps.some(s => 'expect' in s && 'flag' in s.expect && s.expect.flag === 'background_seen')).toBe(false);
+    expect(replay.game.state.getFlag('background_seen')).toBe(false);
+    expect(lintStories([story])).toContainEqual(expect.objectContaining({ code: 'S033', level: 'warning' }));
+  });
+  it('omits a skipped event even when an explicit hint points to it, and warns through common calls', async () => {
+    const text = baseline.replace('trigger=action character=elder', 'trigger=action character=elder film=skip');
+    const { film, story } = await generate(text);
+    expect(film.steps.some(s => 'walkTo' in s && 'event' in s.walkTo && s.walkTo.event === 'elder')).toBe(false);
+    expect(lintStories([story])).toContainEqual(expect.objectContaining({ code: 'S033', level: 'warning' }));
+    const indirect = parseStory(text.replace('      @set met_elder', '      @call flag_change').replace('@common relight', '@common flag_change\n  @set met_elder\n@end\n\n@common relight')).story;
+    expect(lintStories([indirect])).toContainEqual(expect.objectContaining({ code: 'S033', level: 'warning' }));
+  });
   it('crosses doors in both directions across three maps, then saves', async () => {
     const { film, replay } = await generate();
     const doors = film.steps.filter(s => 'walk' in s);
@@ -49,6 +107,20 @@ describe('story film generation (one baseline, memory mutations)', () => {
     const text = baseline.replace('trigger=action character=lamp', 'trigger=auto once character=lamp').replace('@page when=lamp_lit\n  : 심지는 고르게 타고 있다. 오른쪽 아래 금빛 문으로 나가면 마당이다.\n', '');
     const { replay } = await generate(text);
     expect(replay.game.state.getFlag('lamp_lit')).toBe(true);
+  });
+  it('keeps a transferred destination auto choice in the next scene', async () => {
+    const text = baseline.replace('@page when=met_elder', '  @go tower:entry\n@page when=met_elder').replace('trigger=action character=lamp', 'trigger=auto once character=lamp').replace('  @if met_elder\n    @call relight', '  ? 등대에 도착했다. 불을 켤까?\n    *> 불을 켠다\n      @set lamp_lit\n  @if met_elder\n    @call relight').replace('@page when=lamp_lit\n  : 심지는 고르게 타고 있다. 오른쪽 아래 금빛 문으로 나가면 마당이다.\n', '');
+    const { film, replay } = await generate(text);
+    const chapter = film.steps.findIndex(s => 'chapter' in s && s.chapter.startsWith('2장'));
+    expect(film.steps.slice(0, chapter).filter(s => 'choose' in s)).toHaveLength(1);
+    expect(film.steps.slice(chapter).filter(s => 'choose' in s)).toHaveLength(2);
+    expect(replay.game.state.getFlag('lamp_lit')).toBe(true);
+    expect(replay.game.state.getFlag('ending_public')).toBe(true);
+  });
+  it('emits only one consecutive walkTo for a hint and its event', async () => {
+    const { film } = await generate();
+    const visits = film.steps.filter(s => 'walkTo' in s && 'event' in s.walkTo && s.walkTo.event === 'elder');
+    expect(visits).toHaveLength(1);
   });
   it('defaults an unmarked choice to the first option', async () => {
     const { film } = await generate(baseline.replaceAll('*>', '*'));

@@ -153,12 +153,19 @@ class Parser {
   private event(line: Line): Event {
     const match = /^@event\s+(\S+)\s+at\s+(\S+)(?:\s+(.*))?$/.exec(line.text);
     if (!match) throw new Error('이벤트는 @event id at 앵커 형식입니다');
-    const opts = tokens(match[3] ?? ''); const once = opts.filter(token => token.value === 'once').length;
+    const opts = tokens(match[3] ?? '');
+    for (let i = 0; i < opts.length; i++) if (opts[i]!.value.startsWith('when=')) {
+      let end = i + 1;
+      while (end < opts.length && opts[end]!.value !== 'once' && !/^[a-z]+=(?!=)/.test(opts[end]!.value)) end++;
+      opts.splice(i, end - i, { value: opts.slice(i, end).map(t => t.value).join(' '), quoted: false });
+    }
+    const once = opts.filter(token => token.value === 'once').length;
     if (once > 1) throw new Error('once 중복');
-    const attrs = options(opts.filter(token => token.value !== 'once'), ['trigger', 'character', 'wander']);
+    const attrs = options(opts.filter(token => token.value !== 'once'), ['trigger', 'character', 'wander', 'when', 'film']);
     if (attrs.trigger && !['action', 'auto', 'touch'].includes(attrs.trigger)) throw new Error('trigger는 action/auto/touch입니다');
-    const node: Event = { ...this.source(line), kind: 'event', id: id(match[1]!), anchor: match[2]!, once: once === 1, trigger: (attrs.trigger ?? 'action') as Event['trigger'], character: attrs.character ? id(attrs.character) : undefined, wander: attrs.wander ? route(attrs.wander) : undefined, pages: [] };
-    const first: Page = { ...this.source(line), statements: this.body(line.indent) }; node.pages.push(first);
+    if (attrs.film && attrs.film !== 'skip') throw new Error('film은 skip만 허용합니다');
+    const node: Event = { ...this.source(line), kind: 'event', id: id(match[1]!), anchor: match[2]!, once: once === 1, trigger: (attrs.trigger ?? 'action') as Event['trigger'], character: attrs.character ? id(attrs.character) : undefined, wander: attrs.wander ? route(attrs.wander) : undefined, ...(attrs.film ? { film: 'skip' as const } : {}), pages: [] };
+    const first: Page = { ...this.source(line), ...(attrs.when ? { condition: parseCondition(attrs.when) } : {}), statements: this.body(line.indent) }; node.pages.push(first);
     while (true) {
       const next = this.peek();
       if (!next || next.indent !== line.indent || !next.text.startsWith('@page ')) break;

@@ -19,11 +19,6 @@
       }
     },
     {
-      "walkTo": {
-        "event": "elder"
-      }
-    },
-    {
       "pause": 0.35
     },
     {
@@ -164,6 +159,23 @@
       "walk": [
         "left"
       ]
+    },
+    {
+      "settle": true
+    },
+    {
+      "walkTo": {
+        "event": "keeper"
+      }
+    },
+    {
+      "pause": 0.35
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": "auto"
     },
     {
       "settle": true
