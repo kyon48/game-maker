@@ -85,7 +85,8 @@
         "speaker": "윤서"
       },
       {
-        "cmd": "x_review_clues"
+        "cmd": "call",
+        "common": "review_clues"
       },
       {
         "cmd": "choice",
@@ -263,6 +264,113 @@
           }
         ],
         "cancel": 3
+      }
+    ]
+  },
+  "review_clues": {
+    "commands": [
+      {
+        "cmd": "text",
+        "speaker": "윤서",
+        "text": "조사 수첩 — 단서 {plugin:x_clue_count}/5\n네 가지 이상의 단서를 모으면 기록을 근거로 결론을 낼 수 있다. 약속을 조용히 잇는 길에는 편지와 해린의 신뢰도 필요하다."
+      },
+      {
+        "cmd": "if",
+        "cond": {
+          "flag": "clue_clock",
+          "is": true
+        },
+        "then": [
+          {
+            "cmd": "text",
+            "text": "시계: 정전 때 떨어졌으며 출입 시각을 증명하지 않는다."
+          }
+        ]
+      },
+      {
+        "cmd": "if",
+        "cond": {
+          "flag": "clue_seal",
+          "is": true
+        },
+        "then": [
+          {
+            "cmd": "text",
+            "text": "봉인: 부인의 문장으로 봉한 원본을 공증인에게 발송했다."
+          }
+        ]
+      },
+      {
+        "cmd": "if",
+        "cond": {
+          "flag": "clue_letter",
+          "is": true
+        },
+        "then": [
+          {
+            "cmd": "text",
+            "text": "편지: 부인이 원본 발송과 해린의 등사본 보관을 지시했다."
+          }
+        ]
+      },
+      {
+        "cmd": "if",
+        "cond": {
+          "flag": "clue_ledger",
+          "is": true
+        },
+        "then": [
+          {
+            "cmd": "text",
+            "text": "장부: 도서실은 마을에 증여되었고 해린은 관리인이다."
+          }
+        ]
+      },
+      {
+        "cmd": "if",
+        "cond": {
+          "flag": "clue_receipt",
+          "is": true
+        },
+        "then": [
+          {
+            "cmd": "text",
+            "text": "영수증: 임종 뒤 구입한 식물 치료제로 독살 소문과 무관하다."
+          }
+        ]
+      },
+      {
+        "cmd": "if",
+        "cond": {
+          "all": [
+            {
+              "flag": "clue_clock",
+              "is": false
+            },
+            {
+              "flag": "clue_seal",
+              "is": false
+            },
+            {
+              "flag": "clue_letter",
+              "is": false
+            },
+            {
+              "flag": "clue_ledger",
+              "is": false
+            },
+            {
+              "flag": "clue_receipt",
+              "is": false
+            }
+          ]
+        },
+        "then": [
+          {
+            "cmd": "text",
+            "text": "현관홀의 시계, 서재의 서랍과 편지철, 도서실의 장부, 온실의 작업대를 살펴보자."
+          }
+        ]
       }
     ]
   }

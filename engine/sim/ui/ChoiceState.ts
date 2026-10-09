@@ -1,3 +1,4 @@
+import { plainText } from '../../data/text';
 import type { InputFrame } from '../ports';
 import type { ChoiceRequest } from '../event/types';
 export interface ChoiceSnapshot {
@@ -5,6 +6,7 @@ export interface ChoiceSnapshot {
   readonly selected: number;
 }
 export class ChoiceState {
+  constructor(private readonly resolve: (text: string) => string = text => plainText(text, { variable: name => { throw new Error(`Unresolved variable: ${name}`); }, plugin: name => { throw new Error(`Unresolved plugin: ${name}`); } }, false)) {}
   private request: ChoiceRequest | undefined;
   private options: { index: number; label: string }[] = [];
   private cursor = 0;
@@ -13,8 +15,9 @@ export class ChoiceState {
   open(request: ChoiceRequest): void {
     if (this.opened) throw new Error('Choice already open');
     if (request.cancelIndex !== null && (!Number.isInteger(request.cancelIndex) || request.cancelIndex < 0 || request.cancelIndex >= request.labels.length)) throw new Error('Choice cancel index out of range');
-    this.request = { ...request, labels: [...request.labels] }; this.options = []; this.cursor = 0; this.result = undefined;
-    request.labels.forEach((label, index) => { if (label !== null) this.options.push({ index, label }); });
+    const labels = request.labels.map(label => label === null ? null : this.resolve(label));
+    this.request = { ...request, prompt: request.prompt === undefined ? undefined : this.resolve(request.prompt), labels }; this.options = []; this.cursor = 0; this.result = undefined;
+    labels.forEach((label, index) => { if (label !== null) this.options.push({ index, label }); });
     if (!this.options.length) { this.result = -1; this.close(); }
   }
   close(): void { this.request = undefined; }

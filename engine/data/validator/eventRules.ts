@@ -1,3 +1,4 @@
+import { textRules } from './textRules';
 import type { TSchema } from '@sinclair/typebox';
 import { RouteTokenSchema } from '../schema/routes';
 import { ConditionSchema } from '../schema/events';
@@ -39,6 +40,10 @@ export function eventRules(context: ValidationContext, basics: PackBasics, check
         if (schemaErrors(definition.args.properties.route.items as TSchema, references, token).length > 0) report('V9', file, `${p}/route/${index}`, 'Invalid route token');
       });
       if (!check(definition.args, args, file, p)) return;
+      if (command.cmd === 'text') {
+        textRules(context, basics, usage, command.text as string, true, file, p + '/text');
+        if (command.speaker !== undefined) textRules(context, basics, usage, command.speaker as string, false, file, p + '/speaker');
+      }
       if (parallel && !definition.parallelSafe) report('V7', file, p + '/cmd', `Forbidden parallel command: ${command.cmd}`);
       if (['set_flag', 'set_var', 'set_self_flag', 'transfer', 'stop'].includes(command.cmd)) changes = true;
       if (command.cmd === 'set_flag') { const name = command.flag as string; usedFlags.add(name); if (!Object.hasOwn(game!.state.flags, name)) report('V3', file, p + '/flag', 'Undeclared flag'); }
@@ -51,10 +56,12 @@ export function eventRules(context: ValidationContext, basics: PackBasics, check
         currentMaps = new Set([...thenMaps.maps, ...elseMaps.maps]);
       }
       if (command.cmd === 'choice') {
-        const choices = command.options as { when?: Condition; commands: Command[] }[];
+        const choices = command.options as { label: string; when?: Condition; commands: Command[] }[];
+        if (command.prompt !== undefined) textRules(context, basics, usage, command.prompt as string, false, file, p + '/prompt');
         if (command.cancel !== undefined && command.cancel !== null && (command.cancel as number) >= choices.length) report('V9', file, p + '/cancel', 'Cancel index outside options');
         const choiceMaps = new Set<string>();
         choices.forEach((choice, index) => {
+          textRules(context, basics, usage, choice.label, false, file, `${p}/options/${index}/label`);
           const branch = { maps: new Set(currentMaps) };
           if (choice.when) condition(choice.when, file, `${p}/options/${index}/when`, true);
           changes = list(choice.commands, file, `${p}/options/${index}/commands`, mapId, parallel, owner, stack, branch) || changes;

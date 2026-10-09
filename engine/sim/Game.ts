@@ -1,3 +1,5 @@
+import { plainText } from '../data/text';
+import type { TextResolver } from '../data/text';
 import type { PluginRuntime } from './plugins/PluginRuntime';
 import { stateAccess } from './plugins/context';
 import type { HookContext } from '@engine/api';
@@ -61,7 +63,7 @@ export class Game {
   readonly commands: CommandRegistry;
   readonly main: Interpreter;
   readonly message: MessageState;
-  readonly choice = new ChoiceState();
+  readonly choice: ChoiceState;
   private readonly triggers = new TriggerSlot();
   private current: GameSnapshot;
   constructor(private readonly config: GameConfig, map: TileMapData, private readonly characters: Characters,
@@ -80,9 +82,14 @@ export class Game {
       return new EventObject(event, config.tileSize, characters, this.state, config.start.map, options.plugins ? this.pluginCondition : undefined);
     });
     this.map = new MapState(config.start.map, map, [this.player, ...this.events]);
+    const resolver: TextResolver = { variable: name => String(this.state.getVar(name)), plugin: name => {
+      if (!options.plugins) throw new Error(`Unknown plugin text function: ${name}`);
+      return options.plugins.format(name, {}, this.state);
+    }, color: name => options.skin ? Object.hasOwn(options.skin.colors, name) : false };
+    this.choice = new ChoiceState(text => plainText(text, resolver, false));
     this.message = new MessageState({ width: config.screen.width - 2 * (options.skin?.window.padding ?? 8),
       rows: options.skin?.message.rows ?? 3, charsPerTick: options.skin?.message.charsPerTick ?? 1 },
-    options.textMeasurer ?? new HeadlessTextMeasurer(options.skin?.font.size ?? 12));
+    options.textMeasurer ?? new HeadlessTextMeasurer(options.skin?.font.size ?? 12), resolver);
     this.showMapName();
     this.options.plugins?.mapEnter(this.hookContext());
     this.current = this.capture();

@@ -1,6 +1,6 @@
 import { Value } from '@sinclair/typebox/value';
 import type { Static, TSchema } from '@sinclair/typebox';
-import type { EngineApi, PluginModule, HookContext, SaveData, CommandDefinition } from '@engine/api';
+import type { EngineApi, PluginModule, HookContext, SaveData, CommandDefinition, TextDefinition } from '@engine/api';
 import { API_VERSION } from '../../data/apiVersion';
 import { ConditionSchema, CommandSchema } from '../../data/schema/events';
 import { registerBuiltins } from '../commands';
@@ -16,6 +16,7 @@ export class PluginRuntime {
   readonly commands = new CommandRegistry();
   readonly diagnostics: Diagnostic[] = [];
   readonly conditions = new Map<string, { args: TSchema; test: (args: unknown, state: GameState) => boolean }>();
+  readonly text = new Map<string, { args: TSchema; format: (args: unknown, state: GameState) => string }>();
   private readonly hooks = new Map<HookName, HookHandler[]>();
   constructor(readonly engineVersion: string, plugins: readonly NamedPlugin[] = []) {
     registerBuiltins(this.commands);
@@ -39,6 +40,10 @@ export class PluginRuntime {
         this.name(name); if (this.conditions.has(name)) throw new Error(`Duplicate condition: ${name}`);
         this.conditions.set(name, { args: definition.args, test: (args, state) => definition.test(args as Static<S>, readonlyState(state)) });
       } }),
+      text: Object.freeze({ register: <S extends TSchema>(name: `x_${string}`, definition: TextDefinition<S>) => {
+        this.name(name); if (this.text.has(name)) throw new Error(`Duplicate text function: ${name}`);
+        this.text.set(name, { args: definition.args, format: (args, state) => definition.format(args as Static<S>, readonlyState(state)) });
+      } }),
       hooks: { on: (event: HookName, handler: HookHandler) => {
         if (!['mapEnter', 'mapLeave', 'tick', 'loadSave'].includes(event)) throw new Error(`Unknown hook: ${event}`);
         const handlers = this.hooks.get(event) ?? []; handlers.push(handler); this.hooks.set(event, handlers);
@@ -50,6 +55,12 @@ export class PluginRuntime {
     const condition = this.conditions.get(name); if (!condition) throw new Error(`Unknown plugin condition: ${name}`);
     if (!Value.Check(condition.args, [ConditionSchema, CommandSchema], args)) throw new Error(`Invalid condition arguments: ${name}`);
     const result = condition.test(args, state); if (typeof result !== 'boolean') throw new Error(`Condition must return boolean: ${name}`);
+    return result;
+  }
+  format(name: string, args: unknown, state: GameState): string {
+    const definition = this.text.get(name); if (!definition) throw new Error(`Unknown plugin text function: ${name}`);
+    if (!Value.Check(definition.args, [ConditionSchema, CommandSchema], args)) throw new Error(`Invalid text arguments: ${name}`);
+    const result = definition.format(args, state); if (typeof result !== 'string') throw new Error(`Text function must return string: ${name}`);
     return result;
   }
   private emit(event: HookName, ...args: unknown[]): void {
@@ -73,6 +84,6 @@ export class PluginRuntime {
     return { map: save.map, x: save.x, y: save.y, dir: save.dir, flags: save.flags, vars: save.vars, selfFlags: save.selfFlags };
   }
   get validationOptions() {
-    return { commands: this.commands.catalog, conditions: new Map([...this.conditions].map(([name, definition]) => [name, definition.args])), pluginDiagnostics: this.diagnostics };
+    return { commands: this.commands.catalog, conditions: new Map([...this.conditions].map(([name, definition]) => [name, definition.args])), text: new Map([...this.text].map(([name, definition]) => [name, definition.args])), pluginDiagnostics: this.diagnostics };
   }
 }

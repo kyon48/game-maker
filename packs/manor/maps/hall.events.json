@@ -347,7 +347,8 @@
                   "label": "모은 단서를 다시 읽는다",
                   "commands": [
                     {
-                      "cmd": "x_review_clues"
+                      "cmd": "call",
+                      "common": "review_clues"
                     }
                   ]
                 },

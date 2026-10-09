@@ -35,7 +35,20 @@ export function drawUi(context: CanvasRenderingContext2D, snapshot: Pick<GameSna
       context.fillStyle = skin.colors.speaker; context.fillText(message.speaker, padding, top + padding);
     }
     context.fillStyle = skin.colors.text;
-    message.lines.forEach((line, index) => context.fillText(line, padding, top + padding + (index + speakerRows) * lineHeight));
+    message.segments.forEach((line, index) => {
+      let prefix = '', run = '', color: string | undefined;
+      const flush = () => {
+        const colors: Readonly<Record<string, string | undefined>> = skin.colors;
+        context.fillStyle = color === undefined ? skin.colors.text : colors[color] ?? skin.colors.text;
+        context.fillText(run, padding + context.measureText(prefix).width, top + padding + (index + speakerRows) * lineHeight);
+        prefix += run; run = '';
+      };
+      for (const segment of line) {
+        if (segment.color !== color) { if (run) flush(); color = segment.color; }
+        run += segment.text;
+      }
+      if (run) flush();
+    });
   }
   if (snapshot.choice) {
     const choice = snapshot.choice, promptRows = choice.prompt === undefined ? 0 : 1;

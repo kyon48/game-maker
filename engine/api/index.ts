@@ -35,10 +35,12 @@ export interface HookContext {
   readonly mapId: string;
 }
 export interface CommandDefinition<S extends TSchema> { args: S; parallelSafe?: boolean; run: CommandHandler<Static<S>> }
+export interface TextDefinition<S extends TSchema> { args: S; format(args: Static<S>, state: ReadonlyGameState): string }
 export interface EngineApi {
   readonly engineVersion: string;
   commands: { register<S extends TSchema>(name: `x_${string}`, definition: CommandDefinition<S>): void };
   conditions: { register<S extends TSchema>(name: `x_${string}`, definition: { args: S; test(args: Static<S>, state: ReadonlyGameState): boolean }): void };
+  text: { register<S extends TSchema>(name: `x_${string}`, definition: TextDefinition<S>): void };
   hooks: {
     on(event: 'mapEnter' | 'mapLeave', handler: (ctx: HookContext, mapId: string) => void): void;
     on(event: 'tick', handler: (ctx: HookContext) => void): void;

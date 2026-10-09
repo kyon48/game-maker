@@ -6,9 +6,9 @@
     "films/main.narration.md": "c693a208973a2ee06d0500eaab5483280cea810e83c22cd066ac606b1ab30dfa",
     "game.json": "f35842b2d285ce9cb4d6a34cbddd68382ba3db5369de245e832b61a589581b82",
     "maps/garden.events.json": "3d3ec88964f7db8b32a773ae8161d4d7c40f57b467fd607b32d3b40472588013",
-    "maps/pier.events.json": "5aaa81a0cc424eb161e14ccbcde2f2d78a995c09bfba9798f23747b8ff0de91c",
+    "maps/pier.events.json": "88e3d54323224a4f51603cbdf163cddac8ec49e0b05529c9a8d2ae2c042374d1",
     "maps/tower.events.json": "21cc2f67d74c5ba6542bdf684527803d1c4a898c7417adcbf4b74d1313176ffb",
-    "tests/story_main.scenario.json": "221fd2b036c0930ee09e807319bc11aecbe5be8517cd6cfd2d77bda396f242a7"
+    "tests/story_main.scenario.json": "551773151747ca8cbc461353124f4a712d91f0d4f6d4cb431a7c3bddc73e22af"
   },
   "maps": {
     "maps/garden.tmj": "7e9f081a9f08a2cc4739d19190cce48ea0d134a539b1e184088f9d87577b5bac",

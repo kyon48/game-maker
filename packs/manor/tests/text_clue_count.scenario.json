@@ -1,0 +1,12 @@
+{
+  "name": "수첩 치환은 전체 단서 개수를 표시한다",
+  "start": { "map": "hall", "x": 24, "y": 17, "dir": "up" },
+  "state": { "flags": { "introduced": true, "clue_clock": true, "clue_seal": true, "clue_letter": true, "clue_ledger": true, "clue_receipt": true } },
+  "steps": [
+    { "press": "ok" },
+    { "choose": 1 },
+    { "expect": { "textContains": "단서 5/5" } },
+    { "advanceText": true },
+    { "settle": true }
+  ]
+}
