@@ -1,0 +1,108 @@
+{
+  "events": [
+    {
+      "id": "light",
+      "x": 7,
+      "y": 6,
+      "pages": [
+        {
+          "trigger": "action",
+          "character": "lamp",
+          "through": false,
+          "commands": [
+            {
+              "cmd": "face",
+              "target": "this",
+              "dir": "player"
+            },
+            {
+              "cmd": "if",
+              "cond": {
+                "flag": "met_elder",
+                "is": true
+              },
+              "then": [
+                {
+                  "cmd": "call",
+                  "common": "relight"
+                },
+                {
+                  "cmd": "set_flag",
+                  "flag": "lamp_lit",
+                  "value": true
+                },
+                {
+                  "cmd": "text",
+                  "text": "이제 불빛이 보여요. 등대 뒤 마당에서 앞으로의 약속을 생각해 봐야겠어요.",
+                  "speaker": "소라"
+                }
+              ],
+              "else": [
+                {
+                  "cmd": "text",
+                  "text": "아직 열쇠가 없다. 선착장의 촌장에게 먼저 말을 걸자."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "trigger": "action",
+          "character": "lamp",
+          "through": false,
+          "when": {
+            "flag": "lamp_lit",
+            "is": true
+          },
+          "commands": [
+            {
+              "cmd": "face",
+              "target": "this",
+              "dir": "player"
+            },
+            {
+              "cmd": "text",
+              "text": "심지는 고르게 타고 있다. 오른쪽 아래 금빛 문으로 나가면 마당이다."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "entry",
+      "x": 0,
+      "y": 4,
+      "pages": [
+        {
+          "trigger": "touch",
+          "through": true,
+          "commands": [
+            {
+              "cmd": "transfer",
+              "map": "pier",
+              "marker": "to_tower"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "to_garden",
+      "x": 15,
+      "y": 9,
+      "pages": [
+        {
+          "trigger": "touch",
+          "through": true,
+          "commands": [
+            {
+              "cmd": "transfer",
+              "map": "garden",
+              "marker": "entry"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

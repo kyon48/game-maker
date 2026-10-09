@@ -1,0 +1,60 @@
+{
+  "relight": {
+    "commands": [
+      {
+        "cmd": "fade",
+        "to": "black",
+        "frames": 12
+      },
+      {
+        "cmd": "wait",
+        "frames": 12
+      },
+      {
+        "cmd": "fade",
+        "to": "clear",
+        "frames": 12
+      },
+      {
+        "cmd": "text",
+        "text": "소라가 심지를 정리하자 창 너머로 따뜻한 빛이 퍼졌다."
+      }
+    ]
+  },
+  "public_ending": {
+    "commands": [
+      {
+        "cmd": "text",
+        "text": "함께 지킬 사람이 생겼으니 이제 밤길이 덜 외롭겠구나.",
+        "speaker": "촌장"
+      },
+      {
+        "cmd": "text",
+        "text": "돌아가면 이웃들과 불을 지킬 순서를 정할게요.",
+        "speaker": "소라"
+      },
+      {
+        "cmd": "text",
+        "text": "결말 — 함께 켜는 불. 선착장은 누구나 돌아올 수 있는 길이 되었다."
+      }
+    ]
+  },
+  "kept_ending": {
+    "commands": [
+      {
+        "cmd": "text",
+        "text": "오늘 밤은 제가 남아 있을게요. 준비가 되면 다른 사람도 초대하고 싶어요.",
+        "speaker": "소라"
+      },
+      {
+        "cmd": "text",
+        "text": "서두르지 않아도 좋다. 약속을 지키는 첫날이니까.",
+        "speaker": "촌장"
+      },
+      {
+        "cmd": "text",
+        "text": "결말 — 오래 지키는 불. 한 사람의 작은 약속이 먼 바다까지 닿았다."
+      }
+    ]
+  }
+}

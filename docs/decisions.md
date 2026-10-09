@@ -107,3 +107,13 @@
 - 2026-10-09 / S1a / artRoot는 story.config.json 디렉터리 기준 상대/절대 경로이며 key·en·ko·core를 공백/영문 대소문자 정규화해 조회 / 루트 없음은 팩당 경고 1회, 지정한 파일/별칭이 깨지면 오류; 에셋 복사·캐릭터별 fallback은 S3에서 수행.
 - 2026-10-09 / S1a / @cmd는 JSON 값만 파싱하고 명령·필드·자료형 검증을 하지 않음 / S1b validate가 책임지는 탈출구 유지; once·표정·촬영 선택 정보도 생성 없이 AST에 보관.
 - 2026-10-09 / S1a / story lint를 check에 연결하지 않고 엔진 버전 0.5.0 유지 / S1b에서 팩 story가 생길 때 연결; 이번 단계는 Node 도구와 테스트만 추가하며 engine·팩 데이터·스키마 변경 없음.
+
+- 2026-10-09 / S1b / game.json은 state·maps·start·mapNames만 생성하고 헤더의 title/player/screen도 기존 수기 값을 유지 / 사용자 범위를 우선; 시작 장소는 첫 장면, start 앵커 필수, 방향은 기존 start.dir 또는 down.
+- 2026-10-09 / S1b / tiles.json은 wall/floor/door의 양의 GID와 팩 내부 .tsj 경로 tileset, 선택 firstgid(기본 1) 형식 / 이미지·타일셋 메타데이터는 수기로 준비하고 기존 validate가 참조 범위·파일을 검사.
+- 2026-10-09 / S1b / once는 story_once 셀프 플래그를 face 다음·본문 앞에서 설정하고 후속 page에 self=true 조건 결합 / stop·transfer 뒤의 재실행 방지; 명시 page가 없으면 같은 속성의 trigger=none 페이지, 후속 조건 미성립은 비활성.
+- 2026-10-09 / S1b / character가 있는 action의 모든 페이지에 face this→player를 앞에 넣고 @move는 wait=true / 원고 연출을 순서대로 진행; 그래픽 없는 이벤트·touch는 through=true, 비대기 이동은 @cmd 탈출구 사용.
+- 2026-10-09 / S1b / 앵커 문자 참조를 정식 이름 marker로 변환하고 기존 .tmj는 타일 좌표로 대조해 바이트·mtime 보존 / Tiled의 같은 타일 안 픽셀 오프셋·추가 marker/레이어 손질 허용; --force-maps만 재생성.
+- 2026-10-09 / S1b / .compiled.json은 일반 생성 파일 전체 SHA-256과 맵의 최초/재생성 해시를 기록 / game의 수기 필드 변경도 --force 필요하지만 새 값은 보존; .tmj 해시는 검사 제외·기존 기록 유지, 모든 보호 검사를 쓰기 전에 완료하고 매니페스트를 마지막에 기록.
+- 2026-10-09 / S1b / check --all은 story가 있는 팩(심볼릭 링크 포함)의 일반 생성 파일·매니페스트를 메모리 결과와 비교 / .tmj는 앵커만 검사; 이전 추적 events는 컴파일에서 제거하되 Tiled 맵은 남김, check에 연결.
+- 2026-10-09 / S1b / lantern은 장소 3·장면 5·서로 배타적인 결말 플래그 2개, 기본 타일·스프라이트·폰트 복사로 구성 / 창작 원고 하나에서 게임 데이터를 생성, 메타데이터·캐릭터·UI·에셋·출처는 수기 입력으로 구분.
+- 2026-10-09 / S1b / 엔진에 없는 표정 필드는 경고 후 생략, 나레이션·촬영 힌트는 팩에서 생략, 결말은 대사와 플래그로 표현 / 표정 표시 V3a·에셋 복사 S3·film/scenario 생성 S1c·결과 씬 G3 범위 유지; engine 변경 없이 버전 0.5.0 유지.

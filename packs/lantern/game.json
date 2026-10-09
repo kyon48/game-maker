@@ -1,0 +1,44 @@
+{
+  "id": "lantern",
+  "title": "등대지기의 약속",
+  "version": "0.1.0",
+  "formatVersion": 1,
+  "screen": {
+    "width": 480,
+    "height": 270
+  },
+  "tileSize": 16,
+  "player": "sora",
+  "plugins": [],
+  "labels": {
+    "continue": "이어하기",
+    "newGame": "처음부터"
+  },
+  "state": {
+    "flags": {
+      "met_elder": false,
+      "lamp_lit": false,
+      "ending_public": false,
+      "ending_kept": false
+    },
+    "vars": {
+      "trust": 0
+    }
+  },
+  "maps": [
+    "pier",
+    "tower",
+    "garden"
+  ],
+  "start": {
+    "map": "pier",
+    "x": 3,
+    "y": 6,
+    "dir": "down"
+  },
+  "mapNames": {
+    "pier": "선착장",
+    "tower": "등대",
+    "garden": "등대 뒤 마당"
+  }
+}

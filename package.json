@@ -9,7 +9,7 @@
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.sim.json",
     "lint": "eslint .",
     "test": "vitest run",
-    "check": "npm run typecheck && npm run lint && npm run test && npm run schemas -- --check && npm run validate -- --all && npm run scenarios -- --all && npm run films -- --all && npm run build:all",
+    "check": "npm run typecheck && npm run lint && npm run test && npm run schemas -- --check && npm run story -- check --all && npm run validate -- --all && npm run scenarios -- --all && npm run films -- --all && npm run build:all",
     "tiles": "tsx tools/generate-tiles.ts",
     "characters": "node --import tsx tools/generate-character.ts",
     "fonts": "node --import tsx tools/copy-fonts.ts",

@@ -1,0 +1,218 @@
+{
+  "events": [
+    {
+      "id": "arrival",
+      "x": 3,
+      "y": 6,
+      "pages": [
+        {
+          "trigger": "auto",
+          "through": true,
+          "when": {
+            "self": "story_once",
+            "is": false
+          },
+          "commands": [
+            {
+              "cmd": "set_self_flag",
+              "name": "story_once",
+              "value": true
+            },
+            {
+              "cmd": "text",
+              "text": "등대지기의 약속"
+            },
+            {
+              "cmd": "text",
+              "text": "불이 꺼진 뒤로 돌아오는 배들이 길을 잃었다고 들었어요.",
+              "speaker": "소라"
+            },
+            {
+              "cmd": "text",
+              "text": "위쪽의 촌장을 바라보고 Enter 또는 Z로 대화하자. 오른쪽 금빛 문은 등대 입구다."
+            }
+          ]
+        },
+        {
+          "trigger": "none",
+          "through": true,
+          "when": {
+            "self": "story_once",
+            "is": true
+          },
+          "commands": []
+        }
+      ]
+    },
+    {
+      "id": "elder",
+      "x": 8,
+      "y": 4,
+      "pages": [
+        {
+          "trigger": "action",
+          "character": "elder",
+          "through": false,
+          "commands": [
+            {
+              "cmd": "face",
+              "target": "this",
+              "dir": "player"
+            },
+            {
+              "cmd": "text",
+              "text": "오래 비워 둔 등대를 다시 켜겠다고? 누가 불을 지킬지 생각해 보았나?",
+              "speaker": "촌장"
+            },
+            {
+              "cmd": "text",
+              "text": "우선 제가 불을 밝히고, 그다음 약속을 정하고 싶어요.",
+              "speaker": "소라"
+            },
+            {
+              "cmd": "choice",
+              "prompt": "열쇠를 받으며 뭐라고 약속할까?",
+              "options": [
+                {
+                  "label": "이웃들과 함께 지킬 방법을 찾는다",
+                  "commands": [
+                    {
+                      "cmd": "set_flag",
+                      "flag": "met_elder",
+                      "value": true
+                    },
+                    {
+                      "cmd": "set_var",
+                      "var": "trust",
+                      "op": "add",
+                      "value": 1
+                    },
+                    {
+                      "cmd": "text",
+                      "text": "서로의 밤을 나누면 불도 오래 갈 게다.",
+                      "speaker": "촌장"
+                    }
+                  ]
+                },
+                {
+                  "label": "먼저 혼자 지킬 준비를 한다",
+                  "commands": [
+                    {
+                      "cmd": "set_flag",
+                      "flag": "met_elder",
+                      "value": true
+                    },
+                    {
+                      "cmd": "set_var",
+                      "var": "trust",
+                      "op": "sub",
+                      "value": 1
+                    },
+                    {
+                      "cmd": "text",
+                      "text": "서두르지 말고 네가 감당할 수 있는 약속부터 시작하렴.",
+                      "speaker": "촌장"
+                    }
+                  ]
+                }
+              ],
+              "cancel": null
+            }
+          ]
+        },
+        {
+          "trigger": "action",
+          "character": "elder",
+          "through": false,
+          "when": {
+            "flag": "met_elder",
+            "is": true
+          },
+          "commands": [
+            {
+              "cmd": "face",
+              "target": "this",
+              "dir": "player"
+            },
+            {
+              "cmd": "text",
+              "text": "열쇠는 받았지? 오른쪽 문 너머 등대 중앙의 노란 불씨를 살펴보렴.",
+              "speaker": "촌장"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "record",
+      "x": 7,
+      "y": 9,
+      "pages": [
+        {
+          "trigger": "action",
+          "character": "sign",
+          "through": false,
+          "commands": [
+            {
+              "cmd": "face",
+              "target": "this",
+              "dir": "player"
+            },
+            {
+              "cmd": "if",
+              "cond": {
+                "any": [
+                  {
+                    "flag": "ending_public",
+                    "is": true
+                  },
+                  {
+                    "flag": "ending_kept",
+                    "is": true
+                  }
+                ]
+              },
+              "then": [
+                {
+                  "cmd": "text",
+                  "text": "등대의 불은 다시 켜졌다. 선착장에는 오늘의 약속을 적은 쪽지가 걸렸다."
+                }
+              ],
+              "else": [
+                {
+                  "cmd": "text",
+                  "text": "선착장 안내 — 촌장에게 열쇠 받기, 등대 불씨 밝히기, 뒤 마당에서 약속 정하기."
+                }
+              ]
+            },
+            {
+              "cmd": "save"
+            },
+            {
+              "cmd": "text",
+              "text": "여정을 기록했다. 다음에는 이 자리에서 이어갈 수 있다."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "to_tower",
+      "x": 23,
+      "y": 4,
+      "pages": [
+        {
+          "trigger": "touch",
+          "through": true,
+          "commands": [
+            {
+              "cmd": "transfer",
+              "map": "tower",
+              "marker": "entry"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

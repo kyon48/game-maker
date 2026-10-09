@@ -1,0 +1,22 @@
+{
+  "font": {
+    "family": "Galmuri11",
+    "src": "assets/fonts/Galmuri11.woff2",
+    "size": 12,
+    "lineHeight": 16
+  },
+  "window": {
+    "slice": 8,
+    "padding": 8
+  },
+  "colors": {
+    "text": "#ffffff",
+    "speaker": "#ffd866",
+    "cursor": "#ffffff",
+    "fade": "#000000"
+  },
+  "message": {
+    "rows": 3,
+    "charsPerTick": 1
+  }
+}

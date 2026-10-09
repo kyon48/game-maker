@@ -1,0 +1,7 @@
+{
+  "image": "colors.png",
+  "tilewidth": 16,
+  "tileheight": 16,
+  "columns": 8,
+  "tilecount": 8
+}

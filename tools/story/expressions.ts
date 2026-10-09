@@ -25,3 +25,9 @@ export function expressionAliases(value: unknown): ReadonlyMap<string, string> {
   }
   return aliases;
 }
+
+export function normalizeExpression(name: string, aliases: ReadonlyMap<string, string>): string {
+  const key = aliases.get(name.trim().toLocaleLowerCase('en-US'));
+  if (!key) throw new Error(`모르는 표정: ${name}`);
+  return key;
+}
