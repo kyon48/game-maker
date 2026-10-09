@@ -4,11 +4,12 @@ import { createHash } from 'node:crypto';
 import { readStories } from './files';
 import { compileStories, StoryCompileError, object, jsonBytes } from './compile';
 import type { Diagnostic } from './ast';
+import { planFilm } from './film-project';
 export const hash = (text: string): string => createHash('sha256').update(text).digest('hex');
 interface Manifest { version: 1; files: Record<string, string>; maps: Record<string, string> }
 export interface CompileOptions { force?: boolean; forceMaps?: boolean; check?: boolean }
 export interface Prepared { diagnostics: Diagnostic[]; files?: Map<string, string>; removed?: string[] }
-const ownedPath = /^(game\.json|common-events\.json|maps\/[a-z][a-z0-9_]*\.events\.json)$/;
+const ownedPath = /^(game\.json|common-events\.json|maps\/[a-z][a-z0-9_]*\.events\.json|films\/[a-z][a-z0-9_]*\.(film\.json|narration\.md)|tests\/story_[a-z][a-z0-9_]*\.scenario\.json)$/;
 const mapPath = /^maps\/[a-z][a-z0-9_]*\.tmj$/;
 async function readOptional(file: string): Promise<string | undefined> { try { return await readFile(file, 'utf8'); } catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined; throw error; } }
 function parseManifest(text: string): Manifest {
@@ -42,6 +43,16 @@ export async function prepareCompilation(packId: string, root = process.cwd(), o
     const compilation = compileStories(input.stories, game, tiles, existing, options.forceMaps);
     diagnostics.push(...compilation.diagnostics);
     const files = new Map(compilation.files), protectedFiles = [...files.keys()].filter(file => ownedPath.test(file)).sort();
+    for (const file of Object.keys(old?.files ?? {}).filter(f => /^films\/|^tests\/story_/.test(f))) {
+      const text = await readOptional(path.join(pack, file));
+      if (text !== undefined) files.set(file, text);
+    }
+    if (options.check) {
+      for (const file of Object.keys(old?.files ?? {}).filter(f => /^films\/.*\.film\.json$/.test(f)).sort()) {
+        const name = file.slice(6, -10);
+        for (const [generated, text] of await planFilm(packId, root, files, input.stories, name)) files.set(generated, text);
+      }
+    }
     const removed = Object.keys(old?.files ?? {}).filter(file => !files.has(file)).sort();
     // Complete all ownership checks before writing even the first output.
     if (!options.check && !options.force) {
@@ -54,7 +65,7 @@ export async function prepareCompilation(packId: string, root = process.cwd(), o
     }
     if (diagnostics.some(d => d.level === 'error')) return { diagnostics };
     const manifest: Manifest = {
-      version: 1, files: Object.fromEntries(protectedFiles.map(file => [file, hash(files.get(file)!)])),
+      version: 1, files: Object.fromEntries([...files.keys()].filter(f => ownedPath.test(f)).sort().map(file => [file, !options.check && old?.files[file] && /^films\/|^tests\/story_/.test(file) ? old.files[file] : hash(files.get(file)!)])),
       maps: Object.fromEntries([...compilation.maps].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([file, text]) => [file, !options.forceMaps && existing.has(file) && old?.maps[file] ? old.maps[file] : hash(text)])),
     };
     files.set('story/.compiled.json', jsonBytes(manifest));
@@ -74,6 +85,11 @@ export async function prepareCompilation(packId: string, root = process.cwd(), o
 export async function compilePack(packId: string, root = process.cwd(), options: CompileOptions = {}): Promise<Diagnostic[]> {
   const prepared = await prepareCompilation(packId, root, options);
   if (options.check || !prepared.files || prepared.diagnostics.some(d => d.level === 'error')) return prepared.diagnostics;
+  await writePrepared(packId, root, prepared);
+  return prepared.diagnostics;
+}
+export async function writePrepared(packId: string, root: string, prepared: Prepared & { files?: Map<string, string> }): Promise<void> {
+  if (!prepared.files) return;
   const folder = path.join(root, 'packs', packId);
   for (const [file, text] of prepared.files) {
     const destination = path.join(folder, file);
@@ -85,7 +101,6 @@ export async function compilePack(packId: string, root = process.cwd(), options:
   for (const file of prepared.removed ?? []) { try { await unlink(path.join(folder, file)); } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; } }
   const manifest = path.join(folder, 'story/.compiled.json'), text = prepared.files.get('story/.compiled.json')!;
   if (await readOptional(manifest) !== text) { await mkdir(path.dirname(manifest), { recursive: true }); await writeFile(manifest, text); }
-  return prepared.diagnostics;
 }
 export async function storyPackIds(root = process.cwd()): Promise<string[]> {
   const result: string[] = [];

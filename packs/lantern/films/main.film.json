@@ -1,0 +1,213 @@
+{
+  "name": "main",
+  "steps": [
+    {
+      "chapter": "1장. 돌아오는 길"
+    },
+    {
+      "wait": 1
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "settle": true
+    },
+    {
+      "walkTo": {
+        "event": "elder"
+      }
+    },
+    {
+      "walkTo": {
+        "event": "elder"
+      }
+    },
+    {
+      "pause": 0.35
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "choose": 0,
+      "dwell": 0.4
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "met_elder",
+        "is": true
+      }
+    },
+    {
+      "chapter": "2장. 불씨와 약속"
+    },
+    {
+      "walkTo": {
+        "event": "to_tower"
+      }
+    },
+    {
+      "walk": [
+        "right"
+      ]
+    },
+    {
+      "settle": true
+    },
+    {
+      "walkTo": {
+        "event": "light"
+      }
+    },
+    {
+      "pause": 0.35
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "wait": 36
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "lamp_lit",
+        "is": true
+      }
+    },
+    {
+      "walkTo": {
+        "event": "to_garden"
+      }
+    },
+    {
+      "walk": [
+        "right"
+      ]
+    },
+    {
+      "settle": true
+    },
+    {
+      "walkTo": {
+        "event": "conclusion"
+      }
+    },
+    {
+      "pause": 0.35
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "choose": 0,
+      "dwell": 0.4
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "ending_public",
+        "is": true
+      }
+    },
+    {
+      "expect": {
+        "flag": "ending_kept",
+        "is": false
+      }
+    },
+    {
+      "chapter": "3장. 선착장의 기록"
+    },
+    {
+      "walkTo": {
+        "event": "entry"
+      }
+    },
+    {
+      "walk": [
+        "left"
+      ]
+    },
+    {
+      "settle": true
+    },
+    {
+      "walkTo": {
+        "event": "entry"
+      }
+    },
+    {
+      "walk": [
+        "left"
+      ]
+    },
+    {
+      "settle": true
+    },
+    {
+      "walkTo": {
+        "event": "record"
+      }
+    },
+    {
+      "pause": 0.35
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "flag": "met_elder",
+        "is": true
+      }
+    },
+    {
+      "expect": {
+        "flag": "lamp_lit",
+        "is": true
+      }
+    },
+    {
+      "expect": {
+        "flag": "ending_public",
+        "is": true
+      }
+    },
+    {
+      "expect": {
+        "flag": "ending_kept",
+        "is": false
+      }
+    }
+  ]
+}
