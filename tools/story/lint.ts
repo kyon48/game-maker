@@ -1,3 +1,4 @@
+import { parseText, TextSyntaxError } from '../../engine/data/text';
 import type { Story, Diagnostic, Source, Condition, Statement, Event, Anchor, Destination } from './ast';
 export interface LintOptions { packId?: string; expressions?: ReadonlyMap<string, string> | null }
 /** Pack-wide declarations and conservative reachability, without compiling engine commands. */
@@ -83,12 +84,19 @@ export function lintStories(stories: readonly Story[], options: LintOptions = {}
     else if (value.kind === 'variable') { if (!variables.has(value.name)) report(source, 'S003', `미선언 조건 변수: ${value.name}`); }
     else for (const child of value.conditions) condition(child, source);
   };
+  const textVariables = (text: string, source: Source, controls: boolean) => {
+    try {
+      for (const token of parseText(text, controls)) if (token.kind === 'var' && !variables.has(token.value)) report(source, 'S003', `미선언 대사 변수: ${token.value}`);
+    } catch (error) { if (!(error instanceof TextSyntaxError)) throw error; /* Engine validate owns syntax and plugin registrations. */ }
+  };
   const active = new Set<string>(), results = new Map<string, ReadonlySet<string>>();
   const walk = (list: readonly Statement[], scope: ReadonlySet<string>, trackReachability = true): Set<string> => {
     let maps = new Set(scope);
     for (const node of list) {
       switch (node.kind) {
         case 'dialogue':
+          textVariables(node.text, node, true);
+          if (node.speaker) textVariables(node.speaker, node, false);
           if (node.speaker && !names.has(node.speaker)) report(node, 'S004', `미선언 화자: ${node.speaker}`);
           if (node.expression && options.expressions && !options.expressions.has(node.expression.trim().toLocaleLowerCase('en-US'))) report(node, 'S007', `모르는 표정: ${node.expression}`);
           break;
@@ -100,6 +108,8 @@ export function lintStories(stories: readonly Story[], options: LintOptions = {}
           maps = new Set([...walk(node.then, maps, trackReachability), ...walk(node.else, maps, trackReachability)]); break;
         }
         case 'choice': {
+          textVariables(node.prompt, node, false);
+          for (const option of node.options) textVariables(option.label, option, false);
           if (node.options.length > 6) report(node, 'S008', '선택지는 최대 6개입니다');
           maps = new Set(node.options.flatMap(option => [...walk(option.statements, maps, trackReachability)])); break;
         }

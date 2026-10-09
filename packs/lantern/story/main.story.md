@@ -114,7 +114,7 @@ x......................#
 @film walkTo elder_spot
 @event elder at elder_spot trigger=action character=elder
   촌장(의심): 오래 비워 둔 등대를 다시 켜겠다고? 누가 불을 지킬지 생각해 보았나?
-  소라(결의): 우선 제가 불을 밝히고, 그다음 약속을 정하고 싶어요.
+  소라(결의): 우선 제가 불을 밝히고, 그다음 약속을 정하고 싶어요. 지금 나눈 신뢰는 {var:trust}이에요.
   ? 열쇠를 받으며 뭐라고 약속할까?
     *> 이웃들과 함께 지킬 방법을 찾는다
       @set met_elder

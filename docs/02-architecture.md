@@ -425,7 +425,7 @@ interface PackSource {
 | `wait:<n>` | n틱 대기 |
 
 텍스트 규칙
-- `\n`은 강제 줄바꿈이다. 그 외 제어문자, `\v[...]`, `{var}` 치환은 **MVP 밖이다. 구현하지 말 것.**
+- `\n`은 강제 줄바꿈이다. G1의 `{var:이름}`·`{plugin:x_이름}`·`{wait:틱}`·`{color:이름}`/`{color}`·`{speed:배율}`·`{{`/`}}`는 06 §4를 따른다. `\v[...]` 등 다른 문법은 구현하지 않는다. 본문은 모든 문법을, 화자와 choice prompt/label은 치환·이스케이프만 허용한다.
 - `text`와 `label`은 비어 있으면 안 된다.
 
 ---
@@ -593,6 +593,12 @@ export interface EngineApi {
     register<S extends TSchema>(name: `x_${string}`, def: {
       args: S;
       test(args: Static<S>, state: ReadonlyGameState): boolean;
+    }): void;
+  };
+  text: {
+    register<S extends TSchema>(name: `x_${string}`, def: {
+      args: S;
+      format(args: Static<S>, state: ReadonlyGameState): string; // 순수 함수, 대기 불가
     }): void;
   };
   hooks: {

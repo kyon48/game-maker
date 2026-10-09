@@ -45,7 +45,7 @@ it('walkTo reports a stuck movement with the film step and map in its error', ()
   expect(() => driver.next(v, () => true)).toThrow(/step 0.*map map.*timed out/);
 });
 it('auto waits for fully shown text plus the configured reading duration, page by page', () => {
-  const v = view(); v.message = { text: '한글', speaker: '화자', lines: [''], page: 0, pageCount: 1, fullyShown: false };
+  const v = view(); v.message = { text: '한글', plainText: '한글', speaker: '화자', lines: [''], segments: [[]], page: 0, pageCount: 1, fullyShown: false };
   const driver = new FilmDriver({ name: 'reading', steps: [{ advanceText: 'auto' }] });
   for (let i = 0; i < 3; i++) expect(driver.next(v, () => true)!.pressed.size).toBe(0);
   v.message = { ...v.message, lines: ['한글'], fullyShown: true };
@@ -67,7 +67,7 @@ it('expect and chapter do not advance any ticks, and hidden choices are errors',
 it('observes consecutive identical messages, page changes, chosen options and map changes', () => {
   const v = view(), observer = new TimelineObserver();
   expect(observer.observe(v, 0)).toEqual([{ tick: 0, type: 'map', mapId: 'map' }]);
-  v.message = { text: '같은 대사', speaker: '화자', lines: ['같은 대사'], fullyShown: true, page: 0, pageCount: 2 };
+  v.message = { text: '같은 대사', plainText: '같은 대사', speaker: '화자', lines: ['같은 대사'], segments: [[]], fullyShown: true, page: 0, pageCount: 2 };
   expect(observer.observe(v, 1)[0]?.type).toBe('text-start');
   v.message = { ...v.message, page: 1, fullyShown: false };
   expect(observer.observe(v, 2, { held: new Set(), pressed: new Set(['ok']) })).toEqual([]);
@@ -95,7 +95,7 @@ it.each([
   expect(result.diagnostics.some(d => d.code === code && d.file === 'films/invalid.film.json' && d.pointer.startsWith(pointer))).toBe(true);
 });
 it('generates subtitles, chapters and script, rebasing a message spanning a chapter boundary', () => {
-  const events: FramedEvent[] = [{ type: 'chapter', title: '도착', tick: 0, frame: 0 }, { type: 'text-start', id: 1, text: '안녕\n하세요', speaker: '화자', tick: 1, frame: 0 }, { type: 'chapter', title: '기록', tick: 120, frame: 60 }, { type: 'text-end', id: 1, text: '안녕\n하세요', speaker: '화자', tick: 240, frame: 119 }];
+  const events: FramedEvent[] = [{ type: 'chapter', title: '도착', tick: 0, frame: 0 }, { type: 'text-start', id: 1, text: '안녕\n하세요', plainText: '안녕\n하세요', speaker: '화자', tick: 1, frame: 0 }, { type: 'chapter', title: '기록', tick: 120, frame: 60 }, { type: 'text-end', id: 1, text: '안녕\n하세요', plainText: '안녕\n하세요', speaker: '화자', tick: 240, frame: 119 }];
   const files = artifacts(events, 30, 120, '촬영');
   expect(files.subtitles).toContain('00:00:00,000 --> 00:00:03,966'); expect(files.subtitles).toContain('화자: 안녕\n하세요');
   expect(files.chapters).toBe('00:00 도착\n00:02 기록\n'); expect(files.script).toContain('## 00:02 기록');
@@ -143,12 +143,12 @@ it('recorder advances two ticks at 30fps or one at 60fps and skip-capture never 
 });
 it('crop does not carry a message or choice that already closes on its first frame', () => {
   const events: FramedEvent[] = [
-    { type: 'text-start', id: 1, text: '이전 대사', tick: 1, frame: 0 },
+    { type: 'text-start', id: 1, text: '이전 대사', plainText: '이전 대사', tick: 1, frame: 0 },
     { type: 'choice', id: 2, phase: 'open', labels: ['이전 선택'], indices: [0], chosen: null, tick: 2, frame: 1 },
-    { type: 'text-end', id: 1, text: '이전 대사', tick: 20, frame: 10 },
+    { type: 'text-end', id: 1, text: '이전 대사', plainText: '이전 대사', tick: 20, frame: 10 },
     { type: 'choice', id: 2, phase: 'close', labels: ['이전 선택'], indices: [0], chosen: 0, tick: 20, frame: 10 },
     { type: 'chapter', title: '새 챕터', tick: 20, frame: 10 },
-    { type: 'text-start', id: 3, text: '새 대사', tick: 21, frame: 10 },
+    { type: 'text-start', id: 3, text: '새 대사', plainText: '새 대사', tick: 21, frame: 10 },
   ];
   const cropped = croppedEvents(events, 10, 20);
   expect(cropped.some(e => e.type === 'text-start' && e.id === 1)).toBe(false);

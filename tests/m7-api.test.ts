@@ -12,7 +12,7 @@ import { ESLint } from 'eslint';
 type Assert<T extends true> = T;
 export type NoInternalContext = Assert<Extract<keyof CommandContext, 'face' | 'evaluate' | 'save' | 'common' | 'transfer' | 'move' | 'call'> extends never ? true : false>;
 export type NoInternalState = Assert<Extract<keyof GameStateAccess, 'dirty' | 'clearDirty' | 'snapshot'> extends never ? true : false>;
-export type ApiKeys = Assert<keyof EngineApi extends 'engineVersion' | 'commands' | 'conditions' | 'hooks' ? true : false>;
+export type ApiKeys = Assert<keyof EngineApi extends 'engineVersion' | 'commands' | 'conditions' | 'hooks' | 'text' ? true : false>;
 const empty = { held: new Set<never>(), pressed: new Set<never>() };
 const config: GameConfig = { id: 'test', title: 'Test', version: '1.0.0', formatVersion: 1, plugins: [], labels: { continue: 'Continue', newGame: 'New' }, tileSize: 16, screen: { width: 160, height: 160 }, maps: ['a', 'b'], start: { map: 'a', x: 1, y: 1, dir: 'right' }, player: 'hero', state: { flags: { met: false }, vars: { n: 0 } } };
 const map: TileMapData = { width: 8, height: 8, tilewidth: 16, tileheight: 16, layers: [], tilesets: [], tileLookup: new Map() };

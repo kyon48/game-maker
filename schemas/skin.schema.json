@@ -64,7 +64,9 @@
       }
     },
     "colors": {
-      "additionalProperties": false,
+      "additionalProperties": {
+        "type": "string"
+      },
       "type": "object",
       "required": [
         "text",
