@@ -29,7 +29,7 @@ try {
   if (command === 'lint' && packId && !extra.length) print(await lintPack(packId));
   else if (command === 'compile' && packId && extra.every(value => ['--force', '--force-maps'].includes(value))) {
     const diagnostics = await compilePack(packId, process.cwd(), { force: extra.includes('--force'), forceMaps: extra.includes('--force-maps') });
-    if (!print(diagnostics) && !await validateCompiledPack(packId)) process.exitCode = 1;
+    if (!print(diagnostics) && !await validateCompiledPack(packId, process.cwd(), true)) process.exitCode = 1;
   } else if (command === 'film' && packId) {
     let name = 'main', force = false, valid = true;
     for (let i = 0; i < extra.length; i++) {

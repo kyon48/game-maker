@@ -2,7 +2,7 @@ import path from 'node:path';
 import { FsSource } from '../fsSource';
 import { nodePluginRuntime } from '../loadPlugins';
 import { validatePack } from '../../engine/data/validator/validate';
-import type { PackSource } from '../../engine/api';
+import { storySource } from './source';
 import type { Story, Diagnostic } from './ast';
 import { generateFilm } from './film';
 import { prepareCompilation, writePrepared, hash } from './project';
@@ -10,11 +10,7 @@ import { readStories } from './files';
 import { jsonBytes, object, StoryCompileError } from './compile';
 export async function planFilm(packId: string, root: string, files: ReadonlyMap<string, string>, stories: readonly Story[], name: string) {
   const fs = new FsSource(path.join(root, 'packs', packId));
-  const source: PackSource = {
-    readJson: async file => files.has(file) ? JSON.parse(files.get(file)!) as unknown : fs.readJson(file),
-    exists: async file => files.has(file) || await fs.exists(file),
-    listFiles: async () => [...new Set([...(await fs.listFiles()).filter(f => !/^films\/|^tests\/story_/.test(f)), ...files.keys()])],
-  };
+  const source = await storySource(fs.root, files, true);
   const plugins = await nodePluginRuntime(source, fs.root);
   const result = await validatePack(source, packId, plugins.validationOptions);
   if (!result.pack) throw new Error(result.diagnostics.filter(d => d.level === 'error').map(d => `${d.file}${d.pointer} ${d.code}: ${d.message}`).join('\n'));

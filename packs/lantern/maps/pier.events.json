@@ -45,6 +45,30 @@
       ]
     },
     {
+      "id": "sailor",
+      "x": 5,
+      "y": 11,
+      "pages": [
+        {
+          "trigger": "action",
+          "character": "sailor",
+          "through": false,
+          "commands": [
+            {
+              "cmd": "face",
+              "target": "this",
+              "dir": "player"
+            },
+            {
+              "cmd": "text",
+              "text": "밀물이 들 때까지 배를 손보고 있어요. 등대가 밝아지면 밤길도 덜 걱정되겠지요.",
+              "speaker": "뱃사공"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "elder",
       "x": 8,
       "y": 4,
@@ -138,6 +162,42 @@
               "cmd": "text",
               "text": "열쇠는 받았지? 오른쪽 문 너머 등대 중앙의 노란 불씨를 살펴보렴.",
               "speaker": "촌장"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "keeper",
+      "x": 13,
+      "y": 10,
+      "pages": [
+        {
+          "trigger": "action",
+          "character": "keeper",
+          "through": false,
+          "when": {
+            "any": [
+              {
+                "flag": "ending_public",
+                "is": true
+              },
+              {
+                "flag": "ending_kept",
+                "is": true
+              }
+            ]
+          },
+          "commands": [
+            {
+              "cmd": "face",
+              "target": "this",
+              "dir": "player"
+            },
+            {
+              "cmd": "text",
+              "text": "창에 다시 불이 보이더구나. 누가 지키든 오늘의 약속을 오래 기억해 주렴.",
+              "speaker": "옛 등대지기"
             }
           ]
         }

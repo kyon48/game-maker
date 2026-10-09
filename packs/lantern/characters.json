@@ -1,6 +1,24 @@
 {
-  "sora": { "sheet": "assets/characters/sora.png", "frameWidth": 16, "frameHeight": 24, "moveTicks": 12 },
-  "elder": { "placeholder": "#c08040", "moveTicks": 20 },
-  "lamp": { "placeholder": "#f1d06c" },
-  "sign": { "placeholder": "#94b8c6" }
+  "sora": {
+    "sheet": "assets/characters/sora.png",
+    "frameWidth": 16,
+    "frameHeight": 24,
+    "moveTicks": 12
+  },
+  "elder": {
+    "placeholder": "#c08040",
+    "moveTicks": 20
+  },
+  "lamp": {
+    "placeholder": "#f1d06c"
+  },
+  "sign": {
+    "placeholder": "#94b8c6"
+  },
+  "sailor": {
+    "placeholder": "#5c88c0"
+  },
+  "keeper": {
+    "placeholder": "#bca060"
+  }
 }

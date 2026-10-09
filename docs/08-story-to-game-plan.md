@@ -75,6 +75,8 @@ flowchart LR
 | `### 장면 제목 @ location` | 장면. 이 장면의 이벤트는 그 맵에 놓인다 |
 | `> 문장` | 나레이션(film 층). 기본은 진행을 막지 않음. `@waitNarration`으로 대기 |
 | `@event id at 앵커 [trigger=action\|auto\|touch] [once] [character=id] [wander=…]` … `@end` | 이벤트. `once`면 셀프 플래그로 1회 실행 후 두 번째 페이지(`@page`가 없으면 `trigger=none`) |
+| `@event … when=<조건>` | 기본 페이지의 등장 조건. 거짓이고 다른 페이지도 선택되지 않으면 이벤트 비활성. 후속 페이지는 자체 조건을 사용하며 once의 셀프 플래그와 결합 |
+| `@event … film=skip` | 게임 이벤트는 생성하되 촬영 순회에서 제외. 본문 플래그 변경은 lint 경고 |
 | `@page when=<조건>` | 같은 이벤트의 다음 페이지. 조건은 `flag`, `!flag`, `var>=3`, `all(...)`, `any(...)` |
 | `이름(표정): 대사` | `text`. 이름은 `@character`의 표시 이름. 표정은 key·영문·한글·핵심 별칭 모두 허용(§5). 표정 생략 가능 |
 | `: 대사` | 화자 없는 지문 |

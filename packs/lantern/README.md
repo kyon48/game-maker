@@ -44,3 +44,5 @@ game.json도 전체 파일 해시로 보호하므로 사람이 메타데이터�
 S1c 촬영 생성물: `films/main.film.json`, `films/main.narration.md`, `tests/story_main.scenario.json`도 사람이 편집하는 파일이 아니다.
 `npm run story -- build lantern`으로 원고에서 팩과 촬영 경로를 갱신·검증하고, `npm run film -- lantern main`으로 무음 영상을 녹화한다.
 기본 `*>` 경로는 함께 지키는 결말이다. 혼자 지키는 결말은 원고 선택 표시를 바꾼 메모리 변형 테스트로 전체 경로를 확인한다.
+
+S1d 예시: 선착장의 뱃사공(`film=skip`)은 수동 플레이에서만 대화하고, 옛 등대지기(`when=any(ending_public,ending_kept)`)는 결말을 본 뒤 선착장에 나타난다.

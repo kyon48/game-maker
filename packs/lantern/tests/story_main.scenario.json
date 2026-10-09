@@ -544,7 +544,7 @@
       "frames": 12
     },
     {
-      "hold": "left",
+      "hold": "down",
       "frames": 12
     },
     {
@@ -573,6 +573,31 @@
     },
     {
       "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "wait": 21
+    },
+    {
+      "hold": "ok",
+      "frames": 1
+    },
+    {
+      "wait": 251
+    },
+    {
+      "hold": "ok",
+      "frames": 1
+    },
+    {
+      "wait": 2
+    },
+    {
+      "hold": "up",
       "frames": 12
     },
     {

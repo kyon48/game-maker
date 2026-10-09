@@ -1,4 +1,4 @@
-# 스토리 파서·lint·팩 컴파일 (S1a/S1b/S1c)
+# 스토리 파서·lint·팩 컴파일 (S1a/S1b/S1c/S1d)
 
 ```sh
 npm run story -- lint <packId>
@@ -238,3 +238,48 @@ art/TTS/음성 자동 진행은 이후 단계이며 이번에는 호출하지 �
 
 테스트는 lantern 원고 하나의 메모리 변형으로 문 왕복·시작/진입 auto·fade/wait·대체 결말·첫 옵션 기본값·플래그 기대·힌트·나레이션·결정론을 확인한다.
 별도 임시 작업 디렉터리에서는 생성물 편집 감지·--force·check·compile의 촬영 파일 보존도 검증한다.
+
+## 이벤트 등장 조건과 촬영 제외 (S1d)
+
+```text
+@event elder_first at old_spot character=elder when=!met
+  촌장: 처음 보는 얼굴이구나.
+  @set met
+@end
+@event elder_later at new_spot character=elder when=met
+  촌장: 다시 만났구나.
+@end
+@event sailor at dock character=sailor film=skip
+  뱃사공: 밀물을 기다리고 있어요.
+@end
+```
+
+`when=`은 기본 페이지 조건이며 플래그·변수 비교·all/any와 조건 내부 공백을 지원한다.
+조건의 미선언 이름은 기존 S002/S003, 잘못된 문법은 S001이다.
+후속 `@page`는 자체 조건만 사용한다. 첫 등장 조건이 사라진 뒤에도 후속 페이지를 독립적으로 표시할 수 있기 때문이다.
+once와 함께 쓰면 기본 페이지는 `all(self=false, when)`, 후속 페이지는 기존 `all(self=true, page 조건)`이다.
+once 완료 후 자동 추가되는 none 페이지도 기존대로 self=true를 사용한다.
+촬영 시 현재 선택 가능한 페이지가 없으면 이벤트를 방문하거나 expect를 만들지 않는다. 명시한 @film walkTo 힌트는 여전히 실제 접근 요청이므로 비활성 이벤트를 가리키면 오류다.
+
+`film=skip`은 이벤트 본문·게임 페이지를 바꾸지 않으며, 촬영 방문·선택·그 이벤트의 플래그 expect에서 제외한다.
+본문, 분기, 선택지, 공통 호출에 set/unset이 있으면 촬영에서 실행되지 않음을 S033 경고로 알린다.
+명시한 @film walkTo 힌트도 film=skip 이벤트를 가리키면 생략한다. 배경 action NPC에 사용한다. auto/touch의 게임 트리거 자체를 비활성화하는 옵션은 아니다.
+
+이벤트 내부 @go도 문 이동과 같은 장면 경계를 사용한다.
+맵이 바뀌면 앞 이벤트의 대사 진행을 종료하고, 도착 auto가 있으면 settle을 다음 장면의 대사·선택지 처리 뒤로 미룬다.
+advanceText 실행 도중 맵이 바뀐 경우에는 그 지점까지의 hold/wait 입력으로 바꿔 재생 시 도착 대사를 앞 장면이 소비하지 않게 한다.
+도착 맵의 auto는 원고상 다음 장면의 *> 선택과 플래그 expect를 사용한다.
+힌트와 이어지는 이벤트가 같은 대상이면 연속 walkTo는 하나만 출력하며, 중간에 pause나 다른 단계가 있으면 유지한다.
+
+| 코드 | 수준 | 의미 |
+|---|---|---|
+| S033 | 경고 | film=skip 이벤트의 플래그 변경은 촬영·장면 expect에서 제외됨 |
+| S034 | 경고 | compile 후 보존된 촬영 생성물이 원고와 다름 — story film 필요 |
+
+lantern의 선착장 뱃사공은 film=skip 예시, 옛 등대지기는 두 결말 중 하나를 본 후 나타나는 when 예시다.
+
+촬영 생성 전 검증에서는 .compiled.json이 소유한 film/narration/story 시나리오만 제외한다.
+메모리 컴파일의 보존 파일에도 같은 기준을 적용한다. 사람이 쓴 소유권 없는 film/시나리오는 이름이나 폴더가 같아도 제외하지 않는다.
+compile 단독 실행은 기존 촬영 파일을 보존하고 재생성 결과와 다르면 S034 `story film 필요` 경고를 낸다.
+`story film`/`story build`로 원고에서 다시 생성하면 새 film·시나리오를 정상 검증·리허설한다.
+생성 파일을 손으로 지울 필요가 없으며 S025 소유권 검사는 그대로 유지한다. `story check`는 오래된 생성물을 S029 차이로 계속 실패 처리한다.

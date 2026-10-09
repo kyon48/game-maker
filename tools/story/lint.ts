@@ -134,8 +134,21 @@ export function lintStories(stories: readonly Story[], options: LintOptions = {}
     }
     return maps;
   };
+  const changesFlags = (list: readonly Statement[], seen = new Set<string>()): boolean => list.some(node => {
+    if (node.kind === 'set' || node.kind === 'unset') return true;
+    if (node.kind === 'if') return changesFlags(node.then, seen) || changesFlags(node.else, seen);
+    if (node.kind === 'choice') return node.options.some(o => changesFlags(o.statements, seen));
+    if (node.kind === 'call' && !seen.has(node.common)) {
+      const next = new Set(seen); next.add(node.common);
+      return changesFlags(common.get(node.common)?.statements ?? [], next);
+    }
+    return false;
+  });
   for (const scene of scenes) for (const node of scene.items) {
-    if (node.kind === 'event') for (const page of node.pages) { if (page.condition) condition(page.condition, page); walk(page.statements, new Set([scene.location])); }
+    if (node.kind === 'event') {
+      if (node.film === 'skip' && node.pages.some(p => changesFlags(p.statements))) report(node, 'S033', 'film=skip 이벤트의 플래그 변경은 촬영 경로와 장면 expect에 포함되지 않습니다', 'warning');
+      for (const page of node.pages) { if (page.condition) condition(page.condition, page); walk(page.statements, new Set([scene.location])); }
+    }
     else walk([node], new Set([scene.location]));
   }
   // Uncalled declarations must still have valid references; no entry map is assumed.
