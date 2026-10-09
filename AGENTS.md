@@ -9,17 +9,18 @@
 | `docs/02-architecture.md` | **엔진 명세(정본).** 엔진 동작은 이 문서가 기준이다 |
 | `docs/04-video-pipeline.md` | 영상 파이프라인 V1~V4(녹화·TTS·비주얼노벨 표현·콘텐츠) |
 | `docs/06-game-features.md` | 게임 요소 G0~G5(배회 NPC·텍스트 치환·씬·아이템·전투·사운드) |
+| `docs/08-story-to-game-plan.md` | 스토리 → 게임 → 영상 자동화(S 트랙)와 **현재 진행 순서**. `.story.md` 문법(§2.3) |
 | `docs/07-narration-style.md` | 나레이션 작법. 나레이션은 게임 대화창이 아니라 촬영 대본(film) 층에 둔다 |
 | `docs/05-mascot-bible.md` | 아트 기준(구현과 무관) |
 | `docs/decisions.md` | 구현 중 결정 기록 |
 
-문서끼리 충돌하면 02 → 04/06 → 07 순으로 우선한다. 배경 자료(01, 03, archive)는 읽기만 한다.
+문서끼리 충돌하면 02 → 04/06/08 → 07 순으로 우선한다. 배경 자료(01, 03, archive)는 읽기만 한다.
 
 ## 진행 순서
 
-M1~M8(엔진 MVP)과 V1(녹화)은 완료됐다. 이후 순서:
+M1~M8(엔진 MVP), V1(녹화), G0, S1a는 완료됐다. 이후 순서(08 §5):
 
-`G0 → G1 → V2 → G3 → G2 → V3 + G5 → G4 → V4`
+`S1b → S1c → G1 → V2 → S2 → V3a → S3 → [첫 영상] → G3 → G2 → V3b + G5 → G4 → V4`
 
 - 프롬프트 하나에 단계 하나만 진행한다.
 - 브랜치는 **main에서 새로 만든 `feature/<단계>`**(예: `feature/g0`). 끝나면 그 브랜치에 커밋하고 `git branch --show-current` 결과와 함께 요약한다. 푸시하지 않는다.
