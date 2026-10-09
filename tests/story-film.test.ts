@@ -183,3 +183,67 @@ it('tracks film/narration/scenario ownership, detects edits and check difference
     expect(await compilePack('lantern', root, { check: true })).toContainEqual(expect.objectContaining({ code: 'S029', file: 'packs/lantern/films/main.narration.md' }));
   } finally { await rm(root, { recursive: true, force: true }); }
 });
+
+import { spawnSync } from 'node:child_process';
+import { createRequire } from 'node:module';
+async function temporaryStoryPack() {
+  const root = await mkdtemp(path.join(tmpdir(), 'story-review-')), folder = path.join(root, 'packs/lantern');
+  await mkdir(path.join(folder, 'story'), { recursive: true });
+  for (const file of ['game.json', 'characters.json', 'skin.json', 'CREDITS.md']) await writeFile(path.join(folder, file), await readFile(`packs/lantern/${file}`));
+  await symlink(path.resolve('packs/lantern/assets'), path.join(folder, 'assets'));
+  await writeFile(path.join(folder, 'story/main.story.md'), baseline);
+  await writeFile(path.join(folder, 'story/tiles.json'), JSON.stringify(tiles));
+  return { root, folder };
+}
+function storyCli(root: string, ...args: string[]) {
+  return spawnSync(process.execPath, ['--import', createRequire(import.meta.url).resolve('tsx'), path.resolve('tools/story/index.ts'), ...args], { cwd: root, encoding: 'utf8' });
+}
+it('can regenerate owned films after deleting a declared/expected flag, with compile warning and check failure', async () => {
+  const { root, folder } = await temporaryStoryPack();
+  const original = baseline.replace('@flag met_elder', '@flag obsolete\n@flag met_elder').replace('      @set met_elder', '      @set obsolete\n      @set met_elder');
+  const changed = original.replace('@flag obsolete\n', '').replace('      @set obsolete\n', '');
+  try {
+    await writeFile(path.join(folder, 'story/main.story.md'), original);
+    expect(storyCli(root, 'build', 'lantern').status).toBe(0);
+    expect(await readFile(path.join(folder, 'films/main.film.json'), 'utf8')).toContain('obsolete');
+    await writeFile(path.join(folder, 'story/main.story.md'), changed);
+    const compile = storyCli(root, 'compile', 'lantern');
+    expect(compile.status, compile.stdout + compile.stderr).toBe(0);
+    expect(compile.stdout).toContain('story film 필요');
+    expect(storyCli(root, 'check', 'lantern').status).toBe(1);
+    expect(storyCli(root, 'film', 'lantern').status).toBe(0);
+    expect(await readFile(path.join(folder, 'films/main.film.json'), 'utf8')).not.toContain('obsolete');
+    await writeFile(path.join(folder, 'story/main.story.md'), original);
+    expect(storyCli(root, 'build', 'lantern').status).toBe(0);
+    await writeFile(path.join(folder, 'story/main.story.md'), changed);
+    const build = storyCli(root, 'build', 'lantern');
+    expect(build.status, build.stdout + build.stderr).toBe(0);
+    expect(await readFile(path.join(folder, 'films/main.film.json'), 'utf8')).not.toContain('obsolete');
+    expect(await readFile(path.join(folder, 'tests/story_main.scenario.json'), 'utf8')).not.toContain('obsolete');
+    await writeFile(path.join(folder, 'story/main.story.md'), original);
+    expect(storyCli(root, 'build', 'lantern').status).toBe(0);
+    await writeFile(path.join(folder, 'story/main.story.md'), changed);
+    const directFilm = storyCli(root, 'film', 'lantern');
+    expect(directFilm.status, directFilm.stdout + directFilm.stderr).toBe(0);
+    expect(await readFile(path.join(folder, 'films/main.film.json'), 'utf8')).not.toContain('obsolete');
+  } finally { await rm(root, { recursive: true, force: true }); }
+}, 15000);
+it('still validates unowned films and story-named scenarios before regenerating', async () => {
+  const { root, folder } = await temporaryStoryPack();
+  try {
+    expect(storyCli(root, 'build', 'lantern').status).toBe(0);
+    await writeFile(path.join(folder, 'films/handwritten.film.json'), JSON.stringify({ name: 'handwritten', steps: [{ expect: { flag: 'undeclared', is: true } }] }));
+    for (const command of ['compile', 'film', 'build']) {
+      const result = storyCli(root, command, 'lantern');
+      expect(result.status).toBe(1);
+      expect(result.stdout + result.stderr).toContain('V3');
+      expect(result.stdout + result.stderr).toContain('handwritten.film.json');
+    }
+    await rm(path.join(folder, 'films/handwritten.film.json'));
+    await writeFile(path.join(folder, 'tests/story_handwritten.scenario.json'), JSON.stringify({ name: 'handwritten', steps: [{ expect: { flag: 'undeclared', is: true } }] }));
+    const result = storyCli(root, 'film', 'lantern');
+    expect(result.status).toBe(1);
+    expect(result.stdout + result.stderr).toContain('handwritten');
+    expect(result.stdout + result.stderr).toContain('Undeclared flag');
+  } finally { await rm(root, { recursive: true, force: true }); }
+}, 15000);
