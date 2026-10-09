@@ -1,0 +1,651 @@
+{
+  "name": "story_main",
+  "steps": [
+    {
+      "wait": 79
+    },
+    {
+      "hold": "ok",
+      "frames": 1
+    },
+    {
+      "wait": 198
+    },
+    {
+      "hold": "ok",
+      "frames": 1
+    },
+    {
+      "wait": 286
+    },
+    {
+      "hold": "ok",
+      "frames": 1
+    },
+    {
+      "wait": 2
+    },
+    {
+      "hold": "up",
+      "frames": 12
+    },
+    {
+      "hold": "up",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "wait": 21
+    },
+    {
+      "hold": "ok",
+      "frames": 1
+    },
+    {
+      "wait": 240
+    },
+    {
+      "hold": "ok",
+      "frames": 1
+    },
+    {
+      "wait": 192
+    },
+    {
+      "hold": "ok",
+      "frames": 1
+    },
+    {
+      "wait": 25
+    },
+    {
+      "hold": "ok",
+      "frames": 1
+    },
+    {
+      "wait": 151
+    },
+    {
+      "hold": "ok",
+      "frames": 1
+    },
+    {
+      "wait": 2
+    },
+    {
+      "expect": {
+        "flag": "met_elder",
+        "is": true
+      }
+    },
+    {
+      "hold": "up",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "down",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "wait": 32
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "down",
+      "frames": 12
+    },
+    {
+      "hold": "down",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "wait": 21
+    },
+    {
+      "hold": "ok",
+      "frames": 1
+    },
+    {
+      "wait": 229
+    },
+    {
+      "hold": "ok",
+      "frames": 1
+    },
+    {
+      "wait": 250
+    },
+    {
+      "hold": "ok",
+      "frames": 1
+    },
+    {
+      "wait": 2
+    },
+    {
+      "expect": {
+        "flag": "lamp_lit",
+        "is": true
+      }
+    },
+    {
+      "hold": "down",
+      "frames": 12
+    },
+    {
+      "hold": "down",
+      "frames": 12
+    },
+    {
+      "hold": "down",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "wait": 32
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "up",
+      "frames": 12
+    },
+    {
+      "hold": "up",
+      "frames": 12
+    },
+    {
+      "hold": "up",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "hold": "right",
+      "frames": 12
+    },
+    {
+      "wait": 21
+    },
+    {
+      "hold": "ok",
+      "frames": 1
+    },
+    {
+      "wait": 188
+    },
+    {
+      "hold": "ok",
+      "frames": 1
+    },
+    {
+      "wait": 198
+    },
+    {
+      "hold": "ok",
+      "frames": 1
+    },
+    {
+      "wait": 25
+    },
+    {
+      "hold": "ok",
+      "frames": 1
+    },
+    {
+      "wait": 192
+    },
+    {
+      "hold": "ok",
+      "frames": 1
+    },
+    {
+      "wait": 166
+    },
+    {
+      "hold": "ok",
+      "frames": 1
+    },
+    {
+      "wait": 239
+    },
+    {
+      "hold": "ok",
+      "frames": 1
+    },
+    {
+      "wait": 2
+    },
+    {
+      "expect": {
+        "flag": "ending_public",
+        "is": true
+      }
+    },
+    {
+      "expect": {
+        "flag": "ending_kept",
+        "is": false
+      }
+    },
+    {
+      "hold": "down",
+      "frames": 12
+    },
+    {
+      "hold": "down",
+      "frames": 12
+    },
+    {
+      "hold": "down",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "wait": 32
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "up",
+      "frames": 12
+    },
+    {
+      "hold": "up",
+      "frames": 12
+    },
+    {
+      "hold": "up",
+      "frames": 12
+    },
+    {
+      "hold": "up",
+      "frames": 12
+    },
+    {
+      "hold": "up",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "wait": 32
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "down",
+      "frames": 12
+    },
+    {
+      "hold": "down",
+      "frames": 12
+    },
+    {
+      "hold": "down",
+      "frames": 12
+    },
+    {
+      "hold": "down",
+      "frames": 12
+    },
+    {
+      "hold": "down",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "hold": "left",
+      "frames": 12
+    },
+    {
+      "wait": 21
+    },
+    {
+      "hold": "ok",
+      "frames": 1
+    },
+    {
+      "wait": 246
+    },
+    {
+      "hold": "ok",
+      "frames": 1
+    },
+    {
+      "wait": 198
+    },
+    {
+      "hold": "ok",
+      "frames": 1
+    },
+    {
+      "wait": 2
+    },
+    {
+      "expect": {
+        "flag": "met_elder",
+        "is": true
+      }
+    },
+    {
+      "expect": {
+        "flag": "lamp_lit",
+        "is": true
+      }
+    },
+    {
+      "expect": {
+        "flag": "ending_public",
+        "is": true
+      }
+    },
+    {
+      "expect": {
+        "flag": "ending_kept",
+        "is": false
+      }
+    }
+  ]
+}

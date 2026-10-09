@@ -40,3 +40,7 @@ game.json도 전체 파일 해시로 보호하므로 사람이 메타데이터�
 표정은 원고에 남지만 엔진 대사 필드에는 넣지 않는다(V3a 전). 컴파일 경고는 팩당 한 번이다.
 나레이션과 촬영 힌트는 팩에서 생략한다. film·scenario 자동 생성은 S1c에서 수행한다.
 엔진에 결말 씬이 없으므로 결말은 대사와 두 플래그로 표현한다. 전용 결과 화면은 G3 범위다.
+
+S1c 촬영 생성물: `films/main.film.json`, `films/main.narration.md`, `tests/story_main.scenario.json`도 사람이 편집하는 파일이 아니다.
+`npm run story -- build lantern`으로 원고에서 팩과 촬영 경로를 갱신·검증하고, `npm run film -- lantern main`으로 무음 영상을 녹화한다.
+기본 `*>` 경로는 함께 지키는 결말이다. 혼자 지키는 결말은 원고 선택 표시를 바꾼 메모리 변형 테스트로 전체 경로를 확인한다.

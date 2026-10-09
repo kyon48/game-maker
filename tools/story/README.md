@@ -1,11 +1,11 @@
-# 스토리 파서·lint·팩 컴파일 (S1a/S1b)
+# 스토리 파서·lint·팩 컴파일 (S1a/S1b/S1c)
 
 ```sh
 npm run story -- lint <packId>
 ```
 
 현재 작업 디렉터리의 `packs/<packId>/story/*.story.md`를 파일명 순서로 읽는다.
-파서와 lint는 팩이나 생성물을 쓰지 않는다. compile/check는 아래에 설명하며, film·art·build는 다음 단계다.
+파서와 lint는 팩이나 생성물을 쓰지 않는다. compile/check는 아래에 설명하며, film/build는 마지막 절에 설명하며 art는 S3 단계다.
 오류가 있으면 종료 코드 1, 경고만 있거나 진단이 없으면 0이다.
 `npm run check`는 story check --all을 포함한다. 파서·CLI·컴파일 단위 테스트도 check에 포함된다.
 
@@ -199,3 +199,42 @@ check는 쓰기/삭제 없이 lint·메모리 컴파일과 일반 생성 파일�
 
 V1~V12는 엔진의 기존 validate 진단을 그대로 출력한다.
 검증기 오류를 S 코드로 바꾸거나 lint에 임의의 엔진 커맨드 검증을 추가하지 않는다.
+
+## 촬영 대본·시나리오 생성 (S1c)
+
+```sh
+npm run story -- film lantern
+npm run story -- film lantern --name main
+npm run story -- film lantern --force
+npm run story -- build lantern
+npm run film -- lantern main
+```
+
+film은 lint·팩 메모리 컴파일·검증 후 장면 순서와 `*>`(없으면 첫 옵션)를 따라 실제 헤드리스 게임을 실행한다.
+`films/<name>.film.json`, `films/<name>.narration.md`, `tests/story_<name>.scenario.json`을 생성하고 scenarios → films를 실행한다.
+이 파일도 .compiled.json의 해시 보호 대상이며 `story check --all`은 리허설로 재생성한 바이트와 비교한다.
+compile만 실행하면 기존 촬영 생성물은 유지한다. 원고를 바꾼 뒤 film 또는 build를 실행해야 check가 통과한다.
+--force는 편집/삭제한 생성물을 덮어쓴다. --name은 파일 이름만 지정하며 별도 선택 경로 옵션은 없다.
+
+build는 lint → compile → film → validate → scenarios → films 순서로 진행하고 실패한 단계에서 종료 코드 1로 중단한다.
+art/TTS/음성 자동 진행은 이후 단계이며 이번에는 호출하지 않는다. 영상은 기존 `npm run film`으로 별도로 녹화한다.
+
+- 장마다 chapter, action/touch 이벤트에는 walkTo·pause 0.35·확인/진입 입력을 넣는다. auto는 자동 시작하므로 확인 입력과 접근 이동을 생략한다.
+- 문 연결 그래프를 선언 순서로 너비 우선 탐색한다. 각 문까지 walkTo한 뒤 현재 인접 위치에서 문을 향해 walk 한 칸·settle을 넣는다.
+- 도착 맵에서 auto 대화가 시작되면 해당 장면을 진행한 뒤 settle한다. 열린 메시지를 settle로 기다리지 않는다.
+- 메시지 준비 대기 단계가 현재 film 형식에 없어, 실제 리허설에서 메시지가 열릴 때까지 측정한 틱을 wait로 넣는다. 시작 auto·fade·wait·이동·공통 이벤트에도 같은 방식이다. 임의의 고정 pause로 준비 시간을 추정하지 않는다.
+- advanceText auto·choose dwell 0.4로 대사를 진행하고, 선택한 분기의 set/unset 마지막 값을 장면 끝과 최종 시나리오에서 expect한다. 공통 이벤트의 선택 경로도 포함한다.
+- 시나리오는 동일 리허설 입력의 hold/wait 압축 기록이다. 별도의 이동 경로·대사 타이밍 추정을 하지 않는다.
+- 장면의 @film pause/walkTo는 그 위치에서 적용한다. 이벤트/공통 이벤트 안의 힌트는 선택 경로에서 모아 action/touch 직전, auto 완료 직후 적용한다. 연속 대사 사이 배치가 필요하면 장면 수준으로 옮긴다.
+- 나레이션은 선택 경로의 `>` 줄을 장·장면 제목과 함께 Markdown으로 추출하며 게임/film 재생 커맨드에는 넣지 않는다.
+- @cmd 내부의 선택지/분기 상태 변경은 경로 분석 대상이 아니다. 선택은 story 문법으로 작성한다. 실제 실행과 예상 선택지가 다르면 오류다.
+- 동일 입력·에셋·엔진이면 두 번 생성한 바이트가 같다. 생성 시각·절대 경로·난수는 출력하지 않는다. 측정 대기는 콘텐츠/에셋/엔진을 변경하면 다시 생성해야 한다.
+
+| 코드 | 수준 | 의미 |
+|---|---|---|
+| S030 | 오류 | 장소 간 문 경로 없음 또는 touch 대상에 인접하지 않음 |
+| S031 | 오류 | 촬영 준비/검증 오류, 원고 선택지와 실행 결과 불일치, 호출 깊이 초과 |
+| S032 | 오류 | 실행/메시지 준비 시간 초과 또는 입력 기록 표현 불가 |
+
+테스트는 lantern 원고 하나의 메모리 변형으로 문 왕복·시작/진입 auto·fade/wait·대체 결말·첫 옵션 기본값·플래그 기대·힌트·나레이션·결정론을 확인한다.
+별도 임시 작업 디렉터리에서는 생성물 편집 감지·--force·check·compile의 촬영 파일 보존도 검증한다.

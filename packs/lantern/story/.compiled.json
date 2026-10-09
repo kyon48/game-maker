@@ -2,10 +2,13 @@
   "version": 1,
   "files": {
     "common-events.json": "73fdd6d37947fee6c6ea5dc22161f51992bc142ad3303837baf1e73945f78904",
+    "films/main.film.json": "b40af20a9925864d94fe50abd1c1f72830eb06701a5b03931d10fdb3b75bd5bf",
+    "films/main.narration.md": "c693a208973a2ee06d0500eaab5483280cea810e83c22cd066ac606b1ab30dfa",
     "game.json": "f35842b2d285ce9cb4d6a34cbddd68382ba3db5369de245e832b61a589581b82",
     "maps/garden.events.json": "3d3ec88964f7db8b32a773ae8161d4d7c40f57b467fd607b32d3b40472588013",
     "maps/pier.events.json": "57031aac9938d83c2c2264df8e3d630ac6efbdfea8cb62c6e8b9e3bab38fcd60",
-    "maps/tower.events.json": "21cc2f67d74c5ba6542bdf684527803d1c4a898c7417adcbf4b74d1313176ffb"
+    "maps/tower.events.json": "21cc2f67d74c5ba6542bdf684527803d1c4a898c7417adcbf4b74d1313176ffb",
+    "tests/story_main.scenario.json": "07781562584ad68af7ca66da9c7805203cc9a3ad6505cbeeb64a32df6c380868"
   },
   "maps": {
     "maps/garden.tmj": "7e9f081a9f08a2cc4739d19190cce48ea0d134a539b1e184088f9d87577b5bac",
