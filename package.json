@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "story": "node --import tsx tools/story/index.ts",
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.sim.json",
     "lint": "eslint .",
     "test": "vitest run",
