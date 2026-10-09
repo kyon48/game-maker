@@ -1,0 +1,166 @@
+{
+  "events": [
+    {
+      "id": "conclusion",
+      "x": 9,
+      "y": 6,
+      "pages": [
+        {
+          "trigger": "action",
+          "character": "sign",
+          "through": false,
+          "commands": [
+            {
+              "cmd": "face",
+              "target": "this",
+              "dir": "player"
+            },
+            {
+              "cmd": "if",
+              "cond": {
+                "flag": "lamp_lit",
+                "is": true
+              },
+              "then": [
+                {
+                  "cmd": "text",
+                  "text": "불을 다시 켰어요. 이제 누구와 이 약속을 나눌까요?",
+                  "speaker": "소라"
+                },
+                {
+                  "cmd": "if",
+                  "cond": {
+                    "var": "trust",
+                    "op": ">=",
+                    "value": 1
+                  },
+                  "then": [
+                    {
+                      "cmd": "text",
+                      "text": "촌장이 나눠 준 열쇠에는 여러 사람의 손때가 남아 있다."
+                    }
+                  ],
+                  "else": [
+                    {
+                      "cmd": "text",
+                      "text": "열쇠를 꼭 쥐니 오늘 밤의 책임이 손바닥에 남았다."
+                    }
+                  ]
+                },
+                {
+                  "cmd": "choice",
+                  "prompt": "앞으로 등대를 어떻게 지킬까?",
+                  "options": [
+                    {
+                      "label": "마을 사람들과 함께 지킨다",
+                      "commands": [
+                        {
+                          "cmd": "set_flag",
+                          "flag": "ending_public",
+                          "value": true
+                        },
+                        {
+                          "cmd": "set_flag",
+                          "flag": "ending_kept",
+                          "value": false
+                        },
+                        {
+                          "cmd": "call",
+                          "common": "public_ending"
+                        }
+                      ]
+                    },
+                    {
+                      "label": "당분간 소라가 남아 지킨다",
+                      "commands": [
+                        {
+                          "cmd": "set_flag",
+                          "flag": "ending_kept",
+                          "value": true
+                        },
+                        {
+                          "cmd": "set_flag",
+                          "flag": "ending_public",
+                          "value": false
+                        },
+                        {
+                          "cmd": "call",
+                          "common": "kept_ending"
+                        }
+                      ]
+                    }
+                  ],
+                  "cancel": null
+                }
+              ],
+              "else": [
+                {
+                  "cmd": "text",
+                  "text": "등대는 아직 어둡다. 먼저 중앙의 불씨를 밝혀야 한다."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "trigger": "action",
+          "character": "sign",
+          "through": false,
+          "when": {
+            "flag": "ending_public",
+            "is": true
+          },
+          "commands": [
+            {
+              "cmd": "face",
+              "target": "this",
+              "dir": "player"
+            },
+            {
+              "cmd": "text",
+              "text": "함께 켜는 불 — 여러 사람의 약속이 등대를 지킨다."
+            }
+          ]
+        },
+        {
+          "trigger": "action",
+          "character": "sign",
+          "through": false,
+          "when": {
+            "flag": "ending_kept",
+            "is": true
+          },
+          "commands": [
+            {
+              "cmd": "face",
+              "target": "this",
+              "dir": "player"
+            },
+            {
+              "cmd": "text",
+              "text": "오래 지키는 불 — 소라의 첫 약속이 등대를 지킨다."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "entry",
+      "x": 0,
+      "y": 9,
+      "pages": [
+        {
+          "trigger": "touch",
+          "through": true,
+          "commands": [
+            {
+              "cmd": "transfer",
+              "map": "tower",
+              "marker": "to_garden"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,13 +1,13 @@
-# 스토리 파서와 lint (S1a)
+# 스토리 파서·lint·팩 컴파일 (S1a/S1b)
 
 ```sh
 npm run story -- lint <packId>
 ```
 
 현재 작업 디렉터리의 `packs/<packId>/story/*.story.md`를 파일명 순서로 읽는다.
-파서와 lint는 팩이나 생성물을 쓰지 않는다. `compile`, `film`, `art`, `build`는 다음 단계다.
+파서와 lint는 팩이나 생성물을 쓰지 않는다. compile/check는 아래에 설명하며, film·art·build는 다음 단계다.
 오류가 있으면 종료 코드 1, 경고만 있거나 진단이 없으면 0이다.
-`check`에 팩의 story lint를 연결하는 것은 S1b에서 한다. 파서·CLI 단위 테스트는 현재 `check`에 포함된다.
+`npm run check`는 story check --all을 포함한다. 파서·CLI·컴파일 단위 테스트도 check에 포함된다.
 
 출력은 `파일:줄 S번호 메시지`이며, 경고 메시지는 `경고:`로 시작한다.
 
@@ -112,3 +112,90 @@ CLI는 임시 팩에 동일한 기준 파일을 써서 종료 코드, 상대 경
 ```sh
 npm test -- --run tests/story.test.ts tests/story-cli.test.ts
 ```
+
+## 팩 컴파일와 생성물 확인
+
+```sh
+npm run story -- compile <packId>
+npm run story -- compile <packId> --force
+npm run story -- compile <packId> --force-maps
+npm run story -- check <packId>
+npm run story -- check --all
+```
+
+compile은 기존 lint를 통과한 뒤 모든 변환·앵커·소유권 검사를 메모리에서 마친다.
+오류가 있으면 생성 파일을 쓰지 않는다. 생성 후에는 기존 validatePack/플러그인 로더를 실행하고 기존 validate CLI와 같은 진단·종료 코드로 보고한다.
+엔진 validate 오류가 있으면 이미 쓴 생성물은 남아 있으므로 원고/입력을 고친 뒤 다시 컴파일한다.
+
+필수 수기 입력은 game.json, characters.json, skin.json, CREDITS.md, 에셋, story/tiles.json이다.
+game.json은 state/maps/start/mapNames **네 필드만** 갱신한다. 제목·플레이어·해상도·버전·labels 등은 기존 값을 보존한다.
+@pack/@player/@screen 헤더를 바꿔도 그 메타데이터를 자동 변경하지 않는다.
+시작 장소는 첫 장면(없으면 첫 장소), 시작 앵커는 그 장소의 start다. 방향은 기존 start.dir, 없으면 down이다.
+
+타일 역할표 형식:
+
+```json
+{
+  "wall": 7,
+  "floor": 2,
+  "door": 8,
+  "tileset": "assets/tilesets/colors.tsj",
+  "firstgid": 1
+}
+```
+
+GID는 양의 정수이며 tileset은 팩 내부 .tsj 경로다. firstgid 기본값은 1.
+외부 .tsj/이미지는 사람이 준비하고, 타일·에셋 참조의 최종 검증은 기존 검증기가 수행한다.
+맵에는 floor·collision·markers를 만든다. #는 wall 그림+충돌, .와 일반 앵커는 floor, 문 앵커는 door 그림이다.
+모든 선언 앵커의 정식 이름을 point marker로 기록한다. 문자 별칭으로 참조한 대상도 정식 이름으로 정규화한다.
+
+이벤트·변환 규칙:
+
+- 장소별 events.json에 그 맵의 모든 장면 이벤트를 원고 순서대로 배치한다. 좌표는 앵커에서 가져온다.
+- action+character 페이지의 첫 커맨드는 face this → player다. 속성은 후속 page에도 이어진다.
+- once는 예약 셀프 플래그 story_once를 사용한다. 첫 페이지는 self=false 조건, face 다음/본문 앞에 true 설정을 넣어 stop·transfer 뒤에도 재실행되지 않는다.
+- 명시한 후속 @page는 self=true와 원고 조건의 all이다. 조건이 모두 거짓이면 이벤트는 비활성이다. @page가 없으면 self=true의 trigger=none 페이지를 덧붙인다.
+- 그래픽 없는 이벤트와 touch 이벤트는 through=true; 그래픽 있는 action/auto는 through=false다.
+- @move는 경로 완료까지 wait=true다. 비대기 이동은 @cmd로 지정할 수 있다.
+- 선택지는 원고 options 전체와 cancel=null을 만든다. *>는 팩 명령에 넣지 않으며 S1c가 촬영 선택에 사용한다.
+- @go는 정식 marker 이름의 transfer다. 문은 앵커 이름 ID의 through=true touch transfer 이벤트다. 다른 이벤트 ID와 충돌하면 오류다.
+- @common/@call과 @if/all/any/비교 조건은 기존 엔진 데이터로 변환한다. @cmd JSON은 그대로 넣고 기존 validate가 내용 검증한다.
+- 표정이 있으면 S028 경고 팩당 1회, portrait/expression 필드는 생략한다. normalizeExpression(name, aliases)는 key/en/ko/core 별칭을 key로 반환하는 순수 함수이며 이후 V3a/S3에서 사용할 수 있다.
+- 나레이션, @waitNarration, @film은 팩에서 생략한다. S1c/S2에서 film으로 연결한다.
+
+생성 목록은 game.json, common-events.json, maps/<location>.events.json, 최초/강제 생성 maps/<location>.tmj, story/.compiled.json이다.
+파일은 JSON 2칸 들여쓰기·LF·마지막 줄끝으로 쓰며 생성 시각·난수·절대 경로를 기록하지 않는다.
+
+### Tiled 손질과 소유권
+
+기존 .tmj는 **한 바이트도 덮어쓰지 않는다**. 정식 이름의 marker가 정확히 하나 있고 원고와 같은 타일 좌표인지 확인한다(좌표의 타일 내 픽셀 오프셋은 허용).
+추가 marker/레이어/시각적 손질은 기존 검증기의 맵 규칙을 만족하는 한 가능하다.
+--force는 일반 생성 파일만 덮어쓰며 앵커 불일치를 무시하지 않는다. --force-maps는 맵을 다시 만든다. 필요하면 둘을 함께 쓴다.
+
+.compiled.json은 version/files/maps로 경로·SHA-256을 기록한다.
+files는 game.json 전체·common-events.json·events.json의 해시 보호 대상이다. game의 수기 메타데이터를 고친 뒤에도 --force로 재컴파일해야 한다(수기 필드의 새 값은 보존).
+maps는 최초/재생성 당시 해시만 기록하며 손질 검사의 비교 대상은 아니다. 맵을 보존하면 기존 기록도 유지한다.
+소유권 없는 기존 생성 경로의 파일이 새 결과와 다르면 첫 컴파일도 --force가 필요하다.
+이전 스토리에서 빠진 추적 events.json은 해시 검사를 통과한 뒤 삭제한다. Tiled 맵은 삭제하지 않는다.
+손상되거나 팩 밖 경로를 담은 매니페스트는 --force로도 실행하지 않는다.
+
+check는 쓰기/삭제 없이 lint·메모리 컴파일과 일반 생성 파일·매니페스트의 바이트를 비교한다.
+맵은 내용/해시 비교에서 제외하지만 앵커 대조를 수행한다. 파일/manifest 누락·최신 원고와 차이·이전 생성 파일 잔존은 실패다.
+--all은 story 폴더가 있는 팩만 검사하며 팩 심볼릭 링크도 찾는다.
+
+### 추가 진단 코드
+
+| 코드 | 수준 | 의미 |
+|---|---|---|
+| S021 | 오류 | 컴파일 필수 입력 JSON/타일 역할표/타일 크기 오류 |
+| S022 | 오류 | 컴파일할 앵커 좌표 없음(시작 장소의 start 포함) |
+| S023 | 오류 | 기존 .tmj의 JSON/marker 누락·중복·좌표 불일치 |
+| S024 | 오류 | 시작할 장소 없음 |
+| S025 | 오류 | 추적 생성 파일 변경/삭제 또는 소유권 없는 기존 출력 |
+| S026 | 오류 | 소유권 매니페스트 형식·버전·경로·해시 오류 |
+| S027 | 오류 | 자동 문 이벤트와 원고 이벤트 ID 충돌 |
+| S028 | 경고 | V3a 전이라 표정 필드 생략(팩당 1회) |
+| S029 | 오류 | check에서 생성물/매니페스트 누락·차이·이전 출력 잔존 |
+
+V1~V12는 엔진의 기존 validate 진단을 그대로 출력한다.
+검증기 오류를 S 코드로 바꾸거나 lint에 임의의 엔진 커맨드 검증을 추가하지 않는다.

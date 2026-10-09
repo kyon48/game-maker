@@ -1,0 +1,6 @@
+{
+  "wall": 7,
+  "floor": 2,
+  "door": 8,
+  "tileset": "assets/tilesets/colors.tsj"
+}
