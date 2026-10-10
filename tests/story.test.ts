@@ -1,9 +1,11 @@
+import { parseStoryConfig } from '../tools/story/config';
 import { readFile } from 'node:fs/promises';
 import { expect, it } from 'vitest';
 import { parseStory } from '../tools/story/parser';
 import { lintStories } from '../tools/story/lint';
 import { parseCondition } from '../tools/story/conditions';
 import { expressionAliases } from '../tools/story/expressions';
+const config = parseStoryConfig(JSON.parse(await readFile('tests/fixtures/story/story.config.json', 'utf8')));
 const valid = await readFile('tests/fixtures/story/valid.story.md', 'utf8');
 const catalog = { expressions: [
   { key: 'suspicious', en: 'Suspicious', ko: '의심' }, { key: 'determined', en: 'Determined', ko: '결의' },
@@ -11,7 +13,7 @@ const catalog = { expressions: [
   { key: 'neutral', en: 'Neutral', ko: '무표정' }, { key: 'startled', en: 'Startled', ko: '깜짝' },
 ], core: { surprised: 'startled', neutral: 'neutral' } };
 const expressions = expressionAliases(catalog);
-function lint(text: string) { const { story, diagnostics } = parseStory(text, 'valid.story.md'); return [...diagnostics, ...lintStories([story], { expressions, packId: 'lantern' })]; }
+function lint(text: string) { const { story, diagnostics } = parseStory(text, 'valid.story.md'); return [...diagnostics, ...lintStories([story], { expressions, packId: 'lantern', config })]; }
 function line(text: string, fragment: string): number { return text.split('\n').findIndex(row => row.includes(fragment)) + 1; }
 it('parses the three-scene fixture, every DSL command and preserves locations on nested AST nodes', () => {
   const { story, diagnostics } = parseStory(valid, 'valid.story.md'); expect(diagnostics).toEqual([]); expect(lint(valid)).toEqual([]);
@@ -65,7 +67,7 @@ it('warns for narration over 90 code points and checks the exact boundary', () =
 it('skips expression checks without artRoot with a single warning for the whole pack', () => {
   const one = parseStory(valid.replace('(의심)', '(not_known)'), 'a.story.md').story;
   const two = parseStory('## 별도 장\n### 새 장면 @ garden\n> 다른 날', 'b.story.md').story;
-  const diagnostics = lintStories([one, two]); expect(diagnostics).toHaveLength(1); expect(diagnostics[0]).toMatchObject({ code: 'S015', level: 'warning' });
+  const diagnostics = lintStories([one, two], { config }); expect(diagnostics).toHaveLength(1); expect(diagnostics[0]).toMatchObject({ code: 'S015', level: 'warning' });
 });
 it('accepts key, English, Korean and core aliases and normalizes them to a canonical key', () => {
   expect(expressions.get('의심')).toBe('suspicious'); expect(expressions.get('soft smile')).toBe('soft_smile'); expect(expressions.get('surprised')).toBe('startled');
@@ -107,7 +109,7 @@ it('checks names inside nested conditions, common events and alternate pages', (
 });
 it('shares declarations across input files while diagnosing conflicting headers and duplicate names', () => {
   const second = parseStory('@pack different "제목"\n@character other "소라"\n@flag met_elder', 'second.story.md');
-  expect(lintStories([parseStory(valid).story, second.story], { expressions }).filter(d => d.code === 'S016')).toHaveLength(3);
+  expect(lintStories([parseStory(valid).story, second.story], { expressions, config }).filter(d => d.code === 'S016')).toHaveLength(3);
 });
 it('common transfers update the caller map for every call, not just the first', () => {
   const text = valid + '\n@common travel\n  @go garden:entry\n@end\n## 추가 장\n### 두 여행 @ pier\n@event one at start\n  @call travel\n  @film walkTo bench\n@end\n@event two at start\n  @call travel\n  @film walkTo bench\n@end\n';

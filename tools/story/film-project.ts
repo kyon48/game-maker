@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { assertNoStoryVoiceOverlap } from './rehearsal';
 import { FsSource } from '../fsSource';
 import { nodePluginRuntime } from '../loadPlugins';
 import { validatePack } from '../../engine/data/validator/validate';
@@ -38,4 +39,18 @@ export async function filmPack(packId: string, root = process.cwd(), name = 'mai
     prepared.diagnostics.push(error instanceof StoryCompileError ? error.diagnostic : { file: `packs/${packId}/story`, line: 1, code: 'S031', level: 'error', message: String(error) });
   }
   return prepared.diagnostics;
+}
+
+/** Check committed manifests through rehearsal only; never synthesize audio during check. */
+export async function checkGeneratedFilms(packId: string, root: string, files: ReadonlyMap<string, string>): Promise<Diagnostic[]> {
+  const source = await storySource(path.join(root, 'packs', packId), files);
+  const plugins = await nodePluginRuntime(source, path.join(root, 'packs', packId));
+  const result = await validatePack(source, packId, plugins.validationOptions), diagnostics: Diagnostic[] = [];
+  if (!result.pack) return result.diagnostics.filter(d => d.level === 'error').map(d => ({ file: `packs/${packId}/${d.file}`, line: 1, code: d.code, level: 'error', message: d.pointer + ': ' + d.message }));
+  const { asFilm, rehearse } = await import('../film/rehearse');
+  for (const [file, text] of files) if (/^films\/[^/]+\.film\.json$/.test(file)) {
+    try { const replay = await rehearse(result.pack, asFilm(JSON.parse(text)), plugins); assertNoStoryVoiceOverlap(replay.warnings); }
+    catch (error) { diagnostics.push({ file: `packs/${packId}/${file}`, line: 1, code: 'S037', level: 'error', message: `${String(error)}; npm run story -- build ${packId} 를 실행하세요` }); }
+  }
+  return diagnostics;
 }

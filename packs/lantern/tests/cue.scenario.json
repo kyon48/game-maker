@@ -1,0 +1,16 @@
+{
+  "name": "cue_manual_play",
+  "start": { "map": "pier", "x": 7, "y": 4, "dir": "right" },
+  "steps": [
+    { "wait": 1 },
+    { "advanceText": true },
+    { "settle": true },
+    { "press": "ok" },
+    { "advanceText": true },
+    { "choose": 0 },
+    { "advanceText": true },
+    { "settle": true },
+    { "expect": { "flag": "met_elder", "is": true } },
+    { "expect": { "var": "trust", "op": "==", "value": 1 } }
+  ]
+}

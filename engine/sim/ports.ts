@@ -9,3 +9,6 @@ export interface PackSource {
   listFiles?(): Promise<readonly string[]>;
   exists(path: string): Promise<boolean>;
 }
+
+/** Optional deterministic gate; no audio or narration data enters sim. */
+export interface FilmCuePort { enter(id: string): void; waiting(id: string): boolean; cancel(id: string): void }

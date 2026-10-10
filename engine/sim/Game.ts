@@ -46,6 +46,7 @@ export interface GameSnapshot {
   readonly choice: ChoiceSnapshot | null;
 }
 export interface GameOptions {
+  filmCues?: import('./ports').FilmCuePort;
   voices?: Voices; voiceLengths?: Readonly<Record<string, number>>; recording?: boolean;
   plugins?: PluginRuntime;
   save?: (state: PersistentState) => void; selfFlags?: Readonly<Record<string, boolean>>;
@@ -183,6 +184,7 @@ export class Game {
     const mapId = () => this.map.id;
     const scope = { mapId: this.map.id, id: event.id };
     return {
+      filmCues: this.options.recording ? this.options.filmCues : undefined,
       showMapName: () => this.showMapName(),
       save: () => {
         if (!this.options.save) throw new Error('Save port unavailable');

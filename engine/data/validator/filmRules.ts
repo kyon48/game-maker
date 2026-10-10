@@ -25,6 +25,16 @@ export async function filmRules(context: ValidationContext, basics: PackBasics, 
   if (!context.source.listFiles) return;
   const { game, common } = basics;
   const { read, report, check, options } = context;
+  const cueIds = new Set<string>();
+  const collectCues = (commands: readonly Command[]) => {
+    for (const command of commands) {
+      if (command.cmd === 'film_cue') cueIds.add(command.id as string);
+      if (command.cmd === 'if') { collectCues(command.then as Command[]); collectCues((command.else ?? []) as Command[]); }
+      if (command.cmd === 'choice') for (const option of command.options as { commands: Command[] }[]) collectCues(option.commands);
+    }
+  };
+  for (const events of checks.events.values()) for (const event of events) for (const page of event.pages) collectCues(page.commands ?? []);
+  for (const event of Object.values(common)) collectCues(event.commands);
   const point = (map: string, x: number, y: number, file: string, pointer: string) => {
     if (!game.maps.includes(map)) { report('V3', file, pointer + '/map', 'Unknown film map'); return; }
     checks.arrival(map, x, y, file, pointer);
@@ -56,6 +66,7 @@ export async function filmRules(context: ValidationContext, basics: PackBasics, 
     let possible = new Set([start.map]); const chapters = new Set<string>();
     for (const [i, step] of film.steps.entries()) {
       const p = `/steps/${i}`;
+      if ('cue' in step && step.cue && !cueIds.has(step.cue)) report('V3', file, p + '/cue', 'Unknown film cue');
       if ('narrate' in step) {
         textRules(context, basics, usage, step.narrate, true, file, p + '/narrate');
         if (basics.voices && !basics.voices.narrator) report('VOICE', file, p + '/narrate', 'Missing narrator voice');

@@ -89,6 +89,10 @@
               "speaker": "촌장"
             },
             {
+              "cmd": "film_cue",
+              "id": "story_cue_1"
+            },
+            {
               "cmd": "text",
               "text": "우선 제가 불을 밝히고, 그다음 약속을 정하고 싶어요. 지금 나눈 신뢰는 {var:trust}이에요.",
               "speaker": "소라"

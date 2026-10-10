@@ -5,13 +5,28 @@
       "chapter": "1장. 돌아오는 길"
     },
     {
-      "wait": 1
+      "waitFor": "message"
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice",
+      "count": 1
+    },
+    {
+      "advanceText": "voice",
+      "count": 1
+    },
+    {
+      "advanceText": "voice",
+      "count": 1
     },
     {
       "settle": true
+    },
+    {
+      "narrate": "소라는 오래 꺼져 있던 등대를 찾아 선착장으로 돌아왔습니다."
+    },
+    {
+      "waitNarration": true
     },
     {
       "walkTo": {
@@ -22,17 +37,33 @@
       "pause": 0.35
     },
     {
+      "waitNarration": true
+    },
+    {
       "press": "ok"
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice",
+      "count": 1
+    },
+    {
+      "narrate": "소라는 잠시 손에 쥔 열쇠를 바라보았습니다. 등대의 밤을 함께 지킬 사람을 떠올렸지요.",
+      "cue": "story_cue_1"
+    },
+    {
+      "waitFor": "message"
+    },
+    {
+      "advanceText": "voice",
+      "count": 1
     },
     {
       "choose": 0,
       "dwell": 0.4
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice",
+      "count": 1
     },
     {
       "settle": true
@@ -52,12 +83,21 @@
       }
     },
     {
+      "waitNarration": true
+    },
+    {
       "walk": [
         "right"
       ]
     },
     {
       "settle": true
+    },
+    {
+      "narrate": "불을 켜는 일은 어렵지 않았습니다. 어려운 것은 그다음 밤을 맡기는 일이었지요."
+    },
+    {
+      "waitNarration": true
     },
     {
       "walkTo": {
@@ -68,13 +108,21 @@
       "pause": 0.35
     },
     {
+      "waitNarration": true
+    },
+    {
       "press": "ok"
     },
     {
-      "wait": 36
+      "waitFor": "message"
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice",
+      "count": 1
+    },
+    {
+      "advanceText": "voice",
+      "count": 1
     },
     {
       "settle": true
@@ -89,6 +137,9 @@
       "walkTo": {
         "event": "to_garden"
       }
+    },
+    {
+      "waitNarration": true
     },
     {
       "walk": [
@@ -107,17 +158,34 @@
       "pause": 0.35
     },
     {
+      "waitNarration": true
+    },
+    {
       "press": "ok"
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice",
+      "count": 1
+    },
+    {
+      "advanceText": "voice",
+      "count": 1
     },
     {
       "choose": 0,
       "dwell": 0.4
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice",
+      "count": 1
+    },
+    {
+      "advanceText": "voice",
+      "count": 1
+    },
+    {
+      "advanceText": "voice",
+      "count": 1
     },
     {
       "settle": true
@@ -143,6 +211,9 @@
       }
     },
     {
+      "waitNarration": true
+    },
+    {
       "walk": [
         "left"
       ]
@@ -154,6 +225,9 @@
       "walkTo": {
         "event": "entry"
       }
+    },
+    {
+      "waitNarration": true
     },
     {
       "walk": [
@@ -172,10 +246,14 @@
       "pause": 0.35
     },
     {
+      "waitNarration": true
+    },
+    {
       "press": "ok"
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice",
+      "count": 1
     },
     {
       "settle": true
@@ -189,10 +267,18 @@
       "pause": 0.35
     },
     {
+      "waitNarration": true
+    },
+    {
       "press": "ok"
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice",
+      "count": 1
+    },
+    {
+      "advanceText": "voice",
+      "count": 1
     },
     {
       "settle": true

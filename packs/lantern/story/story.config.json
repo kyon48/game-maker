@@ -1,1 +1,25 @@
-{}
+{
+  "voices": {
+    "narrator": {
+      "provider": "macos-say",
+      "voice": "Yuna"
+    },
+    "sora": {
+      "provider": "macos-say",
+      "voice": "Shelley"
+    },
+    "elder": {
+      "provider": "macos-say",
+      "voice": "Grandpa"
+    },
+    "keeper": {
+      "provider": "macos-say",
+      "voice": "Reed"
+    },
+    "sailor": {
+      "provider": "macos-say",
+      "voice": "Eddy"
+    }
+  },
+  "narrator": "narrator"
+}

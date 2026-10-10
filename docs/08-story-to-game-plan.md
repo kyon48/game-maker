@@ -86,6 +86,9 @@ flowchart LR
 | `@go 맵:앵커 [dir]` `@move 대상 up,up,wait:30` `@face 대상 player` `@fade black 30` `@wait 60` `@shake` | 연출 |
 | `@common id` … `@end` / `@call id` | 공통 이벤트 |
 | `@film pause 1.5` `@film walkTo 앵커` | 촬영 전용 힌트(팩에는 안 들어감) |
+| `@waitNarration` | 장면에서는 나레이션 대기열 전체 완료 대기. 이벤트·공통 이벤트 안에서는 cue 위치까지 도달 후 완료 대기 |
+| `story.config.json: voices` | 목소리 키 → `{provider, voice, speed?}`. `@character … voice=키`를 표시 이름으로 연결해 voices.json 생성 |
+| `story.config.json: narrator` | 나레이션·화자 없는 대사에 사용할 목소리 키 |
 | `@cmd {"cmd":"show_map_name"}` | 엔진 커맨드 직접 삽입 |
 
 ### 2.4 예시: story.md 일부 → 생성물
@@ -153,12 +156,12 @@ flowchart LR
 ```json
 { "chapter": "1장. 꺼진 불빛" },
 { "narrate": "안개 낀 선착장. 소라는 …" },
-{ "walkTo": { "event": "elder" } }, { "pause": 0.35 }, { "press": "ok" },
+{ "walkTo": { "event": "elder" } }, { "pause": 0.35 }, { "waitNarration": true }, { "press": "ok" },
 { "advanceText": "voice" }, { "choose": 0, "dwell": 0.4 }, { "advanceText": "voice" }, { "settle": true },
 { "expect": { "flag": "met_elder", "is": true } }
 ```
 
-`narrate`·`advanceText: "voice"`는 V2 이후다. 그 전에는 `advanceText: "auto"`로 내고 나레이션은 `films/main.narration.md`로만 뽑는다. `*>`가 없는 선택지는 첫 번째 옵션을 고른다. 장면이 끝날 때 그 장면에서 `@set`한 플래그를 `expect`로 자동 확인한다.
+S2부터 voices가 있으면 `advanceText: "voice", count: 1`과 `narrate`를 생성한다. voices가 없거나 화자 목소리가 없으면 `advanceText: "auto", count: 1`로 진행하며, voices 없는 팩의 나레이션은 Markdown으로만 보존한다. 메시지 준비는 `waitFor: "message"`로 기다린다. 이벤트 안 나레이션은 텍스트 없는 `film_cue` 대기 지점으로 연결하며 `narrate`의 cue가 도달·음성 완료 뒤 다음 대사를 해제한다. `*>`가 없는 선택지는 첫 번째 옵션을 고른다. 장면이 끝날 때 그 장면에서 `@set`한 플래그를 `expect`로 자동 확인한다.
 
 ### 2.5 자동과 수동의 경계
 
@@ -260,7 +263,7 @@ Codex에게 story.md를 직접 쓰게 해도 된다. 어느 쪽이든 검증 명
 
 ## 6. 단계별 작업 정의
 
-각 Codex 단계는 프롬프트 하나, `feature/<단계>` 브랜치, `npm run check` 통과, 엔진 변경이 있으면 minor 버전 증가. S 단계는 `tools/story/`와 테스트만 바꾸고 `engine/`을 건드리지 않는다.
+각 Codex 단계는 프롬프트 하나, `feature/<단계>` 브랜치, `npm run check` 통과, 엔진 변경이 있으면 minor 버전 증가. S 단계는 주로 `tools/story/`와 테스트를 바꾼다. S2는 이벤트 중간 나레이션 연결에 필요한 최소 결정론적 `film_cue` 대기 장치를 엔진에 추가한다.
 
 | 단계 | 담당 | 범위 | 완료 기준 |
 |---|---|---|---|
@@ -270,7 +273,7 @@ Codex에게 story.md를 직접 쓰게 해도 된다. 어느 쪽이든 검증 명
 | **G1** 텍스트 치환 | Codex | 06 §4 그대로 | 06 §9 기준 |
 | **V2a** TTS·길이 동기화 | Codex | voices.json, `tts` 도구와 제공자 1개, 매니페스트, sim 음성 길이표·자동 진행, `advanceText: "voice"` | 대사 음성이 든 mp4. 대사 하나 고치면 그 줄만 재생성 |
 | **V2b** 나레이션·합성 | Codex | film `narrate`/`waitNarration`/`music`, 오디오 합성·덕킹·LUFS | 나레이션+대사 음성이 든 mp4, SRT에 나레이션 포함 |
-| **S2** 나레이션 연결 | Codex | `story film`이 `>` 줄을 `narrate`로, `@waitNarration`을, `advanceText: "voice"`를 내도록 | lantern 영상에 나레이션이 흐름 |
+| **S2** 나레이션 연결 **(완료)** | Codex | `story film`이 `>` 줄을 `narrate`로, `@waitNarration`을, `advanceText: "voice"`를 내도록 | lantern 영상에 나레이션이 흐름 |
 | **V3a** 얼굴 칸 | Codex | §4.3: `portraits.json` 스키마·검증, `text.portrait/expression`, MessageState 폭 반영, HD 레이어와 얼굴 그리기, 녹화 1080p 합성 캡처 | lantern 대화에 표정 얼굴 표시. `film:verify` 통과. 헤드리스 시나리오 결과 불변 |
 | **S3** 표정·에셋 연결 | Codex | `story art`: 표정 이름 정규화(key·en·ko·core), fallback 체인, 쓰인 표정만 복사, `portraits.json` 생성, 컴파일러가 `portrait/expression` 필드 출력 | lantern이 base 에셋으로 얼굴을 바꿔 가며 대화. 모르는 표정 이름은 lint 오류 |
 | **첫 영상 제작** | 사용자+GPT | 비공개 팩의 story.md 작성(§7 IP), 표정 배정, 나레이션, `story build` → `tts` → `film` | §5 마일스톤 5개 항목 |
@@ -301,5 +304,6 @@ Codex에게 story.md를 직접 쓰게 해도 된다. 어느 쪽이든 검증 명
 ## 8. 엔진 명세와의 관계
 
 - 명세 P1~P6은 그대로다. S 트랙은 `tools/story/`에만 있고 `engine/`을 import하되 반대 방향은 없다.
-- 엔진에 들어가는 변경은 V3a의 `portraits.json`·`text` 선택 필드·HD 레이어뿐이며 formatVersion·API_VERSION·saveVersion은 유지한다.
+- S2의 `film_cue`는 일반 모드에서 즉시 통과하며 녹화 모드에서 외부 포트의 해제만 기다린다. 음성·나레이션 텍스트와 길이는 sim에 넣지 않는다.
+- 그 밖에 엔진에 들어가는 변경은 V3a의 `portraits.json`·`text` 선택 필드·HD 레이어뿐이며 formatVersion·API_VERSION·saveVersion은 유지한다.
 - V3a 확정 후 `portraits.json`과 `text` 필드는 02 명세에 정식 절로 옮기고, 04 §6은 V3b 범위로 고쳐 쓴다. 06 §2의 권장 순서도 §5의 새 순서로 갱신한다.

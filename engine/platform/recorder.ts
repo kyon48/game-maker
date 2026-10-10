@@ -1,3 +1,4 @@
+import type { FilmCueGate } from '../film/cues';
 import type { GameSession } from '../sim/state/GameSession';
 import type { Game } from '../sim/Game';
 import type { Film } from '../data/schema/film';
@@ -14,8 +15,8 @@ export interface Recorder {
 declare global {
   interface Window { __recorder?: Recorder; __filmRequest?: { film: Film; fps: 30 | 60 } }
 }
-export function createRecorder(game: Game, film: Film, fps: 30 | 60, context: CanvasRenderingContext2D, render: (game: Game) => void, saveSession?: GameSession, audio?: FilmAudioOptions): Recorder {
-  const session = new FilmSession(game, film, saveSession, audio);
+export function createRecorder(game: Game, film: Film, fps: 30 | 60, context: CanvasRenderingContext2D, render: (game: Game) => void, saveSession?: GameSession, audio?: FilmAudioOptions, cues?: FilmCueGate): Recorder {
+  const session = new FilmSession(game, film, saveSession, audio, cues);
   let frames = 0, advancing = false;
   const pixels = () => {
     render(session.game);

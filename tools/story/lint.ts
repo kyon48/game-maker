@@ -1,6 +1,7 @@
+import type { StoryConfig } from './config';
 import { parseText, TextSyntaxError } from '../../engine/data/text';
 import type { Story, Diagnostic, Source, Condition, Statement, Event, Anchor, Destination } from './ast';
-export interface LintOptions { packId?: string; expressions?: ReadonlyMap<string, string> | null }
+export interface LintOptions { packId?: string; expressions?: ReadonlyMap<string, string> | null; config?: StoryConfig }
 /** Pack-wide declarations and conservative reachability, without compiling engine commands. */
 export function lintStories(stories: readonly Story[], options: LintOptions = {}): Diagnostic[] {
   const diagnostics: Diagnostic[] = [];
@@ -16,6 +17,8 @@ export function lintStories(stories: readonly Story[], options: LintOptions = {}
   };
   const characters = declarations(stories.flatMap(s => s.characters), n => n.id, '인물 ID');
   const names = declarations([...characters.values()], n => n.name, '인물 표시 이름');
+  for (const character of characters.values()) if (character.voice && !Object.hasOwn(options.config?.voices ?? {}, character.voice)) report(character, 'S035', `설정에 없는 목소리 키: ${character.voice}`);
+  if (options.config?.narrator && !Object.hasOwn(options.config.voices ?? {}, options.config.narrator)) report(stories[0]!, 'S035', `설정에 없는 narrator 목소리 키: ${options.config.narrator}`);
   const flags = declarations(stories.flatMap(s => s.flags), n => n.name, '플래그');
   const variables = declarations(stories.flatMap(s => s.variables), n => n.name, '변수');
   const locations = declarations(stories.flatMap(s => s.locations), n => n.id, '장소');
@@ -98,9 +101,13 @@ export function lintStories(stories: readonly Story[], options: LintOptions = {}
           textVariables(node.text, node, true);
           if (node.speaker) textVariables(node.speaker, node, false);
           if (node.speaker && !names.has(node.speaker)) report(node, 'S004', `미선언 화자: ${node.speaker}`);
+          const speaker = node.speaker ? names.get(node.speaker) : undefined;
+          if (speaker && !speaker.voice) report(speaker, 'S036', `대사가 있지만 voice가 없는 인물: ${speaker.name} (무음)`, 'warning');
           if (node.expression && options.expressions && !options.expressions.has(node.expression.trim().toLocaleLowerCase('en-US'))) report(node, 'S007', `모르는 표정: ${node.expression}`);
           break;
-        case 'narration': if ([...node.text].length > 90) report(node, 'S014', '나레이션이 90자를 넘습니다', 'warning'); break;
+        case 'narration':
+          if (options.config?.voices && !options.config.narrator) report(node, 'S035', '나레이션에 필요한 narrator 목소리 키가 설정되지 않았습니다');
+          textVariables(node.text, node, true); if ([...node.text].length > 90) report(node, 'S014', '나레이션이 90자를 넘습니다', 'warning'); break;
         case 'set': case 'unset': if (!flags.has(node.flag)) report(node, 'S002', `미선언 플래그: ${node.flag}`); break;
         case 'add': case 'sub': if (!variables.has(node.variable)) report(node, 'S003', `미선언 변수: ${node.variable}`); break;
         case 'if': {
