@@ -96,12 +96,12 @@ describe('story film generation (one baseline, memory mutations)', () => {
   });
   it('measures a fade/wait prefix rather than guessing a pause', async () => {
     const { film } = await generate(baseline.replace('@fade black 12', '@fade black 47').replace('@wait 12', '@wait 29'));
-    expect(film.steps.some(s => 'wait' in s && s.wait >= 88)).toBe(true);
+    expect(film.steps.some(s => 'wait' in s && typeof s.wait === 'number' && s.wait >= 88)).toBe(true);
   });
   it('waits for startup auto with a fade prefix', async () => {
     const { film } = await generate(baseline.replace('  : 등대지기의 약속', '  @fade black 17\n  @wait 23\n  @fade clear 17\n  : 등대지기의 약속'));
     const firstAdvance = film.steps.findIndex(s => 'advanceText' in s);
-    expect(film.steps.slice(0, firstAdvance).some(s => 'wait' in s && s.wait > 1)).toBe(true);
+    expect(film.steps.slice(0, firstAdvance).some(s => 'wait' in s && typeof s.wait === 'number' && s.wait > 1)).toBe(true);
   });
   it('handles an auto scene immediately after transfer without settling on its open message', async () => {
     const text = baseline.replace('trigger=action character=lamp', 'trigger=auto once character=lamp').replace('@page when=lamp_lit\n  : 심지는 고르게 타고 있다. 오른쪽 아래 금빛 문으로 나가면 마당이다.\n', '');

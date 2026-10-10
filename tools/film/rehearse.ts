@@ -1,3 +1,4 @@
+import { narrationOptions } from '../../engine/film/narration';
 import { voiceLengths } from '../../engine/data/voice';
 import { Value } from '@sinclair/typebox/value';
 import { FilmSchema } from '../../engine/data/schema/film';
@@ -24,13 +25,13 @@ export async function prepareFilm(packId: string, id: string) {
   if (!result.pack) throw new Error(result.diagnostics.map(d => `${d.code} ${d.file}${d.pointer}: ${d.message}`).join('\n'));
   return { pack: result.pack, plugins, film: asFilm(await source.readJson(`films/${id}.film.json`)) };
 }
-export async function rehearse(pack: ValidatedPack, film: Film, plugins: PluginRuntime) {
+export async function rehearse(pack: ValidatedPack, film: Film, plugins: PluginRuntime, extraction = false) {
   const start = film.start ?? pack.game.start;
   const runtime = new GameSession(pack, { plugins, voices: pack.voices, voiceLengths: voiceLengths(pack.voiceManifest), recording: film.steps.some(s => 'advanceText' in s && s.advanceText === 'voice') }, start, {
     flags: { ...pack.game.state.flags, ...film.state?.flags }, vars: { ...pack.game.state.vars, ...film.state?.vars },
   });
-  const session = new FilmSession(runtime.game, film, runtime), events: TimelineEvent[] = [];
+  const session = new FilmSession(runtime.game, film, runtime, narrationOptions(() => runtime.game, pack.voices, voiceLengths(pack.voiceManifest), extraction, plugins)), events: TimelineEvent[] = [];
   while (await session.tick()) events.push(...session.events());
   events.push(...session.events());
-  return { ticks: session.driver.ticks, events, game: runtime.game };
+  return { warnings: session.driver.audio.warnings, ticks: session.driver.ticks, events, game: runtime.game };
 }

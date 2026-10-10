@@ -14,7 +14,8 @@ interface Frame { rgba: string | null; events: FramedEvent[]; frame: number; don
 export interface RecordOptions { fps?: 30 | 60; chapter?: string; out?: string; hashes?: boolean; build?: boolean; signal?: AbortSignal }
 export async function recordFilm(packId: string, filmId: string, options: RecordOptions = {}) {
   const { pack, film, plugins } = await prepareFilm(packId, filmId);
-  await rehearse(pack, film, plugins);
+  const rehearsal = await rehearse(pack, film, plugins);
+  for (const warning of rehearsal.warnings) console.warn(warning);
   if (options.chapter && !film.steps.some(step => 'chapter' in step && step.chapter === options.chapter)) throw new Error(`Unknown chapter: ${options.chapter}`);
   const fps = options.fps ?? film.fps ?? 30, out = options.out ?? path.join('out', packId, filmId);
   if (options.build !== false) await buildPack(packId, { recording: true });
@@ -62,7 +63,7 @@ export async function recordFilm(packId: string, filmId: string, options: Record
     }
     if (count === 0) throw new Error('Film/chapter produced no frames');
     await video.finish(); video = undefined;
-    const selected = options.chapter ? croppedEvents(events, start, start + count) : events;
+    const selected = options.chapter ? croppedEvents(events, start, start + count, fps) : events;
     await dialogueAudio(packId, out, selected, fps, count, options.signal, options.chapter ? start : 0);
     const files = artifacts(selected, fps, count, film.name);
     await Promise.all([

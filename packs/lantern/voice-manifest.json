@@ -9,6 +9,11 @@
     "provider": "macos-say",
     "voice": "Grandpa"
   },
+  "1659dd90471e7074be026f44ac6194f0aee9fc572aa9d0f489d1c8587cc37d55": {
+    "frames": 130,
+    "provider": "macos-say",
+    "voice": "Yuna"
+  },
   "308d1ce78c08af7defbf7cfa1a26f9190501c3b2f66a0b69c2f626c14ca8ce07": {
     "frames": 153,
     "provider": "macos-say",
@@ -66,6 +71,11 @@
   },
   "cf4ba8b8d4d7a0702c05e6554f52a002de360ea741b7858e4619c783a9784a26": {
     "frames": 122,
+    "provider": "macos-say",
+    "voice": "Yuna"
+  },
+  "d8cd2595745db486e68ededef60b9c1f7c95790125ace56a29055bc40c66f6bb": {
+    "frames": 157,
     "provider": "macos-say",
     "voice": "Yuna"
   },

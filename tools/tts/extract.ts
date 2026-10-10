@@ -22,8 +22,9 @@ export function staticUtterances(pack: ValidatedPack) {
 }
 export async function extractFilm(pack: ValidatedPack, film: Film, plugins: PluginRuntime, warn: (text: string) => void = console.warn) {
   const extraction: Film = { ...film, steps: film.steps.map(s => 'advanceText' in s && s.advanceText === 'voice' ? { advanceText: 'auto' } : s) };
-  const result = await rehearse(pack, extraction, plugins), sources = new Set(collectTexts(pack).map(m => m.text));
-  return result.events.filter(e => e.type === 'text-start').map(e => {
+  const result = await rehearse(pack, extraction, plugins, true), sources = new Set(collectTexts(pack).map(m => m.text));
+  return result.events.flatMap(e => { if (e.type === 'text-start' || e.type === 'narration-start') return [e]; return []; }).map(e => {
+    if (e.type === 'narration-start') return { plainText: e.plainText, speaker: 'narrator' };
     if (e.textOrigin === 'plugin' || (e.textOrigin === undefined && !sources.has(e.sourceText ?? e.text))) warn(`Plugin ctx.showText utterance captured: ${e.plainText}`);
     return { plainText: e.plainText, speaker: e.speaker };
   });

@@ -14,7 +14,7 @@ export async function validatePack(source: PackSource, id: string, options: Vali
   usage.characterReference(basics.game.player, 'game.json', '/player');
   const checks = await mapRules(context, basics);
   eventRules(context, basics, checks, usage);
+  await filmRules(context, basics, checks, usage);
   await finishRules(context, basics, usage);
-  await filmRules(context, basics, checks);
   return { diagnostics, pack: diagnostics.some(result => result.level === 'error') ? undefined : { ...basics, events: checks.events, maps: checks.maps } };
 }

@@ -701,6 +701,88 @@
             "additionalProperties": false,
             "type": "object",
             "required": [
+              "narrate"
+            ],
+            "properties": {
+              "narrate": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "wait": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "waitNarration"
+            ],
+            "properties": {
+              "waitNarration": {
+                "const": true,
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "music"
+            ],
+            "properties": {
+              "music": {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "volume": {
+                    "minimum": 0,
+                    "maximum": 1,
+                    "type": "number"
+                  },
+                  "fadeIn": {
+                    "minimum": 0,
+                    "maximum": 3600,
+                    "type": "number"
+                  },
+                  "loop": {
+                    "const": true,
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "music"
+            ],
+            "properties": {
+              "music": {
+                "type": "null"
+              },
+              "fadeOut": {
+                "minimum": 0,
+                "maximum": 3600,
+                "type": "number"
+              }
+            }
+          },
+          {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
               "waitFor"
             ],
             "properties": {

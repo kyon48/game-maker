@@ -21,6 +21,8 @@ export class MessageState {
   private sourceText = '';
   private voice: VoiceTiming | undefined;
   private elapsed = 0;
+  private pageStartedAt = 0;
+  private pageVoiceTicks: number[] = [];
   private finishedAt: number | undefined;
   private request: TextRequest | undefined;
   private resolved: readonly DisplaySegment[] = [];
@@ -40,11 +42,19 @@ export class MessageState {
     const speaker = request.speaker === undefined ? undefined : resolveText(request.speaker, this.resolver, false).plainText;
     const lines = wrapSegments(parsed.segments, this.config.width, this.measurer);
     this.textOrigin = origin; this.messageId++; this.sourceText = request.text;
-    this.voice = this.voiceTiming?.(parsed.plainText, speaker); this.elapsed = 0; this.finishedAt = undefined;
+    this.voice = this.voiceTiming?.(parsed.plainText, speaker); this.elapsed = 0; this.pageStartedAt = 0; this.finishedAt = undefined;
     this.resolved = parsed.segments;
     this.request = { text: parsed.plainText, speaker }; this.page = 0; this.reset(); this.pages = [];
     for (let i = 0; i < lines.length; i += this.config.rows) this.pages.push(lines.slice(i, i + this.config.rows));
     this.flatPages = this.pages.map(page => page.flat());
+    const counts = this.flatPages.map(page => page.reduce((count, s) => count + [...s.text].length, 0));
+    const total = counts.reduce((sum, count) => sum + count, 0);
+    let consumed = 0, previous = 0;
+    this.pageVoiceTicks = counts.map((count, index) => {
+      consumed += count;
+      const boundary = Math.ceil((this.voice?.voiceFrames ?? 0) * 2 * (total ? consumed / total : (index + 1) / counts.length));
+      const duration = boundary - previous; previous = boundary; return duration;
+    });
   }
   private reset(): void { this.shown = 0; this.progress = 0; this.wait = 0; this.entered = false; }
   close(): void { this.request = undefined; }
@@ -54,8 +64,8 @@ export class MessageState {
     this.elapsed++;
     this.reveal(input);
     if (!this.opened || !this.voice?.auto) return;
-    if (this.shown === this.points.length) {
-      if (this.page + 1 < this.pages.length) { this.page++; this.reset(); }
+    if (this.shown === this.points.length && this.elapsed - this.pageStartedAt >= this.pageVoiceTicks[this.page]!) {
+      if (this.page + 1 < this.pages.length) { this.page++; this.pageStartedAt = this.elapsed; this.reset(); }
       else this.finishedAt ??= this.elapsed;
     }
     if (this.finishedAt !== undefined && this.elapsed >= Math.max(this.finishedAt, (this.voice.voiceFrames ?? 0) * 2) + this.voice.gapTicks) this.close();
