@@ -17,7 +17,7 @@ export interface CommandContext {
   waitFrames(n: number): Wait;
   waitUntil(test: () => boolean): Wait;
   runCommands(list: readonly Command[]): CommandGen;
-  showText(request: TextRequest): CommandGen;
+  showText(request: TextRequest, source?: 'command'): CommandGen;
   showChoice(request: ChoiceRequest): CommandGen<number>;
   evaluate(condition: Condition): boolean;
   face(target: string, dir: Dir | 'player'): void;

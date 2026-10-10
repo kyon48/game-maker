@@ -1,3 +1,5 @@
+import { voiceLengths } from '../data/voice';
+import type { Voices, VoiceManifest } from '../data/schema/voices';
 import runtime from 'virtual:pack-runtime';
 import { packLocation } from './packLocation';
 import { SaveStorage } from './storage';
@@ -65,6 +67,8 @@ async function boot(): Promise<void> {
     source.readJson('skin.json') as Promise<Skin>,
     source.readJson('common-events.json') as Promise<Record<string, { commands: Command[] }>>,
   ]);
+  const voices = await source.exists('voices.json') ? await source.readJson('voices.json') as Voices : undefined;
+  const voiceManifest = await source.exists('voice-manifest.json') ? await source.readJson('voice-manifest.json') as VoiceManifest : undefined;
   const loader = new BrowserMapLoader(new MapCache(source, game.tileSize, new Map(entries)), characters, path => source.url(path));
   const font = new FontFace(skin.font.family, `url(${JSON.stringify(source.url(skin.font.src))})`);
   document.fonts.add(await font.load());
@@ -98,6 +102,7 @@ async function boot(): Promise<void> {
   const start = film?.start ?? (state ? { map: state.map, x: state.x, y: state.y, dir: state.dir } : game.start);
   const initial = await loader.load(start.map);
   const options: GameOptions = {
+    voices, voiceLengths: voiceLengths(voiceManifest), recording: !!film?.steps.some(s => 'advanceText' in s && s.advanceText === 'voice'),
     plugins, skin, textMeasurer: new CanvasTextMeasurer(context), mapLoader: prepared ? { load: id => { const map = prepared.get(id); return map ? Promise.resolve(map) : Promise.reject(new Error(`Unknown map: ${id}`)); } } : loader, commonEvents,
     selfFlags: state?.selfFlags, save: value => { if (!film) storage.write(value); },
   };

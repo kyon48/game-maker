@@ -130,3 +130,9 @@
 - 2026-10-09 / G1 / 해석기는 engine/data/text.ts에 두고 sim·검증기·TTS 평문·story lint가 공유한다. wait는 0 이상의 안전 정수, speed는 양의 유한 십진수이며 남은 wait는 즉시 표시로 건너뛴다. / 기존 import 경계를 유지하고 DOM 없이 한 코드 경로로 해석한다.
 - 2026-10-09 / G1 / skin.colors는 필수 색을 유지하면서 문자열 값의 추가 색 키를 허용한다. MessageState는 색 이름·속도·대기가 붙은 표시 세그먼트를 보유하고 platform만 색을 해석해 그린다. / 팩의 accent 같은 이름을 하드코딩 없이 사용할 수 있게 한다.
 - 2026-10-09 / G1 / manor 단서 수는 x_clue_count 텍스트 함수로, 수첩 문장·단서 목록·단서 없음 안내는 review_clues 공통 이벤트의 데이터와 조건 분기로 옮긴다. 타임라인 text-start/end에 치환된 plainText를 함께 기록한다. / 플러그인의 showText 조립을 전부 제거하고 V2가 메시지와 같은 평문을 캐시 키로 쓰게 한다.
+- 2026-10-10 / V2a / 음성 여백은 skin.message.voiceGap(초, 기본 0.4)에 둔다. voice film일 때만 녹화 길이 동기화를 켜고 기존 auto/press film과 일반 플레이는 유지한다. / S2 전 story 생성 대본과 기존 시나리오를 깨지 않는다.
+- 2026-10-10 / V2a / 캐시 키는 provider·voice·기본값 1을 적용한 speed·G1 평문의 SHA-256이며 DOM/Node 의존성 없는 engine/data/voice.ts를 sim과 도구가 공유한다. frames는 30fps 기준, 매니페스트에는 생성 시각을 넣지 않는다. / 60Hz 고정 틱 결정론과 대사별 캐시 재사용을 유지한다.
+- 2026-10-10 / V2a / TTS 기본 추출은 voice 단계를 auto로 바꾼 리허설의 실제 plainText이며 plugin ctx.showText도 포함하고 경고한다. waitFor:message는 36000틱, voice 진행은 기존 대사 제한 108000틱을 상한으로 한다. / 동적 치환과 첫 음성 생성의 길이표 의존 순환을 해결한다.
+- 2026-10-10 / V2a / macos-say의 단순 voice ID는 시스템 ko_KR 목록의 실제 한국어 이름으로 해석하고 175×speed 말하기 속도를 사용한다. 비어 있지 않은 대사의 빈 WAV는 오류다. / 이름이 같은 영어 음성을 피하고 샌드박스에서 say가 빈 파일을 반환하는 실패를 감지한다.
+- 2026-10-10 / V2a / 대사만 adelay/amix로 MP4에 넣고 manifest 길이로 잘라/채운다. 새 voice 타임라인에 음성 키·30fps 길이를 기록하며 자동 닫힘에서도 같은 문장을 구분하도록 메시지 인스턴스 ID를 쓴다. / V2b의 나레이션·BGM·덕킹·정규화를 앞당기지 않는다.
+- 2026-10-10 / V2a / 미리보기 서버의 SPA HTML fallback은 FetchSource.exists에서 파일 없음으로 처리한다. 부분 챕터 음성은 원래 틱에서 이미 재생한 부분을 잘라 배치한다. / 선택 voices 파일이 없는 무음 팩의 부팅과 부분 녹화의 시간 위치를 유지한다.

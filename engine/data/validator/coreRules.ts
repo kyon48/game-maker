@@ -1,3 +1,6 @@
+import { escapePointer } from './context';
+import { VoicesSchema, VoiceManifestSchema } from '../schema/voices';
+import type { Voices, VoiceManifest } from '../schema/voices';
 import { API_VERSION } from '../apiVersion';
 import { GameSchema, CURRENT_FORMAT_VERSION } from '../schema/game';
 import { CharactersSchema } from '../schema/characters';
@@ -26,6 +29,9 @@ export async function coreRules(context: ValidationContext) {
     if (!await source.exists(`plugins/${name}.ts`) && !context.diagnostics.some(item => item.code === 'V3' && item.file === 'game.json' && item.pointer === pointer)) report('V3', 'game.json', pointer, `Missing plugin: plugins/${name}.ts`);
   }
   if (skin.window.padding * 2 >= game.screen.width) report('V9', 'skin.json', '/window/padding', 'Message inner width must be positive');
-  return { game, characters, skin, common };
+  const voices = await source.exists('voices.json') ? await read('voices.json', VoicesSchema) as Voices | undefined : undefined;
+  const voiceManifest = await source.exists('voice-manifest.json') ? await read('voice-manifest.json', VoiceManifestSchema) as VoiceManifest | undefined : undefined;
+  for (const [speaker, voice] of Object.entries(voices ?? {})) if (!['macos-say', 'fake'].includes(voice.provider)) report('V1', 'voices.json', `/${escapePointer(speaker)}/provider`, 'Unknown TTS provider');
+  return { voices, voiceManifest, game, characters, skin, common };
 }
 export type PackBasics = NonNullable<Awaited<ReturnType<typeof coreRules>>>;

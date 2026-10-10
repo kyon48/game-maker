@@ -12,12 +12,13 @@ export const FilmSchema = Type.Object({
   }, objectOptions)),
   steps: Type.Array(Type.Union([
     ...scenarioSteps,
+    Type.Object({ waitFor: Type.Literal('message') }, objectOptions),
     Type.Object({ pause: seconds }, objectOptions),
     Type.Object({ walkTo: Type.Union([
       Type.Object({ event: Id }, objectOptions),
       Type.Object({ x: Nonnegative, y: Nonnegative }, objectOptions),
     ]), speed: Type.Optional(Type.Literal('normal')) }, objectOptions),
-    Type.Object({ advanceText: Type.Union([Type.Literal('press'), Type.Literal('auto')]) }, objectOptions),
+    Type.Object({ advanceText: Type.Union([Type.Literal('press'), Type.Literal('auto'), Type.Literal('voice')]) }, objectOptions),
     Type.Object({ choose: Nonnegative, dwell: Type.Optional(seconds) }, objectOptions),
     Type.Object({ chapter: Type.String({ minLength: 1, pattern: '^[^\\r\\n]+$' }) }, objectOptions),
   ])),

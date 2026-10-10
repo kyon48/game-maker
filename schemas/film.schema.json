@@ -701,6 +701,19 @@
             "additionalProperties": false,
             "type": "object",
             "required": [
+              "waitFor"
+            ],
+            "properties": {
+              "waitFor": {
+                "const": "message",
+                "type": "string"
+              }
+            }
+          },
+          {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
               "pause"
             ],
             "properties": {
@@ -776,6 +789,10 @@
                   },
                   {
                     "const": "auto",
+                    "type": "string"
+                  },
+                  {
+                    "const": "voice",
                     "type": "string"
                   }
                 ]

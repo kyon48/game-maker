@@ -112,6 +112,11 @@
           "minimum": 1,
           "maximum": 9007199254740991,
           "type": "integer"
+        },
+        "voiceGap": {
+          "minimum": 0,
+          "maximum": 10,
+          "type": "number"
         }
       }
     }

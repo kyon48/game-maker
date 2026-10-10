@@ -67,10 +67,14 @@ export class FilmDriver {
       if (count > 120) throw new Error('walkTo tile movement timed out');
     }
   }
-  private *advance(mode: true | 'press' | 'auto'): Generator<InputFrame> {
+  private *advance(mode: true | 'press' | 'auto' | 'voice'): Generator<InputFrame> {
     let elapsed = 0;
     while (this.view.message && !this.view.choice) {
       if (++elapsed > 108000) throw new Error('advanceText timed out');
+      if (mode === 'voice') {
+        if (!this.view.message.voiceKey || this.view.message.voiceFrames === undefined || !this.view.message.voiceAuto) throw new Error('Missing voice length/synchronization; run npm run tts first');
+        yield empty(); continue;
+      }
       if (mode !== 'auto') { yield* this.press('ok'); continue; }
       if (!this.view.message.fullyShown) { yield empty(); continue; }
       const count = [...this.view.message.lines.join('')].length;
@@ -87,6 +91,10 @@ export class FilmDriver {
       else if ('reload' in step) { if (!this.saveControl) throw new Error('Film reload session unavailable'); this.view = this.saveControl.reload(); }
       else if ('expectSave' in step) { if (!this.saveControl) throw new Error('Film save session unavailable'); if (!this.saveControl.expectSave(step.expectSave)) throw new Error('Saved condition false'); }
       else if ('expect' in step) { if (!this.evaluate(step.expect)) throw new Error('Film expectation failed'); }
+      else if ('waitFor' in step) {
+        let elapsed = 0;
+        while (!this.view.message && !this.view.choice) { if (++elapsed > 36000) throw new Error('waitFor message timed out'); yield empty(); }
+      }
       else if ('pause' in step) yield* this.wait(Math.ceil(step.pause * 60));
       else if ('wait' in step) yield* this.wait(step.wait);
       else if ('press' in step) yield* this.press(step.press);

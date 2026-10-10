@@ -1,6 +1,6 @@
 {
   "name": "game-maker",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -21,7 +21,8 @@
     "migrate-pack": "node --import tsx tools/migrate-pack.ts",
     "films": "node --import tsx tools/films.ts",
     "film": "node --import tsx tools/film.ts",
-    "film:verify": "node --import tsx tools/film/verify.ts"
+    "film:verify": "node --import tsx tools/film/verify.ts",
+    "tts": "node --import tsx tools/tts.ts"
   },
   "dependencies": {
     "@sinclair/typebox": "^0.34.41"

@@ -1,0 +1,22 @@
+{
+  "narrator": {
+    "provider": "macos-say",
+    "voice": "Yuna"
+  },
+  "소라": {
+    "provider": "macos-say",
+    "voice": "Shelley"
+  },
+  "촌장": {
+    "provider": "macos-say",
+    "voice": "Grandpa"
+  },
+  "옛 등대지기": {
+    "provider": "macos-say",
+    "voice": "Reed"
+  },
+  "뱃사공": {
+    "provider": "macos-say",
+    "voice": "Eddy"
+  }
+}

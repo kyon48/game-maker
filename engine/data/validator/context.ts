@@ -7,7 +7,7 @@ import type { Characters } from '../characters';
 export const escapePointer = (key: string) => key.replace(/~/g, '~0').replace(/\//g, '~1');
 export function validationContext(source: PackSource, id: string, options: ValidationOptions) {
   const diagnostics: Diagnostic[] = [];
-  const report = (code: string, file: string, pointer: string, message: string) => diagnostics.push({ code, file, pointer, message, level: code === 'V10' || code === 'V11' ? 'warning' : 'error' });
+  const report = (code: string, file: string, pointer: string, message: string) => diagnostics.push({ code, file, pointer, message, level: code === 'V10' || code === 'V11' || code === 'VOICE' ? 'warning' : 'error' });
   const references = [ConditionSchema, CommandSchema];
   const jsonCache = new Map<string, Promise<unknown>>();
   const readJson = (file: string): Promise<unknown> => {

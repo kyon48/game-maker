@@ -1,3 +1,4 @@
+import { VoicesSchema, VoiceManifestSchema } from './voices';
 import type { CommandCatalog } from '../validator/types';
 import { GameSchema } from './game';
 import { CharactersSchema } from './characters';
@@ -15,6 +16,6 @@ export function packSchemas(catalog: CommandCatalog): ReadonlyMap<string, unknow
     return value;
   };
   const definitions = { Command: normalize(command), Condition: normalize(ConditionSchema) };
-  return new Map(Object.entries({ game: GameSchema, characters: CharactersSchema, skin: SkinSchema, events: EventsSchema, 'common-events': CommonEventsSchema, tiled: TiledSchema, tileset: TilesetSchema, scenario: ScenarioSchema, film: FilmSchema })
+  return new Map(Object.entries({ game: GameSchema, characters: CharactersSchema, skin: SkinSchema, events: EventsSchema, 'common-events': CommonEventsSchema, tiled: TiledSchema, tileset: TilesetSchema, scenario: ScenarioSchema, film: FilmSchema, voices: VoicesSchema, 'voice-manifest': VoiceManifestSchema })
     .map(([name, schema]) => [`${name}.schema.json`, { $schema: 'https://json-schema.org/draft/2020-12/schema', ...normalize(schema) as object, ...(['events', 'common-events', 'scenario', 'film'].includes(name) ? { $defs: definitions } : {}) }]));
 }
