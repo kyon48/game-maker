@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { assertNoStoryVoiceOverlap } from './rehearsal';
 import { FsSource } from '../fsSource';
 import { nodePluginRuntime } from '../loadPlugins';
 import { validatePack } from '../../engine/data/validator/validate';
@@ -48,7 +49,7 @@ export async function checkGeneratedFilms(packId: string, root: string, files: R
   if (!result.pack) return result.diagnostics.filter(d => d.level === 'error').map(d => ({ file: `packs/${packId}/${d.file}`, line: 1, code: d.code, level: 'error', message: d.pointer + ': ' + d.message }));
   const { asFilm, rehearse } = await import('../film/rehearse');
   for (const [file, text] of files) if (/^films\/[^/]+\.film\.json$/.test(file)) {
-    try { await rehearse(result.pack, asFilm(JSON.parse(text)), plugins); }
+    try { const replay = await rehearse(result.pack, asFilm(JSON.parse(text)), plugins); assertNoStoryVoiceOverlap(replay.warnings); }
     catch (error) { diagnostics.push({ file: `packs/${packId}/${file}`, line: 1, code: 'S037', level: 'error', message: `${String(error)}; npm run story -- build ${packId} 를 실행하세요` }); }
   }
   return diagnostics;

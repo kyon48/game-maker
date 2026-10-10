@@ -37,6 +37,9 @@
       "pause": 0.35
     },
     {
+      "waitNarration": true
+    },
+    {
       "press": "ok"
     },
     {
@@ -80,6 +83,9 @@
       }
     },
     {
+      "waitNarration": true
+    },
+    {
       "walk": [
         "right"
       ]
@@ -100,6 +106,9 @@
     },
     {
       "pause": 0.35
+    },
+    {
+      "waitNarration": true
     },
     {
       "press": "ok"
@@ -130,6 +139,9 @@
       }
     },
     {
+      "waitNarration": true
+    },
+    {
       "walk": [
         "right"
       ]
@@ -144,6 +156,9 @@
     },
     {
       "pause": 0.35
+    },
+    {
+      "waitNarration": true
     },
     {
       "press": "ok"
@@ -196,6 +211,9 @@
       }
     },
     {
+      "waitNarration": true
+    },
+    {
       "walk": [
         "left"
       ]
@@ -207,6 +225,9 @@
       "walkTo": {
         "event": "entry"
       }
+    },
+    {
+      "waitNarration": true
     },
     {
       "walk": [
@@ -225,6 +246,9 @@
       "pause": 0.35
     },
     {
+      "waitNarration": true
+    },
+    {
       "press": "ok"
     },
     {
@@ -241,6 +265,9 @@
     },
     {
       "pause": 0.35
+    },
+    {
+      "waitNarration": true
     },
     {
       "press": "ok"

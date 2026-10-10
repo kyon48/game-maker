@@ -1,4 +1,4 @@
-import { storyCues } from './cues';
+import { storyCues, sceneNarrationCues } from './cues';
 import type { Story, Location, Anchor, Source, Condition, Statement, Event, Diagnostic } from './ast';
 export interface Tiles { wall: number; floor: number; door: number; tileset: string; firstgid?: number }
 export interface Compilation { files: Map<string, string>; maps: Map<string, string>; diagnostics: Diagnostic[] }
@@ -43,7 +43,7 @@ export function compileStories(stories: readonly Story[], gameValue: unknown, ti
   const locations = stories.flatMap(s => s.locations), scenes = stories.flatMap(s => s.scenes);
   const points = new Map(locations.map(location => [location.id, anchorPoints(location)]));
   const point = (map: string, anchor: string, source: Source): Point => points.get(map)?.get(anchor) ?? compileError(source, 'S022', `앵커 좌표 없음: ${map}:${anchor}`);
-  const cues = storyCues(stories);
+  const cues = storyCues(stories), sceneCues = sceneNarrationCues(stories);
   let expressionWarning = false;
   const commands = (list: readonly Statement[]): unknown[] => list.flatMap(node => {
     switch (node.kind) {
@@ -75,7 +75,8 @@ export function compileStories(stories: readonly Story[], gameValue: unknown, ti
       const condition = !event.once ? when : when ? { all: [selfCondition, when] } : selfCondition;
       const prefix: unknown[] = event.character && event.trigger === 'action' ? [{ cmd: 'face', target: 'this', dir: 'player' }] : [];
       if (event.once && index === 0) prefix.push({ cmd: 'set_self_flag', name: 'story_once', value: true });
-      return { ...attrs, ...(condition ? { when: condition } : {}), commands: [...prefix, ...commands(page.statements)] };
+      const sceneCue = sceneCues.get(event);
+      return { ...attrs, ...(condition ? { when: condition } : {}), commands: [...(sceneCue ? [{ cmd: 'film_cue', id: sceneCue.id }] : []), ...prefix, ...commands(page.statements)] };
     });
     if (event.once && event.pages.length === 1) pages.push({ ...attrs, trigger: 'none', when: { self: 'story_once', is: true }, commands: [] });
     return { id: event.id, x: p.x, y: p.y, pages };

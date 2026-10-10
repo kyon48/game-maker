@@ -1,5 +1,5 @@
 import { FilmCueGate } from '../../engine/film/cues';
-import { storyCues } from './cues';
+import { storyCues, sceneNarrationCues } from './cues';
 import type { Film, FilmStep } from '../../engine/data/schema/film';
 import type { Scenario } from '../../engine/data/scenarios/run';
 import type { InputFrame } from '../../engine/api';
@@ -16,7 +16,9 @@ const empty = (): InputFrame => ({ held: new Set(), pressed: new Set() });
 /** Plan with manual text and immediate cues; voice lengths never participate in generation. */
 export async function generateFilm(stories: readonly Story[], pack: ValidatedPack, plugins: PluginRuntime, name = 'main'): Promise<Map<string, string>> {
   if (!/^[a-z][a-z0-9_]*$/.test(name)) throw new Error('film 이름은 소문자 ID여야 합니다');
-  const gate = new FilmCueGate(), cues = storyCues(stories);
+  const gate = new FilmCueGate(), cues = storyCues(stories), sceneCues = sceneNarrationCues(stories);
+  const boundNarrations = new Map([...sceneCues].map(([event, cue]) => [cue.narrations.at(-1)!, { event, id: cue.id }]));
+  const boundSteps = new Map<Event, number>();
   const runtime = new GameSession(pack, { plugins, recording: true, filmCues: gate });
   const steps: FilmStep[] = [], scenario: ScenarioStep[] = [], narration: string[] = [`# ${name}`, ''];
   const locations = stories.flatMap(s => s.locations), common = new Map(stories.flatMap(s => s.common.map(c => [c.id, c.statements] as const)));
@@ -59,9 +61,10 @@ export async function generateFilm(stories: readonly Story[], pack: ValidatedPac
     if (count && (runtime.game.message.opened || runtime.game.choice.opened)) steps.push({ waitFor: 'message' });
     else if (count && !gate.pending) steps.push({ wait: count });
   };
-  const drain = async (choices: number[], selectedPath: readonly Statement[], initial = false) => {
+  const drain = async (choices: number[], selectedPath: readonly Statement[], trigger: Event['trigger']) => {
     const map = runtime.game.map.id;
-    await waitReady(initial, map, initial);
+    const auto = trigger === 'auto';
+    await waitReady(trigger !== 'action', map, auto);
     let selected = 0, cueIndex = 0;
     const queued = selectedPath.filter(node => node.kind === 'narration' || node.kind === 'waitNarration');
     while (runtime.game.map.id === map && (runtime.game.main.running || runtime.game.message.opened || runtime.game.choice.opened)) {
@@ -78,7 +81,7 @@ export async function generateFilm(stories: readonly Story[], pack: ValidatedPac
         const speaker = runtime.game.message.snapshot?.speaker ?? 'narrator';
         await emit({ advanceText: pack.voices?.[speaker] ? 'voice' : 'auto', count: 1 });
       }
-      await waitReady(false, map, initial);
+      await waitReady(false, map, auto);
     }
     if (selected !== choices.length) compileError(source, 'S031', '예상 선택지가 실행되지 않았습니다');
   };
@@ -106,6 +109,7 @@ export async function generateFilm(stories: readonly Story[], pack: ValidatedPac
     const dx = target.x - runtime.game.player.x, dy = target.y - runtime.game.player.y;
     if (Math.abs(dx) + Math.abs(dy) !== 1) compileError(source, 'S030', `touch 대상에 인접하지 않음: ${id}`);
     const dir: Dir = dx > 0 ? 'right' : dx < 0 ? 'left' : dy > 0 ? 'down' : 'up';
+    if (pack.voices) steps.push({ waitNarration: true });
     await emit({ walk: [dir] });
   };
   const travel = async (destination: string) => {
@@ -145,7 +149,14 @@ export async function generateFilm(stories: readonly Story[], pack: ValidatedPac
     await travel(scene.location);
     const expected = new Map<string, boolean>();
     for (const item of scene.items) {
-      if (item.kind === 'narration') { narration.push(item.text, ''); if (pack.voices) steps.push({ narrate: item.text }); }
+      if (item.kind === 'narration') {
+        narration.push(item.text, '');
+        if (pack.voices) {
+          const bound = boundNarrations.get(item);
+          if (bound) boundSteps.set(bound.event, steps.length);
+          steps.push({ narrate: item.text, ...(bound ? { cue: bound.id } : {}) });
+        }
+      }
       else if (item.kind === 'waitNarration') { if (pack.voices) steps.push({ waitNarration: true }); }
       else if (item.kind === 'filmPause' || item.kind === 'filmWalkTo') await hints([item], scene.location);
       else if (item.kind === 'event') {
@@ -158,16 +169,29 @@ export async function generateFilm(stories: readonly Story[], pack: ValidatedPac
           const onceAllows = !item.once || (index === 0 ? !completed : completed);
           return onceAllows && (!candidate.condition || condition(candidate.condition, state.flags, state.vars));
         });
-        if (!page) continue;
+        if (!page) {
+          const bound = boundSteps.get(item), step = bound === undefined ? undefined : steps[bound];
+          if (step && 'narrate' in step) delete step.cue;
+          continue;
+        }
         const choices: number[] = [];
         const selected = pathStatements(page.statements, state.flags, state.vars, choices, expected);
         for (const node of selected) if (node.kind === 'narration') narration.push(node.text, '');
         if (item.trigger !== 'auto') {
           await hints(selected, scene.location);
           await emit({ walkTo: { event: item.id } }); await emit({ pause: 0.35 });
-          if (item.trigger === 'action') await emit({ press: 'ok' }); else await stepInto(item.id);
+          if (item.trigger === 'action') {
+            if (pack.voices) steps.push({ waitNarration: true });
+            await emit({ press: 'ok' });
+          } else await stepInto(item.id);
         }
-        await drain(choices, selected, item.trigger === 'auto');
+        const sceneCue = sceneCues.get(item);
+        if (sceneCue) {
+          await waitReady(true, scene.location, true);
+          if (gate.pending !== sceneCue.id) compileError(source, 'S031', `장면 시작 cue 불일치: ${gate.pending}`);
+          gate.release(sceneCue.id);
+        }
+        await drain(choices, selected, item.trigger);
         if (item.trigger === 'auto') await hints(selected, runtime.game.map.id);
         if (!pendingAuto() && !runtime.game.message.opened && !runtime.game.choice.opened) await emit({ settle: true });
       }

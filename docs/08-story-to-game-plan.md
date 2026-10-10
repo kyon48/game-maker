@@ -156,7 +156,7 @@ flowchart LR
 ```json
 { "chapter": "1장. 꺼진 불빛" },
 { "narrate": "안개 낀 선착장. 소라는 …" },
-{ "walkTo": { "event": "elder" } }, { "pause": 0.35 }, { "press": "ok" },
+{ "walkTo": { "event": "elder" } }, { "pause": 0.35 }, { "waitNarration": true }, { "press": "ok" },
 { "advanceText": "voice" }, { "choose": 0, "dwell": 0.4 }, { "advanceText": "voice" }, { "settle": true },
 { "expect": { "flag": "met_elder", "is": true } }
 ```
