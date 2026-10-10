@@ -1,7 +1,7 @@
 # 영상 제작 파이프라인 설계 (초안)
 
 - 작성일: 2026-10-08
-- 상태: V1(녹화) 구현 완료(2026-10-08, 엔진 0.4.0). V2 이후는 설계 초안. 실제 구현과 다른 세부(녹화 API 등)는 `docs/decisions.md`의 V1 항목과 `tools/film/README.md`가 기준
+- 상태: V1(녹화) 구현 완료(2026-10-08, 엔진 0.4.0). V2a·V2b 구현 완료(엔진 0.8.0). V3 이후는 설계 초안. 실제 구현과 다른 세부(녹화 API 등)는 `docs/decisions.md`의 V1 항목과 `tools/film/README.md`가 기준
 - 선행 문서: [02-architecture.md](02-architecture.md) (엔진 명세). 이 문서의 § 번호는 이 문서 기준, 엔진 명세 참조는 "명세 §n"으로 표기
 
 ---
@@ -102,6 +102,10 @@ flowchart LR
 | `pause: 초` | 입력 없이 진행 |
 | `walkTo: {event}` 또는 `{x,y}` | 충돌 격자에서 최단 경로(BFS)를 구해 방향 입력으로 풀어 냄. 이벤트 대상이면 그 앞 칸까지 가서 바라봄. 경로가 없으면 대본 오류 |
 | `advanceText: "voice"` | 음성이 끝날 때까지 기다린 뒤 다음 대사(§5.3). `"press"`면 기존처럼 ok 연타 |
+| `narrate: "문장", wait?: true` | 나레이터 음성·자막. 기본 비차단, wait면 끝까지 대기. 앞 나레이션 뒤에 이어 재생 |
+| `waitNarration: true` | 진행·대기 중인 나레이션 전체가 끝날 때까지 빈 입력 |
+| `music: {file, volume?, fadeIn?, loop?: true}` | 팩 상대 경로의 음악 시작. volume 0~1, 페이드 초 단위 |
+| `music: null, fadeOut?: 초` | 현재 음악 정지·페이드 아웃 |
 | `waitFor: "message"` | 메시지 또는 선택지 준비까지 빈 입력으로 최대 36000틱 대기(V2a) |
 | `choose: n, dwell: 초` | 커서를 한 칸씩 옮길 때마다 dwell만큼 머뭇거려 "사람이 고르는" 느낌 |
 | `chapter: 제목` | 타임라인에 챕터 표시 → 유튜브 챕터·부분 렌더링 단위 |
@@ -116,8 +120,8 @@ flowchart LR
 | 파일 | 내용 |
 |---|---|
 | `video.mp4` | 최종 영상(V2부터 음성 포함) |
-| `timeline.json` | `{frame, type, ...}` 목록. type: `text-start`/`text-end`(speaker, text, voiceKey), `choice`(labels, chosen), `map`, `chapter`, `bgm`, `sfx` |
-| `subtitles.srt` | text-start~text-end 구간 자막. 유튜브에 별도 업로드(번인하지 않음) |
+| `timeline.json` | `{frame, type, ...}` 목록. type: `text-start`/`text-end`(speaker, text, voiceKey), `choice`(labels, chosen), `map`, `chapter`, `narration-start`/`narration-end`(text, voiceKey), `music-start`/`music-stop`(file, volume, fade) |
+| `subtitles.srt` | text-start~text-end와 narration-start~narration-end 구간 자막([나레이션] 접두어). 유튜브에 별도 업로드(번인하지 않음) |
 | `chapters.txt` | `00:00 도착` 형식. 설명란에 그대로 붙여넣기 |
 | `script.md` | 화자·대사·선택지를 시간순으로 정리한 대본. 검수용 |
 
@@ -154,11 +158,14 @@ flowchart LR
 
 - `Game` 옵션으로 **읽기 전용 음성 길이표**(`hash → frames`)를 받는다. 순수 데이터라 결정론과 헤드리스 원칙(명세 P3·P4)을 해치지 않는다.
 - 녹화 모드의 메시지 창은 `max(글자 표시 완료, 음성 길이) + 여백(기본 0.4초)`이 지나면 스스로 닫힌다. 일반 플레이에서는 기존처럼 ok로 넘긴다(음성 재생은 선택 기능).
+- 여러 페이지는 글자 수 비율로 음성 틱을 배분해 각 페이지의 최소 표시 시간을 지킨다(녹화 모드만).
 - 타임라인 `text-start`에 `voiceKey`가 남으므로 오디오 합성 단계에서 정확한 프레임에 음성을 놓을 수 있다.
 
 ### 5.4 오디오 합성
 
 - `timeline.json`을 읽어 ffmpeg 필터(`adelay` + `amix`)로 음성·BGM·효과음을 한 트랙으로 만든다. BGM은 대사 구간에서 자동으로 볼륨을 낮춘다(덕킹).
+- 덕킹은 대사·나레이션 음성 구간의 합집합으로 계산한다. 음악은 약 -12dB, 앞뒤 0.15초 램프를 적용하며 가까운 음성 구간은 합친다(사이드체인 없음).
+- 2-pass loudnorm으로 정규화한 뒤 48kHz 스테레오 AAC로 저장한다. 챕터 이전 음성·음악은 이미 지난 부분을 잘라 배치한다.
 - 영상과 오디오를 합쳐 `video.mp4`를 만든다. 음량은 유튜브 기준(약 -14 LUFS)으로 정규화한다.
 
 ## 6. 비주얼노벨 표현 (V3)
@@ -247,7 +254,7 @@ flowchart LR
 |---|---|---|
 | V1 녹화 **(완료)** | 녹화 모드(§4.1), film 형식과 리허설(§4.3), walkTo 경로 탐색, 타임라인·SRT·챕터(§4.4), 부분 렌더링 | `manor`의 결말 하나를 무음 mp4로 렌더링. 두 번 렌더링한 영상의 프레임 해시가 같음 |
 | V2a 대사 TTS **(완료)** | voices.json, macos-say/fake 제공자, 캐시·매니페스트, 음성 길이 동기화, voice·waitFor 대본 단계, 대사 음성 배치 | lantern의 대사 음성이 든 mp4. 한 대사 수정 시 그 줄만 재생성 |
-| V2b 나레이션·합성 | 나레이션 단계(07 §7), BGM·덕킹·LUFS 정규화 | 나레이션과 대사 음성이 들어간 최종 mp4 |
+| V2b 나레이션·합성 **(완료)** | 나레이션 단계(07 §7), BGM·덕킹·LUFS 정규화 | 나레이션과 대사 음성이 들어간 최종 mp4 |
 | V3 VN 표현 | 고해상도 레이어, 스탠딩·표정·배경 CG·전환, BGM·효과음, 공유 라이브러리 팩(§6.2), 마스코트 기반 도트 스프라이트 생성 스크립트 | 의상이 다른 마스코트 2명이 공통 표정으로 대화하고 배경 CG가 바뀌는 장면이 든 영상 |
 | V4 콘텐츠 | 원작 → 팩·대본 생성 흐름, 검수 문서 | 고전 한 편의 1화 분량(10분 안팎) 완성 |
 

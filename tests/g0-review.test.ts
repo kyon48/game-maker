@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({ close: vi.fn((fn: (error?: Error) => void) => 
 vi.mock('vite', () => ({ preview: vi.fn(async () => ({ httpServer: { address: mocks.address, close: mocks.close } })) }));
 vi.mock('playwright', () => ({ chromium: { launch: mocks.launch } }));
 vi.mock('../tools/buildPack', () => ({ buildPack: vi.fn() }));
-vi.mock('../tools/film/rehearse', () => ({ prepareFilm: mocks.prepare, rehearse: vi.fn() }));
+vi.mock('../tools/film/rehearse', () => ({ prepareFilm: mocks.prepare, rehearse: vi.fn(async () => ({ warnings: [] })) }));
 vi.mock('../tools/film/video', () => ({ encoder: mocks.encoder }));
 import { recordFilm } from '../tools/film/record';
 beforeEach(() => {

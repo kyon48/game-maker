@@ -6,7 +6,11 @@ export type TimelineEvent =
   | (TextFields & { type: 'text-end' })
   | { tick: number; type: 'choice'; id: number; phase: 'open' | 'close'; labels: string[]; indices: number[]; chosen: number | null; prompt?: string }
   | { tick: number; type: 'map'; mapId: string }
-  | { tick: number; type: 'chapter'; title: string };
+  | { tick: number; type: 'chapter'; title: string }
+  | { tick: number; type: 'narration-start'; id: number; text: string; plainText: string; voiceKey: string; voiceFrames: number }
+  | { tick: number; type: 'narration-end'; id: number; text: string; plainText: string; voiceKey: string; voiceFrames: number }
+  | { tick: number; type: 'music-start'; id: number; file: string; volume: number; fade: number; loop: boolean }
+  | { tick: number; type: 'music-stop'; id: number; file: string; volume: number; fade: number };
 export type FramedEvent = TimelineEvent & { frame: number };
 export class TimelineObserver {
   private previous?: FilmView;

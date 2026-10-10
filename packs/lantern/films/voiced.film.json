@@ -1,8 +1,16 @@
 {
-  "name": "등대지기의 약속 — 대사 음성",
+  "name": "등대지기의 약속 — 나레이션과 음악",
   "steps": [
     {
       "chapter": "1장. 돌아오는 길"
+    },
+    {
+      "music": {
+        "file": "assets/music/harbor.ogg",
+        "volume": 0.35,
+        "fadeIn": 1,
+        "loop": true
+      }
     },
     {
       "waitFor": "message"
@@ -14,9 +22,15 @@
       "settle": true
     },
     {
+      "narrate": "소라는 오래 꺼져 있던 등대를 찾아 선착장으로 돌아왔습니다."
+    },
+    {
       "walkTo": {
         "event": "elder"
       }
+    },
+    {
+      "waitNarration": true
     },
     {
       "pause": 0.35
@@ -45,6 +59,14 @@
     },
     {
       "chapter": "2장. 불씨와 약속"
+    },
+    {
+      "music": {
+        "file": "assets/music/harbor.ogg",
+        "volume": 0.35,
+        "fadeIn": 1,
+        "loop": true
+      }
     },
     {
       "walkTo": {
@@ -86,6 +108,9 @@
       }
     },
     {
+      "narrate": "불을 켜는 일은 어렵지 않았습니다. 어려운 것은 그다음 밤을 맡기는 일이었지요."
+    },
+    {
       "walkTo": {
         "event": "to_garden"
       }
@@ -102,6 +127,9 @@
       "walkTo": {
         "event": "conclusion"
       }
+    },
+    {
+      "waitNarration": true
     },
     {
       "pause": 0.35
@@ -136,6 +164,14 @@
     },
     {
       "chapter": "3장. 선착장의 기록"
+    },
+    {
+      "music": {
+        "file": "assets/music/harbor.ogg",
+        "volume": 0.35,
+        "fadeIn": 1,
+        "loop": true
+      }
     },
     {
       "walkTo": {
@@ -220,6 +256,13 @@
         "flag": "ending_kept",
         "is": false
       }
+    },
+    {
+      "music": null,
+      "fadeOut": 1
+    },
+    {
+      "pause": 1
     }
   ]
 }

@@ -12,6 +12,10 @@ export const FilmSchema = Type.Object({
   }, objectOptions)),
   steps: Type.Array(Type.Union([
     ...scenarioSteps,
+    Type.Object({ narrate: Type.String({ minLength: 1 }), wait: Type.Optional(Type.Boolean()) }, objectOptions),
+    Type.Object({ waitNarration: Type.Literal(true) }, objectOptions),
+    Type.Object({ music: Type.Object({ file: Type.String({ minLength: 1 }), volume: Type.Optional(Type.Number({ minimum: 0, maximum: 1 })), fadeIn: Type.Optional(seconds), loop: Type.Optional(Type.Literal(true)) }, objectOptions) }, objectOptions),
+    Type.Object({ music: Type.Null(), fadeOut: Type.Optional(seconds) }, objectOptions),
     Type.Object({ waitFor: Type.Literal('message') }, objectOptions),
     Type.Object({ pause: seconds }, objectOptions),
     Type.Object({ walkTo: Type.Union([

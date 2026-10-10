@@ -130,8 +130,9 @@ async function boot(): Promise<void> {
     drawUi(context, snapshot, skin, images);
   };
   if ((import.meta.env.DEV || __RECORDING__) && film) {
+    const { narrationOptions } = await import('../film/narration');
     const { createRecorder } = await import('./recorder');
-    window.__recorder = createRecorder(simulation, film, window.__filmRequest?.fps ?? film.fps ?? 30, context, render, saveSession);
+    window.__recorder = createRecorder(simulation, film, window.__filmRequest?.fps ?? film.fps ?? 30, context, render, saveSession, narrationOptions(() => saveSession?.game ?? simulation, voices, voiceLengths(voiceManifest), false, plugins));
     render(); return;
   }
   const stop = startLoop(new FixedTickLoop(input => simulation.tick(input), () => keyboard!.consume(), render), error => { keyboard?.dispose(); fail(error); });

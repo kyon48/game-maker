@@ -2,6 +2,8 @@ import type { Action, InputFrame, Dir } from '../api';
 import type { Film, FilmStep, FilmExpect } from '../data/schema/film';
 import type { SaveExpect } from '../data/schema/scenario';
 import type { FilmView } from './view';
+import { FilmAudio } from './audio';
+import type { FilmAudioOptions } from './audio';
 import { directions, pathTo } from './path';
 export interface FilmSaveControl { reload(): FilmView; expectSave(e: SaveExpect): boolean }
 export interface ChapterMark { tick: number; title: string }
@@ -10,16 +12,18 @@ const input = (action: Action, pressed = true): InputFrame => ({ held: new Set([
 /** Deterministic input state machine. No IO, DOM, clocks, random numbers or sim mutations. */
 export class FilmDriver {
   ticks = 0; done = false; stepIndex = 0;
+  readonly audio: FilmAudio;
   readonly chapters: ChapterMark[] = [];
   private view!: FilmView;
   private saveControl?: FilmSaveControl;
   private evaluate!: (e: FilmExpect) => boolean;
   private readonly program: Generator<InputFrame, void, void>;
-  constructor(readonly film: Film) { this.program = this.run(); }
+  constructor(readonly film: Film, audio?: FilmAudioOptions) { this.audio = new FilmAudio(audio); this.program = this.run(); }
   next(view: FilmView, evaluate: (e: FilmExpect) => boolean, saveControl?: FilmSaveControl): InputFrame | null {
     if (this.done) return null;
     this.view = view; this.evaluate = evaluate; this.saveControl = saveControl;
     try {
+      this.audio.update(this.ticks, view.message);
       const result = this.program.next();
       if (result.done) { this.done = true; return null; }
       if (++this.ticks > 60 * 60 * 60 * 2) throw new Error('Film exceeds two hours');
@@ -87,7 +91,10 @@ export class FilmDriver {
   private *run(): Generator<InputFrame> {
     for (const [index, step] of this.film.steps.entries()) {
       this.stepIndex = index;
-      if ('chapter' in step) this.chapters.push({ tick: this.ticks, title: step.chapter });
+      if ('narrate' in step) { const end = this.audio.narrate(step.narrate, this.ticks); if (step.wait) while (this.ticks < end) yield empty(); }
+      else if ('waitNarration' in step) { while (this.ticks < this.audio.end) yield empty(); }
+      else if ('music' in step) this.audio.setMusic(step.music, this.ticks, 'fadeOut' in step ? step.fadeOut : 0);
+      else if ('chapter' in step) this.chapters.push({ tick: this.ticks, title: step.chapter });
       else if ('reload' in step) { if (!this.saveControl) throw new Error('Film reload session unavailable'); this.view = this.saveControl.reload(); }
       else if ('expectSave' in step) { if (!this.saveControl) throw new Error('Film save session unavailable'); if (!this.saveControl.expectSave(step.expectSave)) throw new Error('Saved condition false'); }
       else if ('expect' in step) { if (!this.evaluate(step.expect)) throw new Error('Film expectation failed'); }
@@ -120,5 +127,7 @@ export class FilmDriver {
         }
       }
     }
+    // Keep nonblocking narration audible even when the last game step finishes.
+    while (this.ticks < this.audio.end) yield empty();
   }
 }

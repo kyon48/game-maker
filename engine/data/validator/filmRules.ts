@@ -1,3 +1,6 @@
+import { textRules } from './textRules';
+import type { Usage } from './context';
+import { packPath } from '../loader/path';
 import { FilmSchema } from '../schema/film';
 import type { Film, FilmExpect } from '../schema/film';
 import type { PackBasics } from './coreRules';
@@ -18,7 +21,7 @@ function walkCommands(commands: readonly Command[], common: PackBasics['common']
   return targets;
 }
 /** Static references across possible map transitions. Actual branch reachability is checked by rehearsal. */
-export async function filmRules(context: ValidationContext, basics: PackBasics, checks: MapChecks): Promise<void> {
+export async function filmRules(context: ValidationContext, basics: PackBasics, checks: MapChecks, usage: Usage): Promise<void> {
   if (!context.source.listFiles) return;
   const { game, common } = basics;
   const { read, report, check, options } = context;
@@ -53,6 +56,17 @@ export async function filmRules(context: ValidationContext, basics: PackBasics, 
     let possible = new Set([start.map]); const chapters = new Set<string>();
     for (const [i, step] of film.steps.entries()) {
       const p = `/steps/${i}`;
+      if ('narrate' in step) {
+        textRules(context, basics, usage, step.narrate, true, file, p + '/narrate');
+        if (basics.voices && !basics.voices.narrator) report('VOICE', file, p + '/narrate', 'Missing narrator voice');
+      }
+      if ('music' in step && step.music) {
+        try {
+          const music = packPath('', step.music.file);
+          if (music !== step.music.file || !/\.(ogg|wav|mp3|flac|m4a)$/i.test(music)) report('V3', file, p + '/music/file', 'Music must use a pack-relative audio file (ogg/wav/mp3/flac/m4a)');
+          else if (!await context.source.exists(music)) report('V3', file, p + '/music/file', 'Missing film music file');
+        } catch { report('V3', file, p + '/music/file', 'Music path must stay inside the pack'); }
+      }
       if ('chapter' in step) { if (chapters.has(step.chapter)) report('V9', file, p + '/chapter', 'Duplicate film chapter'); chapters.add(step.chapter); }
       if ('expectSave' in step) condition(step.expectSave, file, p + '/expectSave');
       if ('reload' in step) possible = new Set(game.maps);
