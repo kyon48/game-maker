@@ -6,6 +6,6 @@ export function registerText(registry: CommandRegistry): void {
   registry.register('text', {
     args: argsSchema,
     parallelSafe: false,
-    *run(args, ctx) { yield* ctx.showText(args); },
+    *run(args, ctx) { yield* ctx.showText(args, 'command'); },
   });
 }

@@ -41,6 +41,8 @@ export function eventRules(context: ValidationContext, basics: PackBasics, check
       });
       if (!check(definition.args, args, file, p)) return;
       if (command.cmd === 'text') {
+        const speaker = (command.speaker as string | undefined) ?? 'narrator';
+        if (basics.voices && !/[{}]/.test(speaker) && !Object.hasOwn(basics.voices, speaker)) report('VOICE', file, p + '/speaker', `Missing voice: ${speaker}`);
         textRules(context, basics, usage, command.text as string, true, file, p + '/text');
         if (command.speaker !== undefined) textRules(context, basics, usage, command.speaker as string, false, file, p + '/speaker');
       }

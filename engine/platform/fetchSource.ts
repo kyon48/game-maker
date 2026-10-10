@@ -18,6 +18,6 @@ export class FetchSource implements PackSource {
     const response = await fetch(this.url(path), { method: 'HEAD' });
     if (response.status === 404) return false;
     if (!response.ok) throw new Error(`Load failed: ${path} (${response.status})`);
-    return true;
+    return !/text\/html/i.test(response.headers.get('content-type') ?? '');
   }
 }

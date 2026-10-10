@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "patternProperties": {
+    "^[a-f0-9]{64}$": {
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "frames",
+        "provider",
+        "voice"
+      ],
+      "properties": {
+        "frames": {
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "type": "integer"
+        },
+        "provider": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "voice": {
+          "minLength": 1,
+          "type": "string"
+        }
+      }
+    }
+  }
+}

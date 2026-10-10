@@ -1,3 +1,4 @@
+import { dialogueAudio } from './audio';
 import { preview } from 'vite';
 import { chromium } from 'playwright';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -62,6 +63,7 @@ export async function recordFilm(packId: string, filmId: string, options: Record
     if (count === 0) throw new Error('Film/chapter produced no frames');
     await video.finish(); video = undefined;
     const selected = options.chapter ? croppedEvents(events, start, start + count) : events;
+    await dialogueAudio(packId, out, selected, fps, count, options.signal, options.chapter ? start : 0);
     const files = artifacts(selected, fps, count, film.name);
     await Promise.all([
       writeFile(path.join(out, 'timeline.json'), JSON.stringify(selected, null, 2) + '\n'),

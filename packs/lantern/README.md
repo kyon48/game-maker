@@ -46,3 +46,7 @@ S1c 촬영 생성물: `films/main.film.json`, `films/main.narration.md`, `tests/
 기본 `*>` 경로는 함께 지키는 결말이다. 혼자 지키는 결말은 원고 선택 표시를 바꾼 메모리 변형 테스트로 전체 경로를 확인한다.
 
 S1d 예시: 선착장의 뱃사공(`film=skip`)은 수동 플레이에서만 대화하고, 옛 등대지기(`when=any(ending_public,ending_kept)`)는 결말을 본 뒤 선착장에 나타난다.
+
+V2a 대사 음성: `voices.json`과 수기 `films/voiced.film.json`은 입력, `voice-manifest.json`은 TTS 생성물이다.
+`npm run tts -- lantern --film voiced` 후 `npm run film -- lantern voiced`로 한국어 대사 음성을 녹화한다.
+macOS 한국어 음성이 필요하며 로컬 WAV는 .cache/voice/lantern에만 둔다. story 생성 main film은 S2 전까지 auto 형식을 유지한다.

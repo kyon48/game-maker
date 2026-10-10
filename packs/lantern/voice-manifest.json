@@ -1,0 +1,82 @@
+{
+  "07a8502c4aea82fe91af345818a74ef0393d9651a44ef30ca19005b0038e1910": {
+    "frames": 120,
+    "provider": "macos-say",
+    "voice": "Yuna"
+  },
+  "14c55fa926f4a9d83e40af7c1094967feb42c039a88a9359dfc9a920354aa08e": {
+    "frames": 206,
+    "provider": "macos-say",
+    "voice": "Grandpa"
+  },
+  "308d1ce78c08af7defbf7cfa1a26f9190501c3b2f66a0b69c2f626c14ca8ce07": {
+    "frames": 153,
+    "provider": "macos-say",
+    "voice": "Yuna"
+  },
+  "33bf4a3d3ae55809f2d12511db6365560d05c184b6fe0ddab574b02f84fe8ce4": {
+    "frames": 111,
+    "provider": "macos-say",
+    "voice": "Yuna"
+  },
+  "35da957f0a5461e033710650ba4b47fce4f2acf82332eb0a181f864d0777142f": {
+    "frames": 248,
+    "provider": "macos-say",
+    "voice": "Shelley"
+  },
+  "3b69ea7026090fa6d09dba75260115720700858e35b0eb2dd059170dc03cd69c": {
+    "frames": 181,
+    "provider": "macos-say",
+    "voice": "Yuna"
+  },
+  "4a5dd9beb560771f0e744cd3bac4f68efbc7abbcbd1a68f41ef15956a5fbfc7a": {
+    "frames": 38,
+    "provider": "macos-say",
+    "voice": "Yuna"
+  },
+  "682cd87002bdb39bf728b8df55fe4c86c9d9dda92b111f9e09e70e6603b38806": {
+    "frames": 218,
+    "provider": "macos-say",
+    "voice": "Shelley"
+  },
+  "699a3216b19b068b8541552232f2c32a26caeaa01cef00077e12e75abb4b09c2": {
+    "frames": 159,
+    "provider": "macos-say",
+    "voice": "Grandpa"
+  },
+  "7271b05513410ddc4dd7d9771d123900e4eaef5698cc91685a6a145f5c9bec12": {
+    "frames": 145,
+    "provider": "macos-say",
+    "voice": "Shelley"
+  },
+  "82270e26772d4d14dcd6b3942a840ae217a482d116e2e6ef8d116040716aa72b": {
+    "frames": 157,
+    "provider": "macos-say",
+    "voice": "Shelley"
+  },
+  "96a1f0a6839947da9f85099b888827ef6149e8a4b6e23eda2589bc697c1795f6": {
+    "frames": 109,
+    "provider": "macos-say",
+    "voice": "Grandpa"
+  },
+  "a0e8c38e681c74c9425f0e75dc81b6469ee418be1a2793802b23bbd898b846d2": {
+    "frames": 214,
+    "provider": "macos-say",
+    "voice": "Reed"
+  },
+  "cf4ba8b8d4d7a0702c05e6554f52a002de360ea741b7858e4619c783a9784a26": {
+    "frames": 122,
+    "provider": "macos-say",
+    "voice": "Yuna"
+  },
+  "e04642ea59ad417c83f5e41bf17517f04e192b6518813ea4da8567dd45a20677": {
+    "frames": 139,
+    "provider": "macos-say",
+    "voice": "Shelley"
+  },
+  "fbb6a0b35f9dbfbe1c90bce840bf0ffedbc0722333614c50ce456c8ba4924f11": {
+    "frames": 165,
+    "provider": "macos-say",
+    "voice": "Yuna"
+  }
+}

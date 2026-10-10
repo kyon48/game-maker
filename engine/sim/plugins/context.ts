@@ -12,6 +12,6 @@ export function stateAccess(state: GameState): GameStateAccess {
 export function publicContext(context: CommandContext): PublicContext {
   return Object.freeze({ state: stateAccess(context.state), thisEvent: context.thisEvent && Object.freeze({ ...context.thisEvent }),
     get player() { return Object.freeze({ ...context.player }); }, waitFrames: context.waitFrames, waitUntil: context.waitUntil,
-    runCommands: context.runCommands, showText: context.showText, showChoice: context.showChoice,
+    runCommands: context.runCommands, showText: (request: Parameters<PublicContext['showText']>[0]) => context.showText(request), showChoice: context.showChoice,
     get stopped() { return context.stopped; }, stop: context.stop });
 }

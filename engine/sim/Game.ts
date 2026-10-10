@@ -1,3 +1,5 @@
+import { voiceKey } from '../data/voice';
+import type { Voices } from '../data/schema/voices';
 import { plainText } from '../data/text';
 import type { TextResolver } from '../data/text';
 import type { PluginRuntime } from './plugins/PluginRuntime';
@@ -44,6 +46,7 @@ export interface GameSnapshot {
   readonly choice: ChoiceSnapshot | null;
 }
 export interface GameOptions {
+  voices?: Voices; voiceLengths?: Readonly<Record<string, number>>; recording?: boolean;
   plugins?: PluginRuntime;
   save?: (state: PersistentState) => void; selfFlags?: Readonly<Record<string, boolean>>;
   skin?: Skin; textMeasurer?: TextMeasurer; mapLoader?: MapLoader;
@@ -89,7 +92,11 @@ export class Game {
     this.choice = new ChoiceState(text => plainText(text, resolver, false));
     this.message = new MessageState({ width: config.screen.width - 2 * (options.skin?.window.padding ?? 8),
       rows: options.skin?.message.rows ?? 3, charsPerTick: options.skin?.message.charsPerTick ?? 1 },
-    options.textMeasurer ?? new HeadlessTextMeasurer(options.skin?.font.size ?? 12), resolver);
+    options.textMeasurer ?? new HeadlessTextMeasurer(options.skin?.font.size ?? 12), resolver, (text, speaker) => {
+      const voice = options.voices?.[speaker ?? 'narrator']; if (!voice) return undefined;
+      const key = voiceKey(voice, text), frames = options.voiceLengths?.[key];
+      return { voiceKey: key, voiceFrames: frames, auto: !!options.recording && frames !== undefined, gapTicks: Math.ceil((options.skin?.message.voiceGap ?? 0.4) * 60) };
+    });
     this.showMapName();
     this.options.plugins?.mapEnter(this.hookContext());
     this.current = this.capture();
@@ -189,8 +196,8 @@ export class Game {
         return { kind: 'frames', n };
       },
       waitUntil: test => ({ kind: 'until', test }),
-      showText: function* (request) {
-        message.open(request);
+      showText: function* (request, source) {
+        message.open(request, source === 'command' ? 'command' : 'plugin');
         try { yield { kind: 'until', test: () => !message.opened }; }
         finally { message.close(); }
       },

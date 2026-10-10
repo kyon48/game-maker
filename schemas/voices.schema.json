@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "patternProperties": {
+    "^(.*)$": {
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "provider",
+        "voice"
+      ],
+      "properties": {
+        "provider": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "voice": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "speed": {
+          "exclusiveMinimum": 0,
+          "maximum": 10,
+          "type": "number"
+        }
+      }
+    }
+  }
+}

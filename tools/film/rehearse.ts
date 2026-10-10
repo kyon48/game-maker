@@ -1,3 +1,4 @@
+import { voiceLengths } from '../../engine/data/voice';
 import { Value } from '@sinclair/typebox/value';
 import { FilmSchema } from '../../engine/data/schema/film';
 import type { Film } from '../../engine/data/schema/film';
@@ -25,7 +26,7 @@ export async function prepareFilm(packId: string, id: string) {
 }
 export async function rehearse(pack: ValidatedPack, film: Film, plugins: PluginRuntime) {
   const start = film.start ?? pack.game.start;
-  const runtime = new GameSession(pack, { plugins }, start, {
+  const runtime = new GameSession(pack, { plugins, voices: pack.voices, voiceLengths: voiceLengths(pack.voiceManifest), recording: film.steps.some(s => 'advanceText' in s && s.advanceText === 'voice') }, start, {
     flags: { ...pack.game.state.flags, ...film.state?.flags }, vars: { ...pack.game.state.vars, ...film.state?.vars },
   });
   const session = new FilmSession(runtime.game, film, runtime), events: TimelineEvent[] = [];
