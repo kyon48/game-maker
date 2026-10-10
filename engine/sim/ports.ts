@@ -5,6 +5,7 @@ export interface InputFrame {
 }
 export interface TextMeasurer { width(text: string): number }
 export interface PackSource {
+  readBytes?(path: string): Promise<Uint8Array>;
   readJson(path: string): Promise<unknown>;
   listFiles?(): Promise<readonly string[]>;
   exists(path: string): Promise<boolean>;

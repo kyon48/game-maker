@@ -1,3 +1,4 @@
+import type { Portraits } from '../portraits';
 import type { Voices, VoiceManifest } from '../schema/voices';
 import type { TSchema } from '@sinclair/typebox';
 import type { GameConfig, EventDefinition } from '../game';
@@ -15,6 +16,7 @@ export interface ValidationOptions {
   plugins?: readonly { id: string; apiVersion: number }[];
 }
 export interface ValidatedPack {
+  portraits?: Portraits;
   voices?: Voices; voiceManifest?: VoiceManifest;
   game: GameConfig; characters: Characters; skin: Skin;
   common: Record<string, { commands: Command[] }>;

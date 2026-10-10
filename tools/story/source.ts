@@ -15,6 +15,7 @@ export async function storySource(folder: string, files: ReadonlyMap<string, str
     }
   }
   return {
+    readBytes: file => fs.readBytes(file),
     readJson: async file => files.has(file) ? JSON.parse(files.get(file)!) as unknown : fs.readJson(file),
     exists: async file => !excluded.has(file) && (files.has(file) || await fs.exists(file)),
     listFiles: async () => [...new Set([...(await fs.listFiles()), ...files.keys()])].filter(file => !excluded.has(file)),

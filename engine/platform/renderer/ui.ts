@@ -1,3 +1,4 @@
+import { portraitSlot } from '../../data/portraits';
 import type { Skin } from '../../data/skin';
 import type { GameSnapshot } from '../../sim/Game';
 function windowBox(context: CanvasRenderingContext2D, skin: Skin, images: ReadonlyMap<string, CanvasImageSource>,
@@ -30,9 +31,11 @@ export function drawUi(context: CanvasRenderingContext2D, snapshot: Pick<GameSna
     const message = snapshot.message, speakerRows = message.speaker === undefined ? 0 : 1;
     const height = (skin.message.rows + speakerRows) * lineHeight + 2 * padding;
     const top = context.canvas.height - height;
+    const slot = portraitSlot(skin);
+    const textLeft = padding + (message.portrait && message.expression ? slot.width + slot.gap : 0);
     windowBox(context, skin, images, 0, top, context.canvas.width, height);
     if (message.speaker !== undefined) {
-      context.fillStyle = skin.colors.speaker; context.fillText(message.speaker, padding, top + padding);
+      context.fillStyle = skin.colors.speaker; context.fillText(message.speaker, textLeft, top + padding);
     }
     context.fillStyle = skin.colors.text;
     message.segments.forEach((line, index) => {
@@ -40,7 +43,7 @@ export function drawUi(context: CanvasRenderingContext2D, snapshot: Pick<GameSna
       const flush = () => {
         const colors: Readonly<Record<string, string | undefined>> = skin.colors;
         context.fillStyle = color === undefined ? skin.colors.text : colors[color] ?? skin.colors.text;
-        context.fillText(run, padding + context.measureText(prefix).width, top + padding + (index + speakerRows) * lineHeight);
+        context.fillText(run, textLeft + context.measureText(prefix).width, top + padding + (index + speakerRows) * lineHeight);
         prefix += run; run = '';
       };
       for (const segment of line) {

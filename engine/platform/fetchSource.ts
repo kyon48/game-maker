@@ -3,6 +3,11 @@ import { packPath } from '../data/loader/path';
 export class FetchSource implements PackSource {
   constructor(readonly root: string, private readonly inventoryUrl?: string, private readonly cacheKey?: string) {}
   url(path: string): string { return this.root + packPath('', path).split('/').map(encodeURIComponent).join('/') + (this.cacheKey ? '?v=' + encodeURIComponent(this.cacheKey) : ''); }
+  async readBytes(path: string): Promise<Uint8Array> {
+    const response = await fetch(this.url(path));
+    if (!response.ok) throw new Error(`Load failed: ${path} (${response.status})`);
+    return new Uint8Array(await response.arrayBuffer());
+  }
   async readJson(path: string): Promise<unknown> {
     const response = await fetch(this.url(path));
     if (!response.ok) throw new Error(`Load failed: ${path} (${response.status})`);

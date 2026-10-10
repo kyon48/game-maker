@@ -8,6 +8,7 @@ export class FsSource implements PackSource {
     if (path.isAbsolute(file) || file.includes('\\') || !resolved.startsWith(root + path.sep)) throw new Error(`Outside pack: ${file}`);
     return resolved;
   }
+  async readBytes(file: string): Promise<Uint8Array> { return readFile(this.resolve(file)); }
   async readJson(file: string): Promise<unknown> { return JSON.parse(await readFile(this.resolve(file), 'utf8')); }
   async exists(file: string): Promise<boolean> { try { await access(this.resolve(file)); return true; } catch { return false; } }
   async listFiles(): Promise<readonly string[]> {

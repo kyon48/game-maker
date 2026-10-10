@@ -5,7 +5,7 @@ import type { EventScope } from './conditions';
 export type Wait = { kind: 'frames'; n: number } | { kind: 'until'; test: () => boolean };
 export type CommandGen<R = void> = Generator<Wait, R, void>;
 export type CommandHandler<A> = (args: A, ctx: CommandContext) => CommandGen | void;
-export interface TextRequest { text: string; speaker?: string }
+export interface TextRequest { text: string; speaker?: string; portrait?: string; expression?: string }
 export interface ChoiceRequest { prompt?: string; labels: (string | null)[]; cancelIndex: number | null }
 export interface TransferRequest { map: string; marker?: string; x?: number; y?: number; dir?: Dir; fade?: boolean }
 export interface CommandContext {

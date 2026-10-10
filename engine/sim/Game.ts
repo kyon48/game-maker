@@ -33,6 +33,7 @@ import { Interpreter } from './event/Interpreter';
 import { CommandRegistry } from './event/CommandRegistry';
 import { TriggerSlot, actionTarget } from './event/triggers';
 import { registerBuiltins } from './commands';
+import { portraitSlot } from '../data/portraits';
 import { MessageState } from './ui/MessageState';
 import { ChoiceState } from './ui/ChoiceState';
 export interface GameSnapshot {
@@ -92,7 +93,7 @@ export class Game {
     }, color: name => options.skin ? Object.hasOwn(options.skin.colors, name) : false };
     this.choice = new ChoiceState(text => plainText(text, resolver, false));
     this.message = new MessageState({ width: config.screen.width - 2 * (options.skin?.window.padding ?? 8),
-      rows: options.skin?.message.rows ?? 3, charsPerTick: options.skin?.message.charsPerTick ?? 1 },
+      portrait: portraitSlot(options.skin), rows: options.skin?.message.rows ?? 3, charsPerTick: options.skin?.message.charsPerTick ?? 1 },
     options.textMeasurer ?? new HeadlessTextMeasurer(options.skin?.font.size ?? 12), resolver, (text, speaker) => {
       const voice = options.voices?.[speaker ?? 'narrator']; if (!voice) return undefined;
       const key = voiceKey(voice, text), frames = options.voiceLengths?.[key];

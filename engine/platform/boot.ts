@@ -1,3 +1,7 @@
+import { Presentation } from './presentation';
+import { drawPortrait } from './renderer/portraits';
+import { portraitFiles } from '../data/portraits';
+import type { Portraits } from '../data/portraits';
 import { voiceLengths } from '../data/voice';
 import type { Voices, VoiceManifest } from '../data/schema/voices';
 import runtime from 'virtual:pack-runtime';
@@ -17,7 +21,6 @@ import { FetchSource } from './fetchSource';
 import { Keyboard } from './keyboard';
 import { FixedTickLoop, startLoop } from './loop';
 import { drawTileMap } from './renderer/tileMap';
-import { resizeCanvas } from './scale';
 import type { GameConfig, EventDefinition } from '../data/game';
 import type { Characters } from '../data/characters';
 import { Game } from '../sim/Game';
@@ -67,9 +70,11 @@ async function boot(): Promise<void> {
     source.readJson('skin.json') as Promise<Skin>,
     source.readJson('common-events.json') as Promise<Record<string, { commands: Command[] }>>,
   ]);
+  const portraits = await source.exists('portraits.json') ? await source.readJson('portraits.json') as Portraits : {};
   const voices = await source.exists('voices.json') ? await source.readJson('voices.json') as Voices : undefined;
   const voiceManifest = await source.exists('voice-manifest.json') ? await source.readJson('voice-manifest.json') as VoiceManifest : undefined;
   const loader = new BrowserMapLoader(new MapCache(source, game.tileSize, new Map(entries)), characters, path => source.url(path));
+  await Promise.all(portraitFiles(portraits).map(path => loader.image(path)));
   const font = new FontFace(skin.font.family, `url(${JSON.stringify(source.url(skin.font.src))})`);
   document.fonts.add(await font.load());
   await document.fonts.ready;
@@ -91,10 +96,12 @@ async function boot(): Promise<void> {
   context.font = `${skin.font.size}px ${JSON.stringify(skin.font.family)}`;
   const images = loader.images;
   document.title = game.title;
-  app.replaceChildren(canvas);
+  const presentation = new Presentation(canvas);
+  app.replaceChildren(presentation.stage);
+  const resizeController = new AbortController();
   const keyboard = film ? null : new Keyboard(window);
-  const resize = () => resizeCanvas(canvas); resize(); window.addEventListener('resize', resize);
-  cleanup = () => { keyboard?.dispose(); window.removeEventListener('resize', resize); };
+  const resize = () => { presentation.resize(); }; resize(); window.addEventListener('resize', resize);
+  cleanup = () => { keyboard?.dispose(); resizeController.abort(); window.removeEventListener('resize', resize); };
   const continued = restored.state && await chooseStart(context, skin, images, keyboard!, [game.labels.continue, game.labels.newGame]) === 0;
   const state = continued ? restoreSave(candidate, game, new Map(entries), new Map(savedData ? [[savedMap, savedData.data]] : []), {
     loadSave: (state, from) => plugins.loadSave(state, candidate.data!, from),
@@ -129,15 +136,19 @@ async function boot(): Promise<void> {
     }
     drawMapName(context, snapshot.mapName, skin);
     drawUi(context, snapshot, skin, images);
+    drawPortrait(presentation.hdContext, snapshot.message, skin, portraits, images, canvas.width, canvas.height);
   };
   if ((import.meta.env.DEV || __RECORDING__) && film) {
     const { narrationOptions } = await import('../film/narration');
     const { createRecorder } = await import('./recorder');
-    window.__recorder = createRecorder(simulation, film, window.__filmRequest?.fps ?? film.fps ?? 30, context, render, saveSession, narrationOptions(() => saveSession?.game ?? simulation, voices, voiceLengths(voiceManifest), false, plugins), filmCues);
+    const capture = presentation.capture();
+    const renderCapture = (active: Game) => { render(active); presentation.composite(capture); };
+    window.__recorder = createRecorder(simulation, film, window.__filmRequest?.fps ?? film.fps ?? 30, capture, renderCapture, saveSession, narrationOptions(() => saveSession?.game ?? simulation, voices, voiceLengths(voiceManifest), false, plugins), filmCues);
     render(); return;
   }
+  window.addEventListener('resize', () => render(), { signal: resizeController.signal });
   const stop = startLoop(new FixedTickLoop(input => simulation.tick(input), () => keyboard!.consume(), render), error => { keyboard?.dispose(); fail(error); });
-  cleanup = () => { stop(); keyboard?.dispose(); window.removeEventListener('resize', resize); };
+  cleanup = () => { stop(); keyboard?.dispose(); resizeController.abort(); window.removeEventListener('resize', resize); };
   window.addEventListener('pagehide', () => cleanup(), { once: true });
 }
 void boot().catch(fail);

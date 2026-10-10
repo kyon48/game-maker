@@ -22,7 +22,9 @@
             {
               "cmd": "text",
               "speaker": "촌장",
-              "text": "처음 보는 얼굴이군. 우리 마을에 온 것을 환영하네."
+              "text": "처음 보는 얼굴이군. 우리 마을에 온 것을 환영하네.",
+              "portrait": "elder",
+              "expression": "soft_smile"
             },
             {
               "cmd": "choice",
@@ -35,7 +37,9 @@
                     {
                       "cmd": "text",
                       "speaker": "촌장",
-                      "text": "북쪽 숲은 조심하게."
+                      "text": "북쪽 숲은 조심하게.",
+                      "portrait": "elder",
+                      "expression": "soft_smile"
                     }
                   ]
                 },
@@ -45,7 +49,9 @@
                     {
                       "cmd": "text",
                       "speaker": "촌장",
-                      "text": "말이 없어도 괜찮네."
+                      "text": "말이 없어도 괜찮네.",
+                      "portrait": "elder",
+                      "expression": "soft_smile"
                     }
                   ]
                 }
@@ -70,7 +76,9 @@
             {
               "cmd": "text",
               "speaker": "촌장",
-              "text": "또 왔나. 마을을 천천히 둘러보게."
+              "text": "또 왔나. 마을을 천천히 둘러보게.",
+              "portrait": "elder",
+              "expression": "soft_smile"
             }
           ]
         }

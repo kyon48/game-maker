@@ -32,6 +32,7 @@ async function prepare(text = baseline, voiced = true) {
   if (voiced) compiled.files.set('voices.json', jsonBytes(voices));
   const fs = new FsSource('packs/lantern');
   const source: PackSource = {
+    readBytes: file => fs.readBytes(file),
     readJson: async file => file === 'voices.json' ? voices : compiled.files.has(file) ? JSON.parse(compiled.files.get(file)!) as unknown : fs.readJson(file),
     exists: async file => file === 'voices.json' ? voiced : compiled.files.has(file) || await fs.exists(file),
     listFiles: async () => [...new Set([...(await fs.listFiles()).filter(f => !/^films\/|^tests\//.test(f)), ...compiled.files.keys()])],
