@@ -1,4 +1,4 @@
-# 스토리 파서·lint·팩 컴파일 (S1a/S1b/S1c/S1d)
+# 스토리 파서·lint·팩 컴파일 (S1a/S1b/S1c/S1d/S2)
 
 ```sh
 npm run story -- lint <packId>
@@ -161,9 +161,9 @@ GID는 양의 정수이며 tileset은 팩 내부 .tsj 경로다. firstgid 기본
 - @go는 정식 marker 이름의 transfer다. 문은 앵커 이름 ID의 through=true touch transfer 이벤트다. 다른 이벤트 ID와 충돌하면 오류다.
 - @common/@call과 @if/all/any/비교 조건은 기존 엔진 데이터로 변환한다. @cmd JSON은 그대로 넣고 기존 validate가 내용 검증한다.
 - 표정이 있으면 S028 경고 팩당 1회, portrait/expression 필드는 생략한다. normalizeExpression(name, aliases)는 key/en/ko/core 별칭을 key로 반환하는 순수 함수이며 이후 V3a/S3에서 사용할 수 있다.
-- 나레이션, @waitNarration, @film은 팩에서 생략한다. S1c/S2에서 film으로 연결한다.
+- 이벤트·공통 이벤트의 나레이션과 @waitNarration은 ID만 가진 film_cue로 변환한다. 텍스트·음성은 film에만 둔다. @film 힌트는 팩에서 생략한다.
 
-생성 목록은 game.json, common-events.json, maps/<location>.events.json, 최초/강제 생성 maps/<location>.tmj, story/.compiled.json이다.
+생성 목록은 game.json, 설정에 voices가 있으면 voices.json, common-events.json, maps/<location>.events.json, 최초/강제 생성 maps/<location>.tmj, story/.compiled.json이다.
 파일은 JSON 2칸 들여쓰기·LF·마지막 줄끝으로 쓰며 생성 시각·난수·절대 경로를 기록하지 않는다.
 
 ### Tiled 손질과 소유권
@@ -173,7 +173,7 @@ GID는 양의 정수이며 tileset은 팩 내부 .tsj 경로다. firstgid 기본
 --force는 일반 생성 파일만 덮어쓰며 앵커 불일치를 무시하지 않는다. --force-maps는 맵을 다시 만든다. 필요하면 둘을 함께 쓴다.
 
 .compiled.json은 version/files/maps로 경로·SHA-256을 기록한다.
-files는 game.json 전체·common-events.json·events.json의 해시 보호 대상이다. game의 수기 메타데이터를 고친 뒤에도 --force로 재컴파일해야 한다(수기 필드의 새 값은 보존).
+files는 game.json 전체·voices.json·common-events.json·events.json·촬영 생성물의 해시 보호 대상이다. game의 수기 메타데이터를 고친 뒤에도 --force로 재컴파일해야 한다(수기 필드의 새 값은 보존).
 maps는 최초/재생성 당시 해시만 기록하며 손질 검사의 비교 대상은 아니다. 맵을 보존하면 기존 기록도 유지한다.
 소유권 없는 기존 생성 경로의 파일이 새 결과와 다르면 첫 컴파일도 --force가 필요하다.
 이전 스토리에서 빠진 추적 events.json은 해시 검사를 통과한 뒤 삭제한다. Tiled 맵은 삭제하지 않는다.
@@ -200,7 +200,7 @@ check는 쓰기/삭제 없이 lint·메모리 컴파일과 일반 생성 파일�
 V1~V12는 엔진의 기존 validate 진단을 그대로 출력한다.
 검증기 오류를 S 코드로 바꾸거나 lint에 임의의 엔진 커맨드 검증을 추가하지 않는다.
 
-## 촬영 대본·시나리오 생성 (S1c)
+## 촬영 대본·시나리오 생성 (S1c/S2)
 
 ```sh
 npm run story -- film lantern
@@ -216,19 +216,19 @@ film은 lint·팩 메모리 컴파일·검증 후 장면 순서와 `*>`(없으�
 compile만 실행하면 기존 촬영 생성물은 유지한다. 원고를 바꾼 뒤 film 또는 build를 실행해야 check가 통과한다.
 --force는 편집/삭제한 생성물을 덮어쓴다. --name은 파일 이름만 지정하며 별도 선택 경로 옵션은 없다.
 
-build는 lint → compile → film → validate → scenarios → films 순서로 진행하고 실패한 단계에서 종료 코드 1로 중단한다.
-art/TTS/음성 자동 진행은 이후 단계이며 이번에는 호출하지 않는다. 영상은 기존 `npm run film`으로 별도로 녹화한다.
+build는 lint → compile → film → tts → validate → scenarios → films 순서로 진행하고 실패한 단계에서 종료 코드 1로 중단한다.
+tts는 voices가 있을 때만 실행하며 캐시 음성은 다시 생성하지 않는다. art는 S3 단계다. 영상은 기존 `npm run film`으로 별도로 녹화한다.
 
 - 장마다 chapter, action/touch 이벤트에는 walkTo·pause 0.35·확인/진입 입력을 넣는다. auto는 자동 시작하므로 확인 입력과 접근 이동을 생략한다.
 - 문 연결 그래프를 선언 순서로 너비 우선 탐색한다. 각 문까지 walkTo한 뒤 현재 인접 위치에서 문을 향해 walk 한 칸·settle을 넣는다.
 - 도착 맵에서 auto 대화가 시작되면 해당 장면을 진행한 뒤 settle한다. 열린 메시지를 settle로 기다리지 않는다.
-- 메시지 준비 대기 단계가 현재 film 형식에 없어, 실제 리허설에서 메시지가 열릴 때까지 측정한 틱을 wait로 넣는다. 시작 auto·fade·wait·이동·공통 이벤트에도 같은 방식이다. 임의의 고정 pause로 준비 시간을 추정하지 않는다.
-- advanceText auto·choose dwell 0.4로 대사를 진행하고, 선택한 분기의 set/unset 마지막 값을 장면 끝과 최종 시나리오에서 expect한다. 공통 이벤트의 선택 경로도 포함한다.
+- 메시지·선택지 준비는 waitFor:message로 기다린다. 시작 auto·fade·wait·이동·공통 이벤트에 동일하게 적용한다. 메시지가 더 나오지 않는 이벤트 꼬리·transfer 완료의 빈 틱은 wait로 남으며 대사 읽기/음성 길이와 무관하다.
+- voices에 등록된 화자는 advanceText voice, 나머지는 auto로 한 메시지씩(count:1) 진행한다. choose dwell 0.4로 선택하고, 선택한 분기의 set/unset 마지막 값을 장면 끝과 최종 시나리오에서 expect한다. 공통 이벤트의 선택 경로도 포함한다.
 - 시나리오는 동일 리허설 입력의 hold/wait 압축 기록이다. 별도의 이동 경로·대사 타이밍 추정을 하지 않는다.
 - 장면의 @film pause/walkTo는 그 위치에서 적용한다. 이벤트/공통 이벤트 안의 힌트는 선택 경로에서 모아 action/touch 직전, auto 완료 직후 적용한다. 연속 대사 사이 배치가 필요하면 장면 수준으로 옮긴다.
-- 나레이션은 선택 경로의 `>` 줄을 장·장면 제목과 함께 Markdown으로 추출하며 게임/film 재생 커맨드에는 넣지 않는다.
+- 나레이션은 선택 경로의 `>` 줄을 장·장면 제목과 함께 Markdown으로 추출한다. voices가 있으면 장면 위치에 비차단 narrate를, 이벤트 본문 위치에는 cue를 기다리는 narrate를 생성한다. cue 나레이션은 음성 완료까지 인터프리터를 막아 다음 대사와 겹치지 않는다. 장면 나레이션 뒤 대사를 겹치지 않게 하려면 @waitNarration을 명시한다.
 - @cmd 내부의 선택지/분기 상태 변경은 경로 분석 대상이 아니다. 선택은 story 문법으로 작성한다. 실제 실행과 예상 선택지가 다르면 오류다.
-- 동일 입력·에셋·엔진이면 두 번 생성한 바이트가 같다. 생성 시각·절대 경로·난수는 출력하지 않는다. 측정 대기는 콘텐츠/에셋/엔진을 변경하면 다시 생성해야 한다.
+- 동일 입력·에셋·엔진이면 두 번 생성한 바이트가 같다. 생성 시각·절대 경로·난수는 출력하지 않는다. 대본 생성에서는 목소리 길이표를 읽지 않는다. 시나리오는 음성 없는 수동 입력 기록이므로 음성 길이에 따른 기다림을 포함하지 않는다.
 
 | 코드 | 수준 | 의미 |
 |---|---|---|
@@ -267,7 +267,7 @@ once 완료 후 자동 추가되는 none 페이지도 기존대로 self=true를 
 
 이벤트 내부 @go도 문 이동과 같은 장면 경계를 사용한다.
 맵이 바뀌면 앞 이벤트의 대사 진행을 종료하고, 도착 auto가 있으면 settle을 다음 장면의 대사·선택지 처리 뒤로 미룬다.
-advanceText 실행 도중 맵이 바뀐 경우에는 그 지점까지의 hold/wait 입력으로 바꿔 재생 시 도착 대사를 앞 장면이 소비하지 않게 한다.
+advanceText는 count:1로 한 메시지만 처리하여 도착 대사를 앞 장면이 소비하지 않게 한다.
 도착 맵의 auto는 원고상 다음 장면의 *> 선택과 플래그 expect를 사용한다.
 힌트와 이어지는 이벤트가 같은 대상이면 연속 walkTo는 하나만 출력하며, 중간에 pause나 다른 단계가 있으면 유지한다.
 
@@ -283,3 +283,27 @@ lantern의 선착장 뱃사공은 film=skip 예시, 옛 등대지기는 두 결�
 compile 단독 실행은 기존 촬영 파일을 보존하고 재생성 결과와 다르면 S034 `story film 필요` 경고를 낸다.
 `story film`/`story build`로 원고에서 다시 생성하면 새 film·시나리오를 정상 검증·리허설한다.
 생성 파일을 손으로 지울 필요가 없으며 S025 소유권 검사는 그대로 유지한다. `story check`는 오래된 생성물을 S029 차이로 계속 실패 처리한다.
+
+## 목소리 연결 (S2)
+
+```json
+{
+  "voices": {
+    "sora": { "provider": "macos-say", "voice": "Shelley" },
+    "narrator": { "provider": "macos-say", "voice": "Yuna", "speed": 1 }
+  },
+  "narrator": "narrator"
+}
+```
+
+설정은 story/story.config.json에 두고 `@character sora "소라" voice=sora`로 연결한다. compile은 표시 이름을 키로 쓰는 voices.json을 생성하며 narrator도 같은 목소리 키에서 찾는다. 수기 voices.json은 S025 소유권 규칙에 따라 --force 전까지 덮어쓰지 않는다. 선언만 있고 대사가 없는 인물에는 목소리가 필요 없다. 대사가 있지만 voice가 없으면 경고 후 무음으로 둔다.
+
+이벤트·공통 이벤트의 `>`와 @waitNarration은 구조 순서 ID의 film_cue를 만든다. 일반 플레이·시나리오는 즉시 통과한다. 녹화는 film의 cue에 도달한 뒤 나레이션 대기열이 끝나야 다음 커맨드를 진행한다. cue에는 텍스트·목소리·시간을 넣지 않는다.
+
+`story check`는 생성 바이트 비교 뒤 커밋된 매니페스트로 리허설하며 TTS나 say를 호출하지 않는다. 음성 길이가 없거나 원고와 맞지 않으면 `npm run story -- build <pack>` 안내와 함께 실패한다. 이 build만 캐시에 없는 음성을 생성한다. 설정을 없애면 컴파일러가 소유한 voices.json도 제거해 무음 경로로 돌아간다.
+
+| 코드 | 수준 | 의미 |
+|---|---|---|
+| S035 | 오류 | 설정에 없는 voice/narrator 키 또는 음성 팩 나레이션에 narrator 설정 누락 |
+| S036 | 경고 | 대사가 있지만 voice가 없는 인물(무음) |
+| S037 | 오류 | 커밋된 매니페스트의 음성 길이 누락 또는 촬영 리허설 실패(build 필요) |

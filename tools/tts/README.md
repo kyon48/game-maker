@@ -1,9 +1,9 @@
 # 대사·나레이션 TTS (V2a/V2b)
 
 ```sh
-npm run tts -- lantern --film voiced
-npm run tts -- lantern --film voiced --prune
-npm run film -- lantern voiced
+npm run tts -- lantern --film main
+npm run tts -- lantern --film main --prune
+npm run film -- lantern main
 ```
 
 `--film` 기본값은 main이다. voices.json의 화자 표시 이름을 사용하며 화자가 없는 대사는 narrator다.
@@ -37,3 +37,9 @@ waitFor: message는 실제 메시지/선택지 준비를 최대 36000틱 기다�
 film의 narrate도 실제 진행 시점의 G1 평문으로 추출한다. 첫 생성에는 아직 길이가 없으므로 추출용 리허설만 매니페스트 누락 나레이션에 읽기 시간 추정치를 사용한다. 실제 리허설·녹화는 반드시 매니페스트 길이를 사용한다. 나레이션은 narrator 목소리로 캐시한다.
 
 최종 합성은 음성·음악 덕킹과 2-pass loudnorm을 적용하고 48kHz 스테레오 AAC로 출력한다. 원본 캐시의 24kHz mono WAV는 그대로 유지하고 합성에서 변환한다.
+
+## Story 연결 (S2)
+
+`npm run story -- build <pack>`은 원고와 story.config.json의 목소리 키에서 voices.json·main film을 생성한 뒤 tts를 실행한다. 캐시에 없는 대사·나레이션만 생성하며 voice-manifest.json은 커밋한다. `story check`와 npm run check는 say를 호출하지 않고 이 매니페스트만 사용한다.
+
+추출용 리허설에서는 메시지를 수동 진행하되 cue는 유지한다. 대사 하나를 닫으면 다음 이벤트 나레이션 cue에서 멈추고 그 문장을 수집한 뒤 다음 대사로 넘어간다. 이벤트 나레이션은 원고의 정확한 위치에서 수집된다.

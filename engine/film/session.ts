@@ -1,3 +1,4 @@
+import type { FilmCueGate } from './cues';
 import type { Game } from '../sim/Game';
 import type { GameSession } from '../sim/state/GameSession';
 import type { Film } from '../data/schema/film';
@@ -13,8 +14,8 @@ export class FilmSession {
   private chapterIndex = 0;
   private closed = false;
   get game(): Game { return this.saveSession?.game ?? this.initial; }
-  constructor(private readonly initial: Game, film: Film, private readonly saveSession?: GameSession, audio?: FilmAudioOptions) {
-    this.driver = new FilmDriver(film, audio);
+  constructor(private readonly initial: Game, film: Film, private readonly saveSession?: GameSession, audio?: FilmAudioOptions, cues?: FilmCueGate) {
+    this.driver = new FilmDriver(film, audio, cues);
     this.pending = this.observer.observe(observeGame(this.game), 0);
   }
   async tick(): Promise<boolean> {

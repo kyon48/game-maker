@@ -25,6 +25,24 @@
         {
           "additionalProperties": false,
           "type": "object",
+          "required": [
+            "id",
+            "cmd"
+          ],
+          "properties": {
+            "id": {
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "type": "string"
+            },
+            "cmd": {
+              "const": "film_cue",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "additionalProperties": false,
+          "type": "object",
           "properties": {
             "cmd": {
               "const": "show_map_name",

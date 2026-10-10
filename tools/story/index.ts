@@ -11,8 +11,8 @@ const print = (diagnostics: readonly Diagnostic[]) => {
   for (const d of diagnostics) console.log(`${d.file}:${d.line} ${d.code} ${d.level === 'warning' ? '경고: ' : ''}${d.message}`);
   const failed = diagnostics.some(d => d.level === 'error'); if (failed) process.exitCode = 1; return failed;
 };
-async function runChecks(id: string): Promise<void> {
-  for (const tool of ['scenarios', 'films']) {
+async function runTools(id: string, tools: readonly string[]): Promise<boolean> {
+  for (const tool of tools) {
     try {
       const script = fileURLToPath(new URL(`../${tool}.ts`, import.meta.url));
       const result = await promisify(execFile)(process.execPath, ['--import', import.meta.resolve('tsx'), script, id], { maxBuffer: 10 * 1024 * 1024 });
@@ -20,10 +20,12 @@ async function runChecks(id: string): Promise<void> {
     } catch (error) {
       const failure = error as { stdout?: string; stderr?: string };
       process.stdout.write(failure.stdout ?? ''); process.stderr.write(failure.stderr ?? String(error));
-      process.exitCode = 1; break;
+      process.exitCode = 1; return false;
     }
   }
+  return true;
 }
+const runChecks = (id: string) => runTools(id, ['scenarios', 'films']);
 const usage = () => { console.error('story:1 S019 사용법: npm run story -- lint <packId> | compile <packId> [--force] [--force-maps] | film <packId> [--name main] [--force] | build <packId> | check <packId>|--all'); process.exitCode = 1; };
 try {
   if (command === 'lint' && packId && !extra.length) print(await lintPack(packId));
@@ -39,8 +41,11 @@ try {
     }
     if (!valid) usage(); else if (!print(await filmPack(packId, process.cwd(), name, force))) await runChecks(packId);
   } else if (command === 'build' && packId && !extra.length) {
-    if (!print(await lintPack(packId)) && !print(await compilePack(packId)) && !print(await filmPack(packId)) && await validateCompiledPack(packId)) {
-      await runChecks(packId);
+    if (!print(await lintPack(packId)) && !print(await compilePack(packId)) && !print(await filmPack(packId))) {
+      const { FsSource } = await import('../fsSource');
+      const hasVoices = await new FsSource(`packs/${packId}`).exists('voices.json');
+      if ((!hasVoices || await runTools(packId, ['tts'])) && await validateCompiledPack(packId)) await runChecks(packId);
+      else process.exitCode = 1;
     } else process.exitCode = 1;
   } else if (command === 'check' && packId && !extra.length) {
     const ids = packId === '--all' ? await storyPackIds() : [packId];

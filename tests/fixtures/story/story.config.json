@@ -1,0 +1,8 @@
+{
+  "voices": {
+    "sora": { "provider": "fake", "voice": "sora" },
+    "elder": { "provider": "fake", "voice": "elder" },
+    "narrator": { "provider": "fake", "voice": "narrator" }
+  },
+  "narrator": "narrator"
+}

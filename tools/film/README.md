@@ -32,3 +32,9 @@ film:verify는 짧은 demo를 두 번 녹화해 RGBA SHA-256 목록을 비교한
 타임라인은 narration-start/end와 music-start/stop을 기록한다. 나레이션 SRT는 `[나레이션]`으로 구분하며 script.md에도 별도 문단을 만든다. --chapter는 이미 재생 중인 음성·음악과 페이드의 진행 위치를 유지한다.
 
 오디오 합성은 음성 구간 기반 음악 덕킹(-12dB, 앞뒤 0.15초 램프)과 2-pass loudnorm(-14 LUFS, -1dBTP)을 적용한다. 최종 오디오는 48kHz 스테레오 AAC 192kbps다. 디지털 무음은 유한 LUFS가 없으므로 정규화 없이 유지한다. 음성·음악이 전혀 없으면 오디오 트랙을 추가하지 않는다.
+
+## Story 대기 지점 (S2)
+
+생성 film은 `advanceText: "voice", count: 1`로 한 메시지만 진행하고 `waitFor: "message"`로 준비를 기다린다. 목소리 없는 화자는 auto로 진행한다. count를 생략한 기존 대본은 이전처럼 연속 메시지를 처리한다.
+
+`narrate: "문장", cue: "story_cue_1"`은 이벤트의 film_cue에 도달할 때까지 기다린다(최대 36000틱). 그 위치에서 앞 나레이션 뒤에 음성을 배치하고 완료 후 대기 지점을 해제해 다음 대사를 시작한다. `waitNarration: true, cue: "…"`도 같은 위치에서 대기열 전체를 기다린 뒤 해제한다. 일반 플레이·시나리오에서는 cue가 즉시 통과한다.

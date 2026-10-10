@@ -1,10 +1,11 @@
+import { storyVoices } from './config';
 import { readFile, writeFile, mkdir, unlink, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { readStories } from './files';
 import { compileStories, StoryCompileError, jsonBytes } from './compile';
 import type { Diagnostic } from './ast';
-import { planFilm } from './film-project';
+import { planFilm, checkGeneratedFilms } from './film-project';
 import { parseManifest, ownedPath, storyGeneratedPath } from './ownership';
 import type { Manifest } from './ownership';
 export const hash = (text: string): string => createHash('sha256').update(text).digest('hex');
@@ -32,6 +33,8 @@ export async function prepareCompilation(packId: string, root = process.cwd(), o
       if (text !== undefined) existing.set(file, text);
     }
     const compilation = compileStories(input.stories, game, tiles, existing, options.forceMaps);
+    const voices = storyVoices(input.stories, input.config ?? {});
+    if (voices) compilation.files.set('voices.json', jsonBytes(voices));
     diagnostics.push(...compilation.diagnostics);
     const files = new Map(compilation.files), protectedFiles = [...files.keys()].filter(file => ownedPath.test(file)).sort();
     for (const file of Object.keys(old?.files ?? {}).filter(f => storyGeneratedPath.test(f))) {
@@ -62,14 +65,15 @@ export async function prepareCompilation(packId: string, root = process.cwd(), o
     files.set('story/.compiled.json', jsonBytes(manifest));
     if (options.check) {
       for (const [file, expected] of files) {
-        if (await readOptional(path.join(pack, file)) !== expected) report(file, 'S029', '생성물이 없거나 최신 스토리와 다릅니다. npm run story -- compile ' + packId + ' 실행 필요');
+        if (await readOptional(path.join(pack, file)) !== expected) report(file, 'S029', '생성물이 없거나 최신 스토리와 다릅니다. npm run story -- build ' + packId + ' 실행 필요');
       }
       for (const file of removed) report(file, 'S029', '현재 스토리에 없는 이전 생성 파일입니다. 다시 컴파일하세요');
+      if (!diagnostics.some(d => d.level === 'error') && [...files.keys()].some(f => /^films\/.*\.film\.json$/.test(f))) diagnostics.push(...await checkGeneratedFilms(packId, root, files));
     }
     return { diagnostics, files, removed };
   } catch (error) {
     if (error instanceof StoryCompileError) diagnostics.push(error.diagnostic);
-    else report('story/tiles.json', 'S021', String(error));
+    else report('story/tiles.json', options.check ? 'S029' : 'S021', `${String(error)}${options.check ? `; npm run story -- build ${packId} 실행 필요` : ''}`);
     return { diagnostics };
   }
 }

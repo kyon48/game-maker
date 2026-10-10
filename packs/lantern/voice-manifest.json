@@ -14,6 +14,11 @@
     "provider": "macos-say",
     "voice": "Yuna"
   },
+  "179f46bcbe6a50e13ae4db613b5516999528a7f2798219f212c026ab96528052": {
+    "frames": 186,
+    "provider": "macos-say",
+    "voice": "Yuna"
+  },
   "308d1ce78c08af7defbf7cfa1a26f9190501c3b2f66a0b69c2f626c14ca8ce07": {
     "frames": 153,
     "provider": "macos-say",

@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { afterEach, expect, it } from 'vitest';
 import { lintPack } from '../tools/story/files';
+const voiceConfig = JSON.parse(await readFile('tests/fixtures/story/story.config.json', 'utf8')) as Record<string, unknown>;
 const valid = await readFile('tests/fixtures/story/valid.story.md', 'utf8');
 const temporary: string[] = [];
 afterEach(async () => { await Promise.all(temporary.splice(0).map(root => rm(root, { recursive: true, force: true }))); });
@@ -13,6 +14,7 @@ async function setup(text = valid) {
   const root = await mkdtemp(path.join(tmpdir(), 'story-lint-')); temporary.push(root);
   const folder = path.join(root, 'packs/lantern/story'); await mkdir(folder, { recursive: true });
   await writeFile(path.join(folder, 'main.story.md'), text);
+  await writeFile(path.join(folder, 'story.config.json'), JSON.stringify(voiceConfig));
   return { root, folder };
 }
 const tsx = createRequire(import.meta.url).resolve('tsx');
@@ -43,7 +45,7 @@ it('loads artRoot relative to story.config.json and accepts every manifest alias
     { key: 'soft_smile', en: 'Soft Smile', ko: '부드러운 미소' }, { key: 'unimpressed', en: 'Unimpressed', ko: '시큰둥' },
     { key: 'neutral', en: 'Neutral', ko: '무표정' }, { key: 'startled', en: 'Startled', ko: '깜짝' },
   ], core: { surprised: 'startled' } }));
-  await writeFile(path.join(folder, 'story.config.json'), JSON.stringify({ artRoot: '../../../asset-library' }));
+  await writeFile(path.join(folder, 'story.config.json'), JSON.stringify({ ...voiceConfig, artRoot: '../../../asset-library' }));
   expect(await lintPack('lantern', root)).toEqual([]); expect(run(root).status).toBe(0);
   await writeFile(path.join(folder, 'main.story.md'), valid.replace('(의심)', '(모르는 표정)'));
   expect(run(root).stdout).toContain(' S007 '); expect(run(root).status).toBe(1);

@@ -1,3 +1,4 @@
+import { storyCues } from './cues';
 import type { Story, Location, Anchor, Source, Condition, Statement, Event, Diagnostic } from './ast';
 export interface Tiles { wall: number; floor: number; door: number; tileset: string; firstgid?: number }
 export interface Compilation { files: Map<string, string>; maps: Map<string, string>; diagnostics: Diagnostic[] }
@@ -42,6 +43,7 @@ export function compileStories(stories: readonly Story[], gameValue: unknown, ti
   const locations = stories.flatMap(s => s.locations), scenes = stories.flatMap(s => s.scenes);
   const points = new Map(locations.map(location => [location.id, anchorPoints(location)]));
   const point = (map: string, anchor: string, source: Source): Point => points.get(map)?.get(anchor) ?? compileError(source, 'S022', `앵커 좌표 없음: ${map}:${anchor}`);
+  const cues = storyCues(stories);
   let expressionWarning = false;
   const commands = (list: readonly Statement[]): unknown[] => list.flatMap(node => {
     switch (node.kind) {
@@ -60,7 +62,8 @@ export function compileStories(stories: readonly Story[], gameValue: unknown, ti
       case 'shake': return [{ cmd: 'shake' }];
       case 'call': return [{ cmd: 'call', common: node.common }];
       case 'cmd': return [node.value];
-      case 'narration': case 'filmPause': case 'filmWalkTo': case 'waitNarration': return [];
+      case 'narration': case 'waitNarration': return [{ cmd: 'film_cue', id: cues.get(node)! }];
+      case 'filmPause': case 'filmWalkTo': return [];
     }
   });
   const eventData = (event: Event, map: string) => {

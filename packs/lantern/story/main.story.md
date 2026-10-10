@@ -5,8 +5,8 @@
 @character elder "촌장" art=base voice=elder
 @character lamp "등대 불씨"
 @character sign "안내판"
-@character sailor "뱃사공"
-@character keeper "옛 등대지기"
+@character sailor "뱃사공" voice=sailor
+@character keeper "옛 등대지기" voice=keeper
 @flag met_elder
 @flag lamp_lit
 @flag ending_public
@@ -99,12 +99,14 @@ x......................#
 
 ## 1장. 돌아오는 길
 ### 안개 속 도착 @ pier
-> 소라는 오래 꺼져 있던 등대를 찾아 선착장으로 돌아왔습니다.
 @event arrival at start trigger=auto once
   : 등대지기의 약속
   소라: 불이 꺼진 뒤로 돌아오는 배들이 길을 잃었다고 들었어요.
   : 위쪽의 촌장을 바라보고 Enter 또는 Z로 대화하자. 오른쪽 금빛 문은 등대 입구다.
 @end
+
+> 소라는 오래 꺼져 있던 등대를 찾아 선착장으로 돌아왔습니다.
+@waitNarration
 
 @event sailor at sailor_spot trigger=action character=sailor film=skip
   뱃사공: 밀물이 들 때까지 배를 손보고 있어요. 등대가 밝아지면 밤길도 덜 걱정되겠지요.
@@ -114,6 +116,7 @@ x......................#
 @film walkTo elder_spot
 @event elder at elder_spot trigger=action character=elder
   촌장(의심): 오래 비워 둔 등대를 다시 켜겠다고? 누가 불을 지킬지 생각해 보았나?
+  > 소라는 잠시 손에 쥔 열쇠를 바라보았습니다. 등대의 밤을 함께 지킬 사람을 떠올렸지요.
   소라(결의): 우선 제가 불을 밝히고, 그다음 약속을 정하고 싶어요. 지금 나눈 신뢰는 {var:trust}이에요.
   ? 열쇠를 받으며 뭐라고 약속할까?
     *> 이웃들과 함께 지킬 방법을 찾는다
@@ -131,6 +134,7 @@ x......................#
 ## 2장. 불씨와 약속
 ### 등대를 다시 켜다 @ tower
 > 불을 켜는 일은 어렵지 않았습니다. 어려운 것은 그다음 밤을 맡기는 일이었지요.
+@waitNarration
 @event light at lamp_spot trigger=action character=lamp
   @if met_elder
     @call relight

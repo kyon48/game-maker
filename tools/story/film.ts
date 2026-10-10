@@ -1,3 +1,5 @@
+import { FilmCueGate } from '../../engine/film/cues';
+import { storyCues } from './cues';
 import type { Film, FilmStep } from '../../engine/data/schema/film';
 import type { Scenario } from '../../engine/data/scenarios/run';
 import type { InputFrame } from '../../engine/api';
@@ -11,10 +13,11 @@ import { anchorPoints, compileError, jsonBytes } from './compile';
 
 type ScenarioStep = Scenario['steps'][number];
 const empty = (): InputFrame => ({ held: new Set(), pressed: new Set() });
-/** Plan by rehearsing existing input drivers. No sim or driver extensions. */
+/** Plan with manual text and immediate cues; voice lengths never participate in generation. */
 export async function generateFilm(stories: readonly Story[], pack: ValidatedPack, plugins: PluginRuntime, name = 'main'): Promise<Map<string, string>> {
   if (!/^[a-z][a-z0-9_]*$/.test(name)) throw new Error('film 이름은 소문자 ID여야 합니다');
-  const runtime = new GameSession(pack, { plugins });
+  const gate = new FilmCueGate(), cues = storyCues(stories);
+  const runtime = new GameSession(pack, { plugins, recording: true, filmCues: gate });
   const steps: FilmStep[] = [], scenario: ScenarioStep[] = [], narration: string[] = [`# ${name}`, ''];
   const locations = stories.flatMap(s => s.locations), common = new Map(stories.flatMap(s => s.common.map(c => [c.id, c.statements] as const)));
   let source: Scene | Event = stories.flatMap(s => s.scenes)[0]!;
@@ -36,41 +39,45 @@ export async function generateFilm(stories: readonly Story[], pack: ValidatedPac
   const emit = async (step: FilmStep) => {
     const previous = steps.at(-1);
     if ('walkTo' in step && previous && 'walkTo' in previous && JSON.stringify(previous.walkTo) === JSON.stringify(step.walkTo)) return;
-    const position = steps.length, map = runtime.game.map.id, inputs: ScenarioStep[] = [];
     steps.push(step);
-    const driver = new FilmDriver({ name, steps: [step] });
+    const planning = 'advanceText' in step && step.advanceText === 'voice' ? { ...step, advanceText: 'auto' as const } : step;
+    const driver = new FilmDriver({ name, steps: [planning] });
     for (;;) {
       const input = driver.next(observeGame(runtime.game), e => checkExpect(runtime.game, e));
       if (!input) break;
-      appendInput(inputs, input);
       await tick(input);
-      if ('advanceText' in step && runtime.game.map.id !== map) {
-        // An unbounded advance could consume the destination auto dialogue during replay.
-        steps.splice(position, 1, ...inputs);
-        break;
-      }
     }
     if ('expect' in step) scenario.push({ expect: step.expect });
   };
   const waitReady = async (initial = false, boundary?: string, auto = false) => {
     let count = 0;
     if (initial) { await tick(empty()); count++; }
-    while ((!boundary || runtime.game.map.id === boundary) && !runtime.game.message.opened && !runtime.game.choice.opened && (runtime.game.main.running || runtime.game.player.moving || (auto && pendingAuto()))) {
+    while ((!boundary || runtime.game.map.id === boundary) && !gate.pending && !runtime.game.message.opened && !runtime.game.choice.opened && (runtime.game.main.running || runtime.game.player.moving || (auto && pendingAuto()))) {
       if (++count > 36000) compileError(source, 'S032', '메시지/이벤트 완료 대기 시간 초과');
       await tick(empty());
     }
-    if (count) steps.push({ wait: count });
+    if (count && (runtime.game.message.opened || runtime.game.choice.opened)) steps.push({ waitFor: 'message' });
+    else if (count && !gate.pending) steps.push({ wait: count });
   };
-  const drain = async (choices: number[], initial = false) => {
+  const drain = async (choices: number[], selectedPath: readonly Statement[], initial = false) => {
     const map = runtime.game.map.id;
     await waitReady(initial, map, initial);
-    let selected = 0;
+    let selected = 0, cueIndex = 0;
+    const queued = selectedPath.filter(node => node.kind === 'narration' || node.kind === 'waitNarration');
     while (runtime.game.map.id === map && (runtime.game.main.running || runtime.game.message.opened || runtime.game.choice.opened)) {
-      if (runtime.game.choice.opened) {
+      if (gate.pending) {
+        const node = queued[cueIndex++];
+        if (!node || cues.get(node) !== gate.pending) compileError(source, 'S031', `원고 경로와 다른 cue: ${gate.pending}`);
+        if (pack.voices) steps.push(node.kind === 'narration' ? { narrate: node.text, cue: gate.pending } : { waitNarration: true, cue: gate.pending });
+        gate.release(gate.pending);
+      } else if (runtime.game.choice.opened) {
         const index = choices[selected++];
         if (index === undefined) compileError(source, 'S031', '원고 경로에 없는 선택지가 열렸습니다 (@cmd 내부 선택지는 지원하지 않음)');
         await emit({ choose: index, dwell: 0.4 });
-      } else if (runtime.game.message.opened) await emit({ advanceText: 'auto' });
+      } else if (runtime.game.message.opened) {
+        const speaker = runtime.game.message.snapshot?.speaker ?? 'narrator';
+        await emit({ advanceText: pack.voices?.[speaker] ? 'voice' : 'auto', count: 1 });
+      }
       await waitReady(false, map, initial);
     }
     if (selected !== choices.length) compileError(source, 'S031', '예상 선택지가 실행되지 않았습니다');
@@ -138,7 +145,8 @@ export async function generateFilm(stories: readonly Story[], pack: ValidatedPac
     await travel(scene.location);
     const expected = new Map<string, boolean>();
     for (const item of scene.items) {
-      if (item.kind === 'narration') narration.push(item.text, '');
+      if (item.kind === 'narration') { narration.push(item.text, ''); if (pack.voices) steps.push({ narrate: item.text }); }
+      else if (item.kind === 'waitNarration') { if (pack.voices) steps.push({ waitNarration: true }); }
       else if (item.kind === 'filmPause' || item.kind === 'filmWalkTo') await hints([item], scene.location);
       else if (item.kind === 'event') {
         if (item.film === 'skip') continue;
@@ -159,7 +167,7 @@ export async function generateFilm(stories: readonly Story[], pack: ValidatedPac
           await emit({ walkTo: { event: item.id } }); await emit({ pause: 0.35 });
           if (item.trigger === 'action') await emit({ press: 'ok' }); else await stepInto(item.id);
         }
-        await drain(choices, item.trigger === 'auto');
+        await drain(choices, selected, item.trigger === 'auto');
         if (item.trigger === 'auto') await hints(selected, runtime.game.map.id);
         if (!pendingAuto() && !runtime.game.message.opened && !runtime.game.choice.opened) await emit({ settle: true });
       }

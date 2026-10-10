@@ -2,13 +2,14 @@
   "version": 1,
   "files": {
     "common-events.json": "73fdd6d37947fee6c6ea5dc22161f51992bc142ad3303837baf1e73945f78904",
-    "films/main.film.json": "2ed7f1f913274cea505de41d457841499c4d8a4b90e7492e53d1116f0db7824f",
-    "films/main.narration.md": "c693a208973a2ee06d0500eaab5483280cea810e83c22cd066ac606b1ab30dfa",
+    "films/main.film.json": "35fe82490713bc229c10e38a78f2a37cf913fc45158f874364e7a15d09de48f3",
+    "films/main.narration.md": "7498ea7738126fe577099530fec067c98037d0990ee47ae3327fe97478c4ce75",
     "game.json": "f35842b2d285ce9cb4d6a34cbddd68382ba3db5369de245e832b61a589581b82",
     "maps/garden.events.json": "3d3ec88964f7db8b32a773ae8161d4d7c40f57b467fd607b32d3b40472588013",
-    "maps/pier.events.json": "88e3d54323224a4f51603cbdf163cddac8ec49e0b05529c9a8d2ae2c042374d1",
+    "maps/pier.events.json": "ce54463c33a8ccda90822e13be92347921863021e96cdc34ea9d769b0fb4f21f",
     "maps/tower.events.json": "21cc2f67d74c5ba6542bdf684527803d1c4a898c7417adcbf4b74d1313176ffb",
-    "tests/story_main.scenario.json": "551773151747ca8cbc461353124f4a712d91f0d4f6d4cb431a7c3bddc73e22af"
+    "tests/story_main.scenario.json": "aea2903fbf2860e061c0a4cb0f8b1eb74535bc6c25730349c0b7fb95f395c5f1",
+    "voices.json": "740fe13ad4bfbe75a1e237a8683033c0fc9b19de467470051e6b22b615f8b1e6"
   },
   "maps": {
     "maps/garden.tmj": "7e9f081a9f08a2cc4739d19190cce48ea0d134a539b1e184088f9d87577b5bac",

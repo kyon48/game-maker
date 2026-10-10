@@ -24,7 +24,7 @@ afterEach(async () => { await Promise.all(temps.splice(0).map(root => rm(root, {
 async function setup(text = valid) {
   const root = await mkdtemp(path.join(tmpdir(), 'story-compile-')); temps.push(root);
   const folder = path.join(root, 'packs/lantern'); await mkdir(path.join(folder, 'story'), { recursive: true }); await mkdir(path.join(folder, 'assets'));
-  const files: Record<string, string> = { 'game.json': jsonBytes(game), 'story/main.story.md': text, 'story/tiles.json': jsonBytes(tiles), 'characters.json': jsonBytes({ sora: { placeholder: '#123456' }, elder: { placeholder: '#abcdef' } }), 'skin.json': await readFile('tests/fixtures/base/skin.json', 'utf8'), 'CREDITS.md': 'Test assets only', 'assets/colors.tsj': jsonBytes({ image: 'tile.png', tilewidth: 16, tileheight: 16, columns: 8, tilecount: 8 }) };
+  const files: Record<string, string> = { 'story/story.config.json': await readFile('tests/fixtures/story/story.config.json', 'utf8'), 'game.json': jsonBytes(game), 'story/main.story.md': text, 'story/tiles.json': jsonBytes(tiles), 'characters.json': jsonBytes({ sora: { placeholder: '#123456' }, elder: { placeholder: '#abcdef' } }), 'skin.json': await readFile('tests/fixtures/base/skin.json', 'utf8'), 'CREDITS.md': 'Test assets only', 'assets/colors.tsj': jsonBytes({ image: 'tile.png', tilewidth: 16, tileheight: 16, columns: 8, tilecount: 8 }) };
   for (const [file, value] of Object.entries(files)) await writeFile(path.join(folder, file), value);
   await writeFile(path.join(folder, 'assets/tile.png'), await readFile('tests/fixtures/base/assets/tile.png'));
   await writeFile(path.join(folder, 'assets/font.woff2'), await readFile('tests/fixtures/base/assets/font.woff2'));

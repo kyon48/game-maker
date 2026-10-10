@@ -1,3 +1,6 @@
+import { extractFilm } from '../tools/tts/extract';
+import { fake, wavFrames } from '../tools/tts/provider';
+import { voiceKey } from '../engine/data/voice';
 import { readFile } from 'node:fs/promises';
 import { describe, it, expect } from 'vitest';
 import { GameSession } from '../engine/sim/state/GameSession';
@@ -12,13 +15,15 @@ import { nodePluginRuntime } from '../tools/loadPlugins';
 import { runScenario } from '../engine/data/scenarios/run';
 import { scenarioGameWithPlugins } from '../tools/scenarioGame';
 import type { PackSource } from '../engine/api';
-const baseline = await readFile('packs/lantern/story/main.story.md', 'utf8');
+const baseline = (await readFile('packs/lantern/story/main.story.md', 'utf8')).replace(/ voice=[^\s]+/g, '');
 const game = JSON.parse(await readFile('packs/lantern/game.json', 'utf8')) as unknown;
 const tiles = JSON.parse(await readFile('packs/lantern/story/tiles.json', 'utf8')) as unknown;
 async function generate(text = baseline) {
   const parsed = parseStory(text, 'main.story.md');
   expect(parsed.diagnostics.filter(d => d.level === 'error')).toEqual([]);
   const compilation = compileStories([parsed.story], game, tiles);
+  const voices = Object.fromEntries(['narrator', ...parsed.story.characters.map(c => c.name)].map(name => [name, { provider: 'fake', voice: name }]));
+  compilation.files.set('voices.json', JSON.stringify(voices));
   const outputs = await planFilm('lantern', process.cwd(), compilation.files, [parsed.story], 'main');
   const fs = new FsSource('packs/lantern');
   const source: PackSource = { readJson: async f => compilation.files.has(f) ? JSON.parse(compilation.files.get(f)!) as unknown : fs.readJson(f), exists: async f => compilation.files.has(f) || await fs.exists(f), listFiles: async () => [...new Set([...(await fs.listFiles()).filter(f => !/^films\/|^tests\//.test(f)), ...compilation.files.keys()])] };
@@ -26,6 +31,11 @@ async function generate(text = baseline) {
   const result = await validatePack(source, 'lantern', plugins.validationOptions);
   expect(result.pack).toBeDefined();
   const film = asFilm(JSON.parse(outputs.get('films/main.film.json')!) as unknown);
+  result.pack!.voiceManifest = {};
+  for (const utterance of await extractFilm(result.pack!, film, plugins)) {
+    const voice = voices[utterance.speaker ?? 'narrator']!;
+    result.pack!.voiceManifest[voiceKey(voice, utterance.plainText)] = { frames: wavFrames((await fake.synthesize(utterance.plainText, voice.voice, 1)).wav), ...voice };
+  }
   const replay = await rehearse(result.pack!, film, plugins);
   await runScenario(result.pack!, JSON.parse(outputs.get('tests/story_main.scenario.json')!) as unknown, scenarioGameWithPlugins(await nodePluginRuntime(source, fs.root)));
   return { outputs, film, replay, pack: result.pack!, compilation, story: parsed.story };
@@ -94,14 +104,14 @@ describe('story film generation (one baseline, memory mutations)', () => {
     expect(replay.game.map.id).toBe('pier');
     expect(replay.game.state.getFlag('ending_public')).toBe(true);
   });
-  it('measures a fade/wait prefix rather than guessing a pause', async () => {
+  it('waits for a fade/wait prefix through message readiness', async () => {
     const { film } = await generate(baseline.replace('@fade black 12', '@fade black 47').replace('@wait 12', '@wait 29'));
-    expect(film.steps.some(s => 'wait' in s && typeof s.wait === 'number' && s.wait >= 88)).toBe(true);
+    expect(film.steps.some(s => 'waitFor' in s && s.waitFor === 'message')).toBe(true);
   });
   it('waits for startup auto with a fade prefix', async () => {
     const { film } = await generate(baseline.replace('  : 등대지기의 약속', '  @fade black 17\n  @wait 23\n  @fade clear 17\n  : 등대지기의 약속'));
     const firstAdvance = film.steps.findIndex(s => 'advanceText' in s);
-    expect(film.steps.slice(0, firstAdvance).some(s => 'wait' in s && typeof s.wait === 'number' && s.wait > 1)).toBe(true);
+    expect(film.steps.slice(0, firstAdvance).some(s => 'waitFor' in s && s.waitFor === 'message')).toBe(true);
   });
   it('handles an auto scene immediately after transfer without settling on its open message', async () => {
     const text = baseline.replace('trigger=action character=lamp', 'trigger=auto once character=lamp').replace('@page when=lamp_lit\n  : 심지는 고르게 타고 있다. 오른쪽 아래 금빛 문으로 나가면 마당이다.\n', '');

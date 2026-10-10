@@ -4,7 +4,9 @@ import { filmFiles, prepareFilm, rehearse } from './film/rehearse';
 try {
   for (const id of await packIds()) for (const file of await filmFiles(new FsSource(`packs/${id}`))) {
     const name = file.slice(6, -10), { pack, film, plugins } = await prepareFilm(id, name);
-    const result = await rehearse(pack, film, plugins);
+    const result = await rehearse(pack, film, plugins).catch(error => {
+      throw new Error(`${String(error)}\n매니페스트를 갱신하려면 npm run story -- build ${id} 를 실행하세요`);
+    });
     for (const warning of result.warnings) console.warn(`${id}/${file}: ${warning}`);
     console.log(`${id}/${file}: passed (${result.ticks} ticks)`);
   }

@@ -2,6 +2,7 @@ import type { Action, InputFrame, Dir } from '../api';
 import type { Film, FilmStep, FilmExpect } from '../data/schema/film';
 import type { SaveExpect } from '../data/schema/scenario';
 import type { FilmView } from './view';
+import type { FilmCueGate } from './cues';
 import { FilmAudio } from './audio';
 import type { FilmAudioOptions } from './audio';
 import { directions, pathTo } from './path';
@@ -18,7 +19,7 @@ export class FilmDriver {
   private saveControl?: FilmSaveControl;
   private evaluate!: (e: FilmExpect) => boolean;
   private readonly program: Generator<InputFrame, void, void>;
-  constructor(readonly film: Film, audio?: FilmAudioOptions) { this.audio = new FilmAudio(audio); this.program = this.run(); }
+  constructor(readonly film: Film, audio?: FilmAudioOptions, private readonly cues?: FilmCueGate) { this.audio = new FilmAudio(audio); this.program = this.run(); }
   next(view: FilmView, evaluate: (e: FilmExpect) => boolean, saveControl?: FilmSaveControl): InputFrame | null {
     if (this.done) return null;
     this.view = view; this.evaluate = evaluate; this.saveControl = saveControl;
@@ -71,9 +72,9 @@ export class FilmDriver {
       if (count > 120) throw new Error('walkTo tile movement timed out');
     }
   }
-  private *advance(mode: true | 'press' | 'auto' | 'voice'): Generator<InputFrame> {
-    let elapsed = 0;
-    while (this.view.message && !this.view.choice) {
+  private *advance(mode: true | 'press' | 'auto' | 'voice', count?: 1): Generator<InputFrame> {
+    let elapsed = 0; const first = this.view.message;
+    while ((!count || this.view.message?.messageId === first?.messageId) && this.view.message && !this.view.choice) {
       if (++elapsed > 108000) throw new Error('advanceText timed out');
       if (mode === 'voice') {
         if (!this.view.message.voiceKey || this.view.message.voiceFrames === undefined || !this.view.message.voiceAuto) throw new Error('Missing voice length/synchronization; run npm run tts first');
@@ -91,7 +92,11 @@ export class FilmDriver {
   private *run(): Generator<InputFrame> {
     for (const [index, step] of this.film.steps.entries()) {
       this.stepIndex = index;
-      if ('narrate' in step) { const end = this.audio.narrate(step.narrate, this.ticks); if (step.wait) while (this.ticks < end) yield empty(); }
+      if ('cue' in step && step.cue) {
+        let elapsed = 0;
+        while (this.cues?.pending !== step.cue) { if (++elapsed > 36000) throw new Error(`Film cue timed out: ${step.cue}`); if (this.cues?.pending) throw new Error(`Unexpected film cue: ${this.cues.pending}`); yield empty(); }
+      }
+      if ('narrate' in step) { const end = this.audio.narrate(step.narrate, this.ticks); if (step.wait || step.cue) while (this.ticks < end) yield empty(); }
       else if ('waitNarration' in step) { while (this.ticks < this.audio.end) yield empty(); }
       else if ('music' in step) this.audio.setMusic(step.music, this.ticks, 'fadeOut' in step ? step.fadeOut : 0);
       else if ('chapter' in step) this.chapters.push({ tick: this.ticks, title: step.chapter });
@@ -108,7 +113,7 @@ export class FilmDriver {
       else if ('hold' in step) for (let i = 0; i < step.frames; i++) yield input(step.hold, i === 0);
       else if ('walk' in step) for (const dir of step.walk) yield* this.walk(dir);
       else if ('walkTo' in step) yield* this.walkTo(step);
-      else if ('advanceText' in step) yield* this.advance(step.advanceText);
+      else if ('advanceText' in step) yield* this.advance(step.advanceText, 'count' in step ? step.count : undefined);
       else if ('choose' in step) {
         if (!this.view.choice?.options.some(option => option.index === step.choose)) throw new Error('Choice closed or index hidden');
         const dwell = Math.ceil(('dwell' in step ? step.dwell ?? 0 : 0) * 60);
@@ -126,6 +131,7 @@ export class FilmDriver {
           if (++count > 600) throw new Error('settle exceeded 600 ticks'); yield empty();
         }
       }
+      if ('cue' in step && step.cue) this.cues!.release(step.cue);
     }
     // Keep nonblocking narration audible even when the last game step finishes.
     while (this.ticks < this.audio.end) yield empty();

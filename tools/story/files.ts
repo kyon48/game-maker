@@ -1,10 +1,12 @@
+import { parseStoryConfig } from './config';
+import type { StoryConfig } from './config';
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { parseStory } from './parser';
 import { lintStories } from './lint';
 import { expressionAliases } from './expressions';
 import type { Diagnostic, Story } from './ast';
-export interface StoryInput { stories: Story[]; diagnostics: Diagnostic[]; expressions?: ReadonlyMap<string, string> | null }
+export interface StoryInput { stories: Story[]; diagnostics: Diagnostic[]; expressions?: ReadonlyMap<string, string> | null; config?: StoryConfig }
 export async function readStories(packId: string, root = process.cwd()): Promise<StoryInput> {
   const folder = path.join(root, 'packs', packId, 'story'), diagnostics: Diagnostic[] = [], stories: Story[] = [];
   const display = (file: string) => path.relative(root, file).split(path.sep).join('/');
@@ -20,14 +22,15 @@ export async function readStories(packId: string, root = process.cwd()): Promise
     }
   } catch (error) { io(folder, error); return { stories, diagnostics }; }
   let expressions: ReadonlyMap<string, string> | null | undefined;
+  let settings: StoryConfig | undefined;
   const configPath = path.join(folder, 'story.config.json');
   try {
     let config: unknown;
     try { config = JSON.parse(await readFile(configPath, 'utf8')) as unknown; }
     catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
     if (config !== undefined) {
-      if (!config || typeof config !== 'object' || Array.isArray(config)) throw new Error('story.config.json은 객체여야 합니다');
-      const artRoot = (config as Record<string, unknown>).artRoot;
+      settings = parseStoryConfig(config);
+      const artRoot = settings.artRoot;
       if (artRoot !== undefined) {
         if (typeof artRoot !== 'string' || !artRoot.trim()) throw new Error('artRoot는 비어 있지 않은 경로여야 합니다');
         const manifest = path.resolve(folder, artRoot, 'expressions.json');
@@ -36,8 +39,8 @@ export async function readStories(packId: string, root = process.cwd()): Promise
       }
     }
   } catch (error) { expressions = null; io(configPath, error); }
-  diagnostics.push(...lintStories(stories, { packId, expressions }));
-  return { stories, expressions, diagnostics: diagnostics.sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line || a.code.localeCompare(b.code)) };
+  diagnostics.push(...lintStories(stories, { packId, expressions, config: settings }));
+  return { stories, expressions, config: settings, diagnostics: diagnostics.sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line || a.code.localeCompare(b.code)) };
 }
 
 export async function lintPack(packId: string, root = process.cwd()): Promise<Diagnostic[]> { return (await readStories(packId, root)).diagnostics; }
