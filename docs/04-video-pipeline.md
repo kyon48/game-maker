@@ -120,7 +120,7 @@ flowchart LR
 | 파일 | 내용 |
 |---|---|
 | `video.mp4` | 최종 영상(V2부터 음성 포함) |
-| `timeline.json` | `{frame, type, ...}` 목록. type: `text-start`/`text-end`(speaker, text, voiceKey), `choice`(labels, chosen), `map`, `chapter`, `narration-start`/`narration-end`(text, voiceKey), `music-start`/`music-stop`(file, volume, fade) |
+| `timeline.json` | `{frame, type, ...}` 목록. type: `text-start`/`text-end`(speaker, text, voiceKey), `choice`(labels, chosen), `map`, `chapter`, `narration-start`/`narration-end`(text, voiceKey), `music-start`/`music-stop`(file, volume, fade), `bgm-start`/`bgm-stop`(audioId, file, volume, fade), `sfx`(audioId, file, volume) |
 | `subtitles.srt` | text-start~text-end와 narration-start~narration-end 구간 자막([나레이션] 접두어). 유튜브에 별도 업로드(번인하지 않음) |
 | `chapters.txt` | `00:00 도착` 형식. 설명란에 그대로 붙여넣기 |
 | `script.md` | 화자·대사·선택지를 시간순으로 정리한 대본. 검수용 |
@@ -166,6 +166,7 @@ flowchart LR
 
 - `timeline.json`을 읽어 ffmpeg 필터(`adelay` + `amix`)로 음성·BGM·효과음을 한 트랙으로 만든다. BGM은 대사 구간에서 자동으로 볼륨을 낮춘다(덕킹).
 - 덕킹은 대사·나레이션 음성 구간의 합집합으로 계산한다. 음악은 약 -12dB, 앞뒤 0.15초 램프를 적용하며 가까운 음성 구간은 합친다(사이드체인 없음).
+- G5: film music과 게임 BGM은 한 채널에서 나중 요청이 이긴다. 음악만 덕킹하며 효과음은 덕킹하지 않는다. 부분 렌더링에서 이미 시작한 BGM·효과음은 원래 재생 위치로 자른다.
 - 2-pass loudnorm으로 정규화한 뒤 48kHz 스테레오 AAC로 저장한다. 챕터 이전 음성·음악은 이미 지난 부분을 잘라 배치한다.
 - 영상과 오디오를 합쳐 `video.mp4`를 만든다. 음량은 유튜브 기준(약 -14 LUFS)으로 정규화한다.
 
@@ -182,7 +183,7 @@ V3a 메시지 얼굴 칸은 구현을 마쳤으며 데이터·커맨드·skin의
 | `hide_portrait` | `slot` 또는 `character`, `exit` |
 | 스탠딩 표정 변경 | 메시지 얼굴의 `text.expression`과 별도로 V3b에서 확정 |
 | `background` | 배경 CG 표시/해제, `transition`(fade/cut). 표시 중에는 맵 대신 CG |
-| `bgm` / `sfx` | `audio.json`의 ID로 재생·정지·페이드. 녹화 모드에서는 타임라인에 기록 |
+| `bgm` / `sfx` **G5 완료** | 02 §8.6 audio.json·mapBgm. 일반 플레이 Web Audio, 녹화 타임라인 후합성 |
 | `wait` | 기존 그대로(연출 간격) |
 
 ### 6.1 고해상도 레이어

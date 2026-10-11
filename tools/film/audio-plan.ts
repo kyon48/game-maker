@@ -47,11 +47,11 @@ export function audioPlan(pack: string, events: readonly FramedEvent[], fps: 30 
     labels.push(`[${label}]`); speech.push({ start: event.frame / fps, end: event.frame / fps + seconds });
   }
   const duck = duckRegions(speech);
-  for (const event of events) if (event.type === 'music-start') {
-    const original = Math.floor(event.tick * fps / 60), offset = Math.max(0, startFrame - original) / fps, delay = event.frame / fps;
-    const stop = events.find(s => s.type === 'music-stop' && s.id === event.id);
-    const fadeOut = stop?.type === 'music-stop' ? stop.fade : 0;
-    const stopTime = stop ? (Math.floor(stop.tick * fps / 60) - original) / fps : Infinity;
+  for (const event of events) if (event.type === 'music-start' || event.type === 'bgm-start') {
+    const original = event.type === 'music-start' ? Math.floor(event.tick * fps / 60) : frameOf(event.tick, fps), offset = Math.max(0, startFrame - original) / fps, delay = event.frame / fps;
+    const stop = events.find(s => (s.type === 'music-stop' || s.type === 'bgm-stop') && s.id === event.id);
+    const fadeOut = stop && (stop.type === 'music-stop' || stop.type === 'bgm-stop') ? stop.fade : 0;
+    const stopTime = stop ? ((stop.type === 'bgm-stop' ? frameOf(stop.tick, fps) : Math.floor(stop.tick * fps / 60)) - original) / fps : Infinity;
     const seconds = Math.min(total - delay, stopTime + fadeOut - offset);
     if (seconds <= 0) continue;
     const reference = packPath('', event.file);
@@ -60,6 +60,14 @@ export function audioPlan(pack: string, events: readonly FramedEvent[], fps: 30 
     const fadeIn = event.fade > 0 ? `min(1,(t+${offset})/${event.fade})` : '1';
     const fade = fadeOut > 0 ? `max(0,min(1,(${stopTime + fadeOut}-(t+${offset}))/${fadeOut}))` : '1';
     filters.push(`[${index}:a]atrim=start=${offset},asetpts=PTS-STARTPTS,aresample=48000,aformat=channel_layouts=stereo,atrim=duration=${seconds},volume='${event.volume}*${fadeIn}*${fade}*${duckExpression(duck, `(t+${delay})`)}':eval=frame,adelay=${Math.round(delay * 1000)}:all=1[${label}]`);
+    labels.push(`[${label}]`);
+  }
+  for (const event of events) if (event.type === 'sfx') {
+    const original = frameOf(event.tick, fps), offset = Math.max(0, startFrame - original) / fps, delay = event.frame / fps;
+    if (delay >= total) continue;
+    const file = path.join(root, 'packs', pack, packPath('', event.file)), index = files.length, label = `sfx${index}`;
+    files.push(file); args.push('-i', file);
+    filters.push(`[${index}:a]atrim=start=${offset},asetpts=PTS-STARTPTS,aresample=48000,aformat=channel_layouts=stereo,atrim=duration=${total - delay},volume=${event.volume},adelay=${Math.round(delay * 1000)}:all=1[${label}]`);
     labels.push(`[${label}]`);
   }
   if (labels.length) filters.push(`${labels.join('')}amix=inputs=${labels.length}:normalize=0:duration=longest,apad=whole_dur=${total},atrim=duration=${total}[mixed]`);

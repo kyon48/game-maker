@@ -45,5 +45,10 @@
     "pier": "선착장",
     "tower": "등대",
     "garden": "등대 뒤 마당"
+  },
+  "mapBgm": {
+    "pier": "quiet",
+    "tower": "mystery",
+    "garden": "quiet"
   }
 }

@@ -17,6 +17,7 @@ export class Interpreter {
     this.stopRequested = false; this.depth = 0;
     const isStopped = () => this.stopRequested;
     const context: CommandContext = {
+      bgm: host.bgm, sfx: host.sfx,
       filmCues: host.filmCues,
       showMapName: () => host.showMapName(),
       openScene: host.openScene,

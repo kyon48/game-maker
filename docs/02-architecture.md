@@ -577,6 +577,18 @@ G1 텍스트의 {item:id}·{itemCount:category}는 메시지를 열 때 고정�
 
 내장 menu args는 빈 객체다. 필드 cancel은 메인/UI/씬/전환/대기 트리거가 없을 때만 연다. items.json이 있는 팩은 labels.menuItems/menuClues/menuClose/menuEmpty가 필수이고, 없는 기존 팩은 이 라벨이 모두 있을 때만 메뉴가 활성화된다. 좌우 탭(아이템/단서/닫기), 상하 목록, 확인 설명(+icon), 설명에서 확인/취소는 목록, 목록 취소·닫기 탭 확인은 종료(결과 0)다. 항목은 ID 순서, 개수 0은 숨기며 긴 목록은 페이지를 나눈다. 메뉴는 G3의 맵 정지·스냅샷·DrawList·저장 불가 규칙을 그대로 사용한다. item 사용은 범위 밖이다.
 
+### 8.6 게임 사운드 (G5)
+
+선택 파일 `audio.json`은 `{ "id": { "file": "assets/audio/x.ogg", "volume": 0.8, "loop": true } }`다. volume 기본 1, loop 기본 false. ogg/wav/mp3/flac/m4a만 지원하고 팩 내부 파일 존재는 V4, ID 참조는 V3, 인자·스키마는 V1이다.
+
+`bgm {id, fade?}` / `bgm {stop:true, fade?}`와 `sfx {id}`는 동기 커맨드이며 parallel에서도 쓸 수 있다. fade는 0~3600초, 기본 0. BGM 교체는 기존 곡 페이드 아웃과 새 곡 페이드 인을 함께 시작한다. SFX는 loop 설정과 무관하게 한 번 재생한다.
+
+sim은 소리를 내지 않는다. 스냅샷 audio는 현재 bgm ID(null=정지)와 이번 틱 requests(BGM 요청·SFX 순서 목록)를 보존한다. 요청은 틱 시작에 비우고 platform/film이 틱마다 한 번 소비한다. 맵·씬 정지는 사운드 transport를 멈추지 않는다.
+
+`game.json.mapBgm`은 선택적인 맵 ID → audio ID 표다. 진입 단계(§7.5의 4단계)에서 해당 곡을 요청한다. 같은 ID는 재시작 없이 유지하고 없는 맵은 정지한다. 커맨드 override는 다음 맵 진입까지 유지한다. 세이브에는 BGM·재생 위치를 넣지 않고 saveVersion 2를 유지하며, 로드한 맵의 기본 BGM으로 시작한다.
+
+일반 플레이는 platform Web Audio가 부팅 때 모든 파일을 디코딩한다. 첫 키/포인터 입력으로 AudioContext를 시작하고 탭 숨김은 suspend, 다시 보일 때는 이미 시작한 context만 resume한다. 종료 때 모든 source/context/listener를 정리한다. 녹화는 Web Audio를 만들지 않고 bgm-start/stop·sfx 타임라인만 기록해 후합성한다. film music과 게임 BGM은 한 음악 채널이며 나중 요청이 이긴다.
+
 ## 9. 플러그인 API v1
 
 팩 전용 기능은 `packs/<id>/plugins/<이름>.ts`에 둔다. 엔진 코어를 고치지 않는다.
@@ -735,6 +747,8 @@ interface SaveData {
 4. 셀프 플래그: 맵 ID가 `maps`에 있고 이벤트 ID가 그 맵에 있는 키만 유지한다.
 5. 위치: 맵이 `maps`에 없거나, 좌표가 범위 밖이거나 `collision`이면 `game.start`를 쓴다.
 6. plugin `loadSave` 훅을 호출한다(`fromGameVersion` = 세이브의 `gameVersion`).
+
+BGM·재생 위치는 세이브 대상이 아니다. 복원한 위치에서 새 Game을 만들 때 해당 맵의 mapBgm으로 시작한다(§8.6).
 
 ### 11.4 부팅과 오류
 

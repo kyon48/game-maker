@@ -1,0 +1,24 @@
+{
+  "quiet": {
+    "file": "assets/audio/quiet.ogg",
+    "volume": 0.8,
+    "loop": true
+  },
+  "mystery": {
+    "file": "assets/audio/mystery.ogg",
+    "volume": 0.8,
+    "loop": true
+  },
+  "get": {
+    "file": "assets/audio/get.wav",
+    "volume": 0.6
+  },
+  "door": {
+    "file": "assets/audio/door.wav",
+    "volume": 0.6
+  },
+  "confirm": {
+    "file": "assets/audio/confirm.wav",
+    "volume": 0.6
+  }
+}

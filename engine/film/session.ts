@@ -16,10 +16,11 @@ export class FilmSession {
   get game(): Game { return this.saveSession?.game ?? this.initial; }
   constructor(private readonly initial: Game, film: Film, private readonly saveSession?: GameSession, audio?: FilmAudioOptions, cues?: FilmCueGate) {
     this.driver = new FilmDriver(film, audio, cues);
-    this.pending = this.observer.observe(observeGame(this.game), 0);
+    this.driver.audio.gameSound(this.game.snapshot.audio, this.game.audioDefinitions, 0);
+    this.pending = [...this.driver.audio.events(), ...this.observer.observe(observeGame(this.game), 0)];
   }
   async tick(): Promise<boolean> {
-    const frame = this.driver.next(observeGame(this.game), e => checkExpect(this.game, e), this.saveSession ? { reload: () => { this.saveSession!.reload(); return observeGame(this.game); }, expectSave: e => this.saveSession!.expectSave(e) } : undefined);
+    const frame = this.driver.next(observeGame(this.game), e => checkExpect(this.game, e), this.saveSession ? { reload: () => { this.saveSession!.reload(); this.driver.audio.gameSound(this.game.snapshot.audio, this.game.audioDefinitions, this.driver.ticks); return observeGame(this.game); }, expectSave: e => this.saveSession!.expectSave(e) } : undefined);
     this.pending.push(...this.driver.audio.events());
     for (const mark of this.driver.chapters.slice(this.chapterIndex)) this.pending.push({ type: 'chapter', ...mark });
     this.chapterIndex = this.driver.chapters.length;
@@ -29,6 +30,8 @@ export class FilmSession {
     }
     this.game.tick(frame);
     await Promise.resolve();
+    this.driver.audio.gameSound(this.game.snapshot.audio, this.game.audioDefinitions, this.driver.ticks);
+    this.pending.push(...this.driver.audio.events());
     this.pending.push(...this.observer.observe(observeGame(this.game), this.driver.ticks, frame));
     return true;
   }

@@ -1,3 +1,4 @@
+import { GameAudio } from './audio';
 import { drawScene } from './renderer/scenes';
 import { Presentation } from './presentation';
 import { drawPortrait } from './renderer/portraits';
@@ -71,6 +72,7 @@ async function boot(): Promise<void> {
     source.readJson('skin.json') as Promise<Skin>,
     source.readJson('common-events.json') as Promise<Record<string, { commands: Command[] }>>,
   ]);
+  const audio = await source.exists('audio.json') ? await source.readJson('audio.json') as import('../data/audio').Audio : undefined;
   const items = await source.exists('items.json') ? await source.readJson('items.json') as import('../data/items').Items : undefined;
   const portraits = await source.exists('portraits.json') ? await source.readJson('portraits.json') as Portraits : {};
   const voices = await source.exists('voices.json') ? await source.readJson('voices.json') as Voices : undefined;
@@ -106,6 +108,9 @@ async function boot(): Promise<void> {
   const keyboard = film ? null : new Keyboard(window);
   const resize = () => { presentation.resize(); }; resize(); window.addEventListener('resize', resize);
   cleanup = () => { keyboard?.dispose(); resizeController.abort(); window.removeEventListener('resize', resize); };
+  const sound = !film && audio ? new GameAudio(audio) : undefined;
+  const beforeAudio = cleanup; cleanup = () => { beforeAudio(); sound?.dispose(); };
+  await sound?.preload(file => source.readBytes(file));
   const continued = restored.state && await chooseStart(context, skin, images, keyboard!, [game.labels.continue, game.labels.newGame]) === 0;
   const state = continued ? restoreSave(candidate, game, new Map(entries), new Map(savedData ? [[savedMap, savedData.data]] : []), {
     items, loadSave: (state, from) => plugins.loadSave(state, candidate.data!, from),
@@ -114,7 +119,7 @@ async function boot(): Promise<void> {
   const initial = await loader.load(start.map);
   const filmCues = (import.meta.env.DEV || __RECORDING__) && film ? new (await import('../film/cues')).FilmCueGate() : undefined;
   const options: GameOptions = {
-    items, voices, voiceLengths: voiceLengths(voiceManifest), filmCues, recording: !!film?.steps.some(s => 'cue' in s || 'advanceText' in s && s.advanceText === 'voice'),
+    audio, items, voices, voiceLengths: voiceLengths(voiceManifest), filmCues, recording: !!film?.steps.some(s => 'cue' in s || 'advanceText' in s && s.advanceText === 'voice'),
     plugins, skin, textMeasurer: new CanvasTextMeasurer(context), mapLoader: prepared ? { load: id => { const map = prepared.get(id); return map ? Promise.resolve(map) : Promise.reject(new Error(`Unknown map: ${id}`)); } } : loader, commonEvents,
     rngState: state?.rngState, sceneImages,
     selfFlags: state?.selfFlags, save: value => { if (!film) storage.write(value); },
@@ -122,7 +127,7 @@ async function boot(): Promise<void> {
   let saveSession: GameSession | undefined;
   if ((import.meta.env.DEV || __RECORDING__) && film && prepared) {
     const { GameSession } = await import('../sim/state/GameSession');
-    saveSession = new GameSession({ game, items, characters, skin, common: commonEvents, events: new Map(entries), maps: new Map([...prepared].map(([id, map]) => [id, map.data])) }, options, start, { items: { ...game.state.items, ...film.state?.items }, flags: { ...game.state.flags, ...film.state?.flags }, vars: { ...game.state.vars, ...film.state?.vars } });
+    saveSession = new GameSession({ game, audio, items, characters, skin, common: commonEvents, events: new Map(entries), maps: new Map([...prepared].map(([id, map]) => [id, map.data])) }, options, start, { items: { ...game.state.items, ...film.state?.items }, flags: { ...game.state.flags, ...film.state?.flags }, vars: { ...game.state.vars, ...film.state?.vars } });
   }
   let simulation = saveSession?.game ?? new Game({ ...game, start, state: film ? { items: { ...game.state.items, ...film.state?.items }, flags: { ...game.state.flags, ...film.state?.flags }, vars: { ...game.state.vars, ...film.state?.vars } } : state ? { flags: state.flags, vars: state.vars, items: state.items } : game.state }, initial.data, characters, initial.events, options);
   const render = (active = simulation) => {
@@ -154,6 +159,7 @@ async function boot(): Promise<void> {
     window.__recorder = createRecorder(simulation, film, window.__filmRequest?.fps ?? film.fps ?? 30, capture, renderCapture, saveSession, narrationOptions(() => saveSession?.game ?? simulation, voices, voiceLengths(voiceManifest), false, plugins), filmCues, window.__filmRequest?.transport ?? 'deflate');
     render(); return;
   }
+  sound?.apply(simulation.snapshot.audio);
   let restarting = false;
   options.sceneEnd = (name, result) => {
     if (name !== 'ending') return;
@@ -167,12 +173,13 @@ async function boot(): Promise<void> {
       const initial = await loader.load(start.map);
       simulation.main.abort();
       simulation = new Game({ ...game, start, state: restored ? { flags: restored.flags, vars: restored.vars, items: restored.items } : game.state }, initial.data, characters, initial.events, { ...options, selfFlags: restored?.selfFlags, rngState: restored?.rngState });
+      sound?.apply(simulation.snapshot.audio);
       restarting = false;
     })().catch(fail); });
   };
   window.addEventListener('resize', () => render(), { signal: resizeController.signal });
-  const stop = startLoop(new FixedTickLoop(input => { if (!restarting) simulation.tick(input); }, () => keyboard!.consume(), render), error => { keyboard?.dispose(); fail(error); });
-  cleanup = () => { stop(); keyboard?.dispose(); resizeController.abort(); window.removeEventListener('resize', resize); };
+  const stop = startLoop(new FixedTickLoop(input => { if (!restarting) { simulation.tick(input); sound?.apply(simulation.snapshot.audio); } }, () => keyboard!.consume(), render), error => { keyboard?.dispose(); fail(error); });
+  cleanup = () => { sound?.dispose(); stop(); keyboard?.dispose(); resizeController.abort(); window.removeEventListener('resize', resize); };
   window.addEventListener('pagehide', () => cleanup(), { once: true });
 }
 void boot().catch(fail);

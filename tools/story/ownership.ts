@@ -1,6 +1,6 @@
 import { object } from './compile';
 export interface Manifest { version: 1; files: Record<string, string>; maps: Record<string, string>; expressions?: Record<string, string> }
-export const ownedPath = /^(items\.json|game\.json|voices\.json|portraits\.json|assets\/portraits\/[a-z][a-z0-9_]*\/[a-z][a-z0-9_]*\.png|common-events\.json|maps\/[a-z][a-z0-9_]*\.events\.json|films\/[a-z][a-z0-9_]*\.(film\.json|narration\.md)|tests\/story_[a-z][a-z0-9_]*\.scenario\.json)$/;
+export const ownedPath = /^(audio\.json|items\.json|game\.json|voices\.json|portraits\.json|assets\/portraits\/[a-z][a-z0-9_]*\/[a-z][a-z0-9_]*\.png|common-events\.json|maps\/[a-z][a-z0-9_]*\.events\.json|films\/[a-z][a-z0-9_]*\.(film\.json|narration\.md)|tests\/story_[a-z][a-z0-9_]*\.scenario\.json)$/;
 const mapPath = /^maps\/[a-z][a-z0-9_]*\.tmj$/;
 export const storyGeneratedPath = /^(films\/[a-z][a-z0-9_]*\.(film\.json|narration\.md)|tests\/story_[a-z][a-z0-9_]*\.scenario\.json)$/;
 export function parseManifest(text: string): Manifest {

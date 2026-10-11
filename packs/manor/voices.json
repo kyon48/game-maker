@@ -1,0 +1,22 @@
+{
+  "narrator": {
+    "provider": "macos-say",
+    "voice": "Yuna"
+  },
+  "도윤": {
+    "provider": "macos-say",
+    "voice": "Eddy"
+  },
+  "무진": {
+    "provider": "macos-say",
+    "voice": "Eddy"
+  },
+  "윤서": {
+    "provider": "macos-say",
+    "voice": "Yuna"
+  },
+  "해린": {
+    "provider": "macos-say",
+    "voice": "Yuna"
+  }
+}

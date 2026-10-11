@@ -66,3 +66,18 @@ S3: text-start/end에는 portrait·expression을 기록하고 script.md 화자�
 ## G3 씬
 
 `waitFor: "scene"`은 씬이 열릴 때까지 기다린다(36000틱 상한). 퍼즐은 press 단계로 입력하고 `expect: {scene: "ending"}`으로 열린 화면을 확인할 수 있다. 맵이 정지한 동안에도 씬은 고정 틱으로 진행하고 픽셀 캔버스에 그린다. film:verify는 얼굴 demo에 더해 manor lamps 씬 대본을 두 번 녹화해 RGBA 해시를 비교한다.
+
+## G5 게임 BGM·효과음
+
+게임의 audio.json/mapBgm과 bgm/sfx 커맨드를 매 틱 관찰한다. bgm-start/stop·sfx는 timeline.json에 남고 일반 녹화 페이지에서는 AudioContext를 만들지 않는다. film music과 게임 BGM은 하나의 음악 채널에서 요청 순서대로 교체한다. BGM은 음성 구간에서 덕킹하고 SFX는 원래 볼륨으로 섞은 뒤 전체를 2-pass -14 LUFS·48kHz 스테레오 AAC로 정규화한다. 챕터에서 앞서 시작한 BGM·SFX는 이미 지난 샘플을 잘라 재생 위상을 유지한다.
+
+음악 정지 이벤트의 종류는 요청 출처를 따른다(게임 요청 bgm-stop, film 요청 music-stop). 트랙은 공통 id로 연결하므로 서로의 음악도 정지시킨다. 게임 틱 이벤트는 frameOf, film 단계는 틱 경계로 환산해 같은 출력 프레임에서 교체한다.
+
+G5 실제 녹화 확인(2026-10-12, ffmpeg-static loudnorm 분석의 input_i, 최종 AAC 기준):
+
+| 팩/대본 | 길이 | 영상 | 오디오 | 음량 | 타임라인 |
+|---|---:|---|---|---:|---|
+| manor truth | 530.133초 | 1920×1080 / 30fps | 48kHz 스테레오 AAC | -14.01 LUFS | 대사 51개·BGM 시작 3개·SFX 11개 |
+| lantern main | 134.200초 | 1920×1080 / 30fps | 48kHz 스테레오 AAC | -14.03 LUFS | 대사 16개·나레이션 3개·BGM 시작 5개·SFX 2개 |
+
+일반 manor 페이지에서 5파일 디코딩, 첫 입력 전 suspended, 입력 후 running, loop BGM 및 단서 획득 one-shot SFX의 실제 Web Audio source 시작을 Playwright로 확인했다. 결과 mp4는 out/에만 보관하며 커밋하지 않는다.

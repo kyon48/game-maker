@@ -1,3 +1,4 @@
+import { audioFilePattern } from '../audio';
 import { textRules } from './textRules';
 import type { Usage } from './context';
 import { packPath } from '../loader/path';
@@ -76,7 +77,7 @@ export async function filmRules(context: ValidationContext, basics: PackBasics, 
       if ('music' in step && step.music) {
         try {
           const music = packPath('', step.music.file);
-          if (music !== step.music.file || !/\.(ogg|wav|mp3|flac|m4a)$/i.test(music)) report('V3', file, p + '/music/file', 'Music must use a pack-relative audio file (ogg/wav/mp3/flac/m4a)');
+          if (music !== step.music.file || !audioFilePattern.test(music)) report('V3', file, p + '/music/file', 'Music must use a pack-relative audio file (ogg/wav/mp3/flac/m4a)');
           else if (!await context.source.exists(music)) report('V3', file, p + '/music/file', 'Missing film music file');
         } catch { report('V3', file, p + '/music/file', 'Music path must stay inside the pack'); }
       }

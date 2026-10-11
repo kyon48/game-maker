@@ -1,3 +1,5 @@
+import { SoundState } from './state/SoundState';
+import type { Audio, SoundSnapshot } from '../data/audio';
 import { itemNotice, menuLabelKeys } from '../data/items';
 import type { Items, Category } from '../data/items';
 import { SceneStack } from './scenes/SceneStack';
@@ -42,6 +44,7 @@ import { portraitSlot } from '../data/portraits';
 import { MessageState } from './ui/MessageState';
 import { ChoiceState } from './ui/ChoiceState';
 export interface GameSnapshot {
+  readonly audio: SoundSnapshot;
   readonly scenes: import('./scenes/SceneStack').SceneSnapshot[];
   readonly items: Readonly<Record<string, number>>;
   readonly rngState: number;
@@ -56,6 +59,7 @@ export interface GameSnapshot {
   readonly choice: ChoiceSnapshot | null;
 }
 export interface GameOptions {
+  audio?: Audio;
   items?: Items;
   rngState?: number;
   sceneImages?: ReadonlySet<string>;
@@ -69,6 +73,7 @@ export interface GameOptions {
   hooks?: { mapLeave?: (id: string) => void; mapEnter?: (id: string) => void; tick?: () => void };
 }
 export class Game {
+  readonly sound: SoundState;
   readonly scenes: SceneStack;
   readonly rng: Random;
   private sceneResult: { name: string; value: number } | null = null;
@@ -89,6 +94,7 @@ export class Game {
   private current: GameSnapshot;
   constructor(private readonly config: GameConfig, map: TileMapData, private readonly characters: Characters,
     events: readonly EventDefinition[], private readonly options: GameOptions = {}) {
+    this.sound = new SoundState(options.audio);
     this.commands = options.plugins?.commands ?? new CommandRegistry();
     if (!options.plugins) registerBuiltins(this.commands);
     this.main = new Interpreter(this.commands);
@@ -120,11 +126,13 @@ export class Game {
       this.sceneResult = { name, value }; if (!options.recording) options.sceneEnd?.(name, value);
     });
     for (const [name, definition] of options.plugins?.scenes ?? []) this.scenes.definitions.set(name, definition);
+    this.sound.playBgm(this.config.mapBgm?.[this.map.id] ?? null);
     this.showMapName();
     this.options.plugins?.mapEnter(this.hookContext());
     this.current = this.capture();
   }
   tick(input: InputFrame): void {
+    this.sound.beginTick();
     if (this.scenes.opened) {
       const consumed = this.message.opened || this.choice.opened;
       if (this.message.opened) this.message.update(input);
@@ -201,6 +209,7 @@ export class Game {
     this.options.hooks?.tick?.(); // (8), registration is M7.
     this.current = this.capture();
   }
+  get audioDefinitions(): Audio { return this.options.audio ?? {}; }
   get snapshot(): GameSnapshot { return this.current; }
   private readonly pluginCondition = (name: string, args: unknown, state: GameState): boolean => {
     if (!this.options.plugins) throw new Error(`Unknown plugin condition: ${name}`);
@@ -217,6 +226,7 @@ export class Game {
     const mapId = () => this.map.id;
     const scope = { mapId: this.map.id, id: event.id };
     return {
+      bgm: (id, fade) => this.sound.playBgm(id, fade), sfx: id => this.sound.playSfx(id),
       filmCues: this.options.recording ? this.options.filmCues : undefined,
       showMapName: () => this.showMapName(),
       itemNotice: (id, count) => { const item = this.options.items?.[id], label = this.config.labels.itemGet; if (!item || !label) throw new Error('Missing item or itemGet label'); return itemNotice(label, item.name, count); },
@@ -302,6 +312,7 @@ export class Game {
     this.map = new MapState(request.map, next.data, [this.player, ...this.events]);
     if (!this.map.collision.passable(position.x, position.y)) throw new Error('Transfer arrives on collision');
     this.triggers.take(); this.leaving = false;
+    this.sound.playBgm(this.config.mapBgm?.[this.map.id] ?? null);
     this.showMapName();
     this.options.plugins?.mapEnter(this.hookContext());
     this.options.hooks?.mapEnter?.(this.map.id);
@@ -319,6 +330,6 @@ export class Game {
     const characters = this.map.characters.map(character => character.snapshot());
     const player = characters[0]!;
     characters.sort((a, b) => a.pixelY - b.pixelY);
-    return { items: this.state.snapshot().items, scenes: this.scenes.snapshot, rngState: this.rng.state, sceneResult: this.sceneResult, mapId: this.map.id, mapName: this.mapName.snapshot, fade: this.effects.alpha, shake: this.effects.offset, player, characters, message: this.message.snapshot, choice: this.choice.snapshot };
+    return { audio: this.sound.snapshot, items: this.state.snapshot().items, scenes: this.scenes.snapshot, rngState: this.rng.state, sceneResult: this.sceneResult, mapId: this.map.id, mapName: this.mapName.snapshot, fade: this.effects.alpha, shake: this.effects.offset, player, characters, message: this.message.snapshot, choice: this.choice.snapshot };
   }
 }

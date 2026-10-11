@@ -19,6 +19,7 @@ export function lintStories(stories: readonly Story[], options: LintOptions = {}
   const names = declarations([...characters.values()], n => n.name, '인물 표시 이름');
   for (const character of characters.values()) if (character.voice && !Object.hasOwn(options.config?.voices ?? {}, character.voice)) report(character, 'S035', `설정에 없는 목소리 키: ${character.voice}`);
   if (options.config?.narrator && !Object.hasOwn(options.config.voices ?? {}, options.config.narrator)) report(stories[0]!, 'S035', `설정에 없는 narrator 목소리 키: ${options.config.narrator}`);
+  const audio = declarations(stories.flatMap(s => s.audio), n => n.id, '오디오');
   const items = declarations(stories.flatMap(s => s.items), n => n.id, '아이템');
   for (const item of items.values()) if (!item.name.trim()) report(item, 'S001', '아이템 이름이 비었습니다');
   const flags = declarations(stories.flatMap(s => s.flags), n => n.name, '플래그');
@@ -41,6 +42,7 @@ export function lintStories(stories: readonly Story[], options: LintOptions = {}
   if (options.expressions === undefined) report(startSource, 'S015', 'artRoot가 없어 표정 이름 검사를 건너뜁니다', 'warning');
   const anchors = new Map<string, Map<string, Anchor>>(), edges = new Map<string, Set<string>>();
   for (const location of locations.values()) {
+    if (location.bgm && !audio.has(location.bgm)) report(location, 'S045', `미선언 오디오: ${location.bgm}`);
     edges.set(location.id, new Set()); const lookup = new Map<string, Anchor>(); anchors.set(location.id, lookup);
     const chars = new Set<string>(), anchorNames = new Set<string>();
     for (const anchor of location.anchors) {
@@ -117,6 +119,7 @@ export function lintStories(stories: readonly Story[], options: LintOptions = {}
         case 'narration':
           if (options.config?.voices && !options.config.narrator) report(node, 'S035', '나레이션에 필요한 narrator 목소리 키가 설정되지 않았습니다');
           textVariables(node.text, node, true); if ([...node.text].length > 90) report(node, 'S014', '나레이션이 90자를 넘습니다', 'warning'); break;
+        case 'bgm': case 'sfx': if (node.id !== null && !audio.has(node.id)) report(node, 'S045', `미선언 오디오: ${node.id}`); break;
         case 'set': case 'unset': if (!flags.has(node.flag)) report(node, 'S002', `미선언 플래그: ${node.flag}`); break;
         case 'give': case 'take': if (!items.has(node.item)) report(node, 'S043', `미선언 아이템: ${node.item}`); break;
         case 'scene': if (node.resultVar && !variables.has(node.resultVar)) report(node, 'S003', `미선언 변수: ${node.resultVar}`); break;

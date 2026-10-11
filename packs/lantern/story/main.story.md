@@ -14,7 +14,13 @@
 @var trust 0
 @item lighthouse_key "등대 열쇠" category=item desc="촌장이 맡긴 오래된 등대 열쇠. 약속을 잇는 문을 연다."
 
-@location pier "선착장"
+@audio quiet file=assets/audio/quiet.ogg volume=0.8 loop
+@audio mystery file=assets/audio/mystery.ogg volume=0.8 loop
+@audio get file=assets/audio/get.wav volume=0.6
+@audio door file=assets/audio/door.wav volume=0.6
+@audio confirm file=assets/audio/confirm.wav volume=0.6
+
+@location pier "선착장" bgm=quiet
 @layout
 ########################
 #......................#
@@ -38,7 +44,7 @@
 @anchor k = keeper_spot
 @anchor x = to_tower -> tower:entry
 
-@location tower "등대"
+@location tower "등대" bgm=mystery
 @layout
 ################
 #..............#
@@ -59,7 +65,7 @@ w..............#
 @anchor l = lamp_spot
 @anchor x = to_garden -> garden:entry
 
-@location garden "등대 뒤 마당"
+@location garden "등대 뒤 마당" bgm=quiet
 @layout
 ########################
 #......................#
@@ -80,6 +86,8 @@ x......................#
 @anchor c = bench
 
 @common relight
+  @bgm quiet fade=0.3
+  @sfx confirm
   @fade black 12
   @wait 12
   @fade clear 12
@@ -121,11 +129,13 @@ x......................#
   소라(결의): 우선 제가 불을 밝히고, 그다음 약속을 정하고 싶어요. 지금 나눈 신뢰는 {var:trust}이에요.
   ? 열쇠를 받으며 뭐라고 약속할까?
     *> 이웃들과 함께 지킬 방법을 찾는다
+      @sfx get
       @give lighthouse_key silent
       @set met_elder
       @add trust 1
       촌장(부드러운 미소): 서로의 밤을 나누면 불도 오래 갈 게다.
     * 먼저 혼자 지킬 준비를 한다
+      @sfx get
       @give lighthouse_key silent
       @set met_elder
       @sub trust 1

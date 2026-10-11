@@ -11,6 +11,7 @@ function fixture() {
   const registry = new CommandRegistry(); registerBuiltins(registry);
   const state = new GameState({ flags: { met: false }, vars: { gold: 0 } });
   const host: CommandHost = {
+    bgm: () => {}, sfx: () => {},
     itemNotice: () => 'item',
     openScene: () => ({ done: true, value: 0 }),
     showMapName: () => {}, save: () => {}, transfer: function* () {}, move: () => ({ done: true }), fade: () => ({ done: true }), shake: () => ({ done: true }), showCharacter: () => {}, common: () => [],

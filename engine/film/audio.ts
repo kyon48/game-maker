@@ -1,3 +1,4 @@
+import type { Audio, SoundSnapshot } from '../data/audio';
 import type { TimelineEvent } from './timeline';
 export interface NarrationVoice { plainText: string; voiceKey: string; voiceFrames: number }
 export interface FilmAudioOptions { narration(text: string): NarrationVoice }
@@ -6,7 +7,7 @@ export class FilmAudio {
   private sequence = 0;
   private queue: { start: number; end: number; voice: NarrationVoice; id: number; started: boolean }[] = [];
   private pending: TimelineEvent[] = [];
-  private music?: Extract<TimelineEvent, { type: 'music-start' }>;
+  private music?: Extract<TimelineEvent, { type: 'music-start' | 'bgm-start' }>;
   private dialogue?: { key: string; end: number };
   private overlaps = new Set<string>();
   readonly warnings: string[] = [];
@@ -38,10 +39,26 @@ export class FilmAudio {
     }
     this.queue = this.queue.filter(item => tick < item.end);
   }
-  setMusic(value: { file: string; volume?: number; fadeIn?: number; loop?: true } | null, tick: number, fadeOut = 0): void {
-    if (this.music) this.pending.push({ type: 'music-stop', tick, id: this.music.id, file: this.music.file, volume: this.music.volume, fade: fadeOut });
+  setMusic(value: { file: string; volume?: number; fadeIn?: number; loop?: true } | null, tick: number, fadeOut = 0, stopType: 'music-stop' | 'bgm-stop' = 'music-stop'): void {
+    // Stop follows the requesting clock (film boundary vs completed sim tick).
+    if (this.music) this.pending.push({ type: stopType, tick, id: this.music.id, file: this.music.file, volume: this.music.volume, fade: fadeOut });
     this.music = undefined;
     if (value) { this.music = { type: 'music-start', tick, id: ++this.sequence, file: value.file, volume: value.volume ?? 1, fade: value.fadeIn ?? 0, loop: value.loop ?? false }; this.pending.push(this.music); }
+  }
+  gameSound(sound: SoundSnapshot, audio: Audio, tick: number): void {
+    for (const request of sound.requests) {
+      if (request.kind === 'bgm') {
+        this.setMusic(null, tick, request.fade, 'bgm-stop');
+        if (request.id !== null) {
+          const data = audio[request.id]; if (!data) throw new Error(`Unknown audio: ${request.id}`);
+          this.music = { type: 'bgm-start', tick, id: ++this.sequence, audioId: request.id, file: data.file, volume: data.volume ?? 1, loop: data.loop ?? false, fade: request.fade };
+          this.pending.push(this.music);
+        }
+      } else {
+        const data = audio[request.id]; if (!data) throw new Error(`Unknown audio: ${request.id}`);
+        this.pending.push({ type: 'sfx', tick, id: ++this.sequence, audioId: request.id, file: data.file, volume: data.volume ?? 1 });
+      }
+    }
   }
   events(): TimelineEvent[] { return this.pending.splice(0); }
 }

@@ -126,6 +126,70 @@
           "additionalProperties": false,
           "type": "object",
           "required": [
+            "id",
+            "cmd"
+          ],
+          "properties": {
+            "id": {
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "type": "string"
+            },
+            "fade": {
+              "minimum": 0,
+              "maximum": 3600,
+              "type": "number"
+            },
+            "cmd": {
+              "const": "bgm",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "stop",
+            "cmd"
+          ],
+          "properties": {
+            "stop": {
+              "const": true,
+              "type": "boolean"
+            },
+            "fade": {
+              "minimum": 0,
+              "maximum": 3600,
+              "type": "number"
+            },
+            "cmd": {
+              "const": "bgm",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "id",
+            "cmd"
+          ],
+          "properties": {
+            "id": {
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "type": "string"
+            },
+            "cmd": {
+              "const": "sfx",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
             "item",
             "cmd"
           ],

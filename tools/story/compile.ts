@@ -42,6 +42,8 @@ export function compileStories(stories: readonly Story[], gameValue: unknown, ti
   const game = object(gameValue), tileSize = game.tileSize;
   if (!Number.isSafeInteger(tileSize) || (tileSize as number) < 1) throw new Error('game.json에 양의 tileSize가 필요합니다');
   const size = tileSize as number, tiles = parseTiles(tileValue), diagnostics: Diagnostic[] = [], files = new Map<string, string>(), maps = new Map<string, string>();
+  const audio = stories.flatMap(s => s.audio);
+  if (audio.length) files.set('audio.json', jsonBytes(Object.fromEntries(audio.map(({ id, filePath, volume, loop }) => [id, { file: filePath, ...(volume !== undefined ? { volume } : {}), ...(loop !== undefined ? { loop } : {}) }]))));
   const items = stories.flatMap(s => s.items);
   if (items.length) files.set('items.json', jsonBytes(Object.fromEntries(items.map(({ id, name, description, category, icon }) => [id, { name, description, category, ...(icon ? { icon } : {}) }]))));
   const locations = stories.flatMap(s => s.locations), scenes = stories.flatMap(s => s.scenes);
@@ -51,6 +53,8 @@ export function compileStories(stories: readonly Story[], gameValue: unknown, ti
   const faces = aliases ? storyFaces(stories, aliases) : new Map();
   const commands = (list: readonly Statement[]): unknown[] => list.flatMap(node => {
     switch (node.kind) {
+      case 'bgm': return [{ cmd: 'bgm', ...(node.id === null ? { stop: true } : { id: node.id }), ...(node.fade !== undefined ? { fade: node.fade } : {}) }];
+      case 'sfx': return [{ cmd: 'sfx', id: node.id }];
       case 'dialogue':
         return [{ cmd: 'text', text: node.text, ...faces.get(node), ...(node.speaker ? { speaker: node.speaker } : {}) }];
       case 'choice': return [{ cmd: 'choice', prompt: node.prompt, options: node.options.map(option => ({ label: option.label, commands: commands(option.statements) })), cancel: null }];
@@ -107,7 +111,7 @@ export function compileStories(stories: readonly Story[], gameValue: unknown, ti
   const start = point(entry, 'start', source);
   const oldStart = game.start && typeof game.start === 'object' ? game.start as Record<string, unknown> : {};
   const dir = ['up', 'down', 'left', 'right'].includes(String(oldStart.dir)) ? oldStart.dir : 'down';
-  const result = { ...game, state: { flags: Object.fromEntries(stories.flatMap(s => s.flags.map(flag => [flag.name, false]))), vars: Object.fromEntries(stories.flatMap(s => s.variables.map(variable => [variable.name, variable.initial]))) }, maps: locations.map(l => l.id), start: { map: entry, x: start.x, y: start.y, dir }, mapNames: Object.fromEntries(locations.map(l => [l.id, l.name])) };
+  const result = { ...game, state: { flags: Object.fromEntries(stories.flatMap(s => s.flags.map(flag => [flag.name, false]))), vars: Object.fromEntries(stories.flatMap(s => s.variables.map(variable => [variable.name, variable.initial]))) }, mapBgm: Object.fromEntries(locations.filter(l => l.bgm).map(l => [l.id, l.bgm])), maps: locations.map(l => l.id), start: { map: entry, x: start.x, y: start.y, dir }, mapNames: Object.fromEntries(locations.map(l => [l.id, l.name])) };
   files.set('game.json', jsonBytes(result));
   files.set('common-events.json', jsonBytes(Object.fromEntries(stories.flatMap(s => s.common.map(common => [common.id, { commands: commands(common.statements) }])))));
   return { files, maps, diagnostics };

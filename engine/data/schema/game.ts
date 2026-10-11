@@ -7,5 +7,6 @@ export const GameSchema = Type.Object({ $schema: Type.Optional(Type.String()), i
   version: Type.String({ pattern: '^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?(\\+[0-9A-Za-z.-]+)?$' }), formatVersion: Positive,
   tileSize: Positive, screen: Type.Object({ width: Positive, height: Positive }, objectOptions), maps: Type.Array(Id, { minItems: 1, uniqueItems: true }),
   start: StartSchema, player: Id, plugins: Type.Array(Id, { uniqueItems: true }), labels: Type.Object({ itemGet: Type.Optional(Type.String({ minLength: 1, pattern: "\\S" })), menuItems: Type.Optional(Type.String({ minLength: 1, pattern: "\\S" })), menuClues: Type.Optional(Type.String({ minLength: 1, pattern: "\\S" })), menuClose: Type.Optional(Type.String({ minLength: 1, pattern: "\\S" })), menuEmpty: Type.Optional(Type.String({ minLength: 1, pattern: "\\S" })), continue: Type.String({ minLength: 1 }), newGame: Type.String({ minLength: 1 }) }, objectOptions),
+  mapBgm: Type.Optional(Type.Record(Id, Id, objectOptions)),
   mapNames: Type.Optional(Type.Record(Id, Type.String({ minLength: 1 }), objectOptions)),
   state: InitialStateSchema }, objectOptions);

@@ -45,6 +45,7 @@ export async function eventRules(context: ValidationContext, basics: PackBasics,
         if (schemaErrors(definition.args.properties.route.items as TSchema, references, token).length > 0) report('V9', file, `${p}/route/${index}`, 'Invalid route token');
       });
       if (!check(definition.args, args, file, p)) return;
+      if ((command.cmd === 'bgm' || command.cmd === 'sfx') && command.id !== undefined && !Object.hasOwn(basics.audio ?? {}, command.id as string)) report('V3', file, p + '/id', 'Undeclared audio');
       if (command.cmd === 'scene') {
         const schema = options.scenes?.get(command.name as string) ?? (command.name === 'ending' ? EndingArgs : command.name === 'menu' ? MenuArgs : undefined);
         if (!schema) report('V1', file, p + '/name', 'Unknown scene');
