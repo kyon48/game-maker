@@ -143,7 +143,7 @@ async function boot(): Promise<void> {
     const { createRecorder } = await import('./recorder');
     const capture = presentation.capture();
     const renderCapture = (active: Game) => { render(active); presentation.composite(capture); };
-    window.__recorder = createRecorder(simulation, film, window.__filmRequest?.fps ?? film.fps ?? 30, capture, renderCapture, saveSession, narrationOptions(() => saveSession?.game ?? simulation, voices, voiceLengths(voiceManifest), false, plugins), filmCues);
+    window.__recorder = createRecorder(simulation, film, window.__filmRequest?.fps ?? film.fps ?? 30, capture, renderCapture, saveSession, narrationOptions(() => saveSession?.game ?? simulation, voices, voiceLengths(voiceManifest), false, plugins), filmCues, window.__filmRequest?.transport ?? 'deflate');
     render(); return;
   }
   window.addEventListener('resize', () => render(), { signal: resizeController.signal });

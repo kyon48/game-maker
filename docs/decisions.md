@@ -170,3 +170,7 @@
 - 2026-10-11 / S3 / art/build는 원본 필요, check는 원본이 없을 때 별칭 캐시와 필요한 portraits.json·PNG만 대조하고 S039 한 번 경고 / 다른 컴퓨터의 check에 개인 에셋 디렉터리나 say가 필요하지 않게 함.
 - 2026-10-11 / S3 / lantern의 artRoot는 설정 파일 기준 상대 경로, V3a 수기 PNG 중 미사용 5개를 제거하고 사용 5개만 생성물로 전환 / 공개 팩에 개인 절대 경로를 남기지 않고 실제 사용 표정만 관리함.
 - 2026-10-11 / S3 / 타임라인 text-start/end에 얼굴 ID·표정 key를 추가하고 script.md에 화자(표정) 표시, 엔진 0.11.0 / 검수 시 실제 표정을 확인하는 하위 호환 확장. formatVersion·API_VERSION·saveVersion 유지.
+
+- 2026-10-11 / V3a-perf / 브라우저의 1080p 합성은 유지하고 RGBA를 네이티브 deflate 압축 후 base64 전송, Node 표준 zlib로 복원 / 측정상 인코딩·전송이 약 94%를 차지하며 픽셀 변경·새 의존성 없이 병목을 제거함. 단계별 측정은 tools/film/README.md에 기록.
+- 2026-10-11 / V3a-perf / film:verify에 같은 상태의 무압축 브라우저 캡처와 복원 프레임 바이트 비교를 추가 / 얼굴 합성 화면 일치·반복 녹화·챕터 구간 결정론을 함께 확인함. 이전 V3a demo visit 79프레임 해시는 모두 동일.
+- 2026-10-11 / V3a-perf / 엔진 patch 0.11.1, formatVersion·API_VERSION·saveVersion 유지 / sim·렌더 결과 변경 없는 녹화 전송 성능 수정.
