@@ -1,3 +1,4 @@
+import { decodeRgba } from './frameTransport';
 import { dialogueAudio } from './audio';
 import { preview } from 'vite';
 import { chromium } from 'playwright';
@@ -11,7 +12,7 @@ import { artifacts, croppedEvents } from './artifacts';
 import type { FramedEvent } from '../../engine/film/timeline';
 // Structural bridge only: tools must not import platform.
 interface Frame { rgba: string | null; events: FramedEvent[]; frame: number; done: boolean }
-export interface RecordOptions { fps?: 30 | 60; chapter?: string; out?: string; hashes?: boolean; build?: boolean; signal?: AbortSignal }
+export interface RecordOptions { fps?: 30 | 60; chapter?: string; out?: string; hashes?: boolean; build?: boolean; signal?: AbortSignal; verifyCapture?: boolean }
 export async function recordFilm(packId: string, filmId: string, options: RecordOptions = {}) {
   const { pack, film, plugins } = await prepareFilm(packId, filmId);
   const rehearsal = await rehearse(pack, film, plugins);
@@ -24,6 +25,7 @@ export async function recordFilm(packId: string, filmId: string, options: Record
   let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined, video: ReturnType<typeof encoder> | undefined;
   const interrupt = () => { void browser?.close().catch(() => {}); };
   const hashes: string[] = [], events: FramedEvent[] = [];
+  let captureChecks = 0;
   let start = options.chapter ? -1 : 0, end = Infinity, count = 0;
   try {
     options.signal?.throwIfAborted();
@@ -40,7 +42,7 @@ export async function recordFilm(packId: string, filmId: string, options: Record
     await page.goto(`http://127.0.0.1:${address.port}/?record=${encodeURIComponent(filmId)}`);
     await page.waitForFunction(() => !!(window as unknown as { __recorder?: unknown }).__recorder || !!document.querySelector('[role=alert]'));
     if (await page.locator('[role=alert]').count()) throw new Error(await page.locator('[role=alert]').innerText());
-    const size = await page.evaluate(() => { const r = (window as unknown as { __recorder: { width: number; height: number } }).__recorder; return { width: r.width, height: r.height }; });
+    const size = await page.evaluate(() => { const r = (window as unknown as { __recorder: { width: number; height: number; encoding?: 'rgba' | 'deflate' } }).__recorder; return { width: r.width, height: r.height, encoding: r.encoding }; });
     video = encoder(size.width, size.height, fps, path.join(out, 'video.mp4'));
     while (true) {
       options.signal?.throwIfAborted();
@@ -52,9 +54,14 @@ export async function recordFilm(packId: string, filmId: string, options: Record
       if (options.chapter && start >= 0) { const next = chapters.find(e => e.title !== options.chapter && e.frame >= start); if (next) end = next.frame; }
       if (frame.frame >= end) break;
       if (start >= 0 && frame.frame >= start && (!frame.done || frame.rgba !== null || frame.events.length > 0)) {
-        const rgba = frame.rgba ?? (!frame.done ? await page.evaluate(() => (window as unknown as { __recorder: { frame(): string } }).__recorder.frame()) : null);
+        const rgba = frame.rgba ?? (!frame.done ? await page.evaluate(() => (window as unknown as { __recorder: { frame(): Promise<string> } }).__recorder.frame()) : null);
         if (rgba !== null) {
-          const bytes = Buffer.from(rgba, 'base64');
+          const bytes = decodeRgba(rgba, size.encoding, size.width * size.height * 4);
+          if (options.verifyCapture && (count === 0 || frame.events.some(event => event.type === 'text-start'))) {
+            const reference = await page.evaluate(() => (window as unknown as { __recorder: { frame(encoding: 'rgba'): Promise<string> } }).__recorder.frame('rgba'));
+            if (!bytes.equals(Buffer.from(reference, 'base64'))) throw new Error(`Browser composite differs from decoded capture at frame ${frame.frame}`);
+            captureChecks++;
+          }
           if (options.hashes) hashes.push(createHash('sha256').update(bytes).digest('hex'));
           await video.write(bytes); count++;
           if (count % (fps * 10) === 0) console.log(`Recorded ${(count / fps).toFixed(0)}s (${count} frames)`);
@@ -74,7 +81,7 @@ export async function recordFilm(packId: string, filmId: string, options: Record
       writeFile(path.join(out, 'script.md'), files.script),
     ]);
     console.log(`${out}: ${count} frames, ${(count / fps).toFixed(3)}s, ${fps}fps, 1920×1080`);
-    return { frames: count, fps, hashes, out, events: selected, startFrame: start };
+    return { frames: count, fps, hashes, captureChecks, out, events: selected, startFrame: start };
   } finally {
     options.signal?.removeEventListener('abort', interrupt);
     try { await video?.abort(); } finally {
