@@ -110,6 +110,7 @@ export function lintStories(stories: readonly Story[], options: LintOptions = {}
           if (options.config?.voices && !options.config.narrator) report(node, 'S035', '나레이션에 필요한 narrator 목소리 키가 설정되지 않았습니다');
           textVariables(node.text, node, true); if ([...node.text].length > 90) report(node, 'S014', '나레이션이 90자를 넘습니다', 'warning'); break;
         case 'set': case 'unset': if (!flags.has(node.flag)) report(node, 'S002', `미선언 플래그: ${node.flag}`); break;
+        case 'scene': if (node.resultVar && !variables.has(node.resultVar)) report(node, 'S003', `미선언 변수: ${node.resultVar}`); break;
         case 'add': case 'sub': if (!variables.has(node.variable)) report(node, 'S003', `미선언 변수: ${node.variable}`); break;
         case 'if': {
           condition(node.condition, node);
@@ -147,7 +148,7 @@ export function lintStories(stories: readonly Story[], options: LintOptions = {}
           break;
         }
         // raw JSON remains opaque: S1b's engine validator owns its content.
-        case 'cmd': case 'wait': case 'shake': case 'fade': case 'filmPause': case 'waitNarration': break;
+        case 'filmInputs': case 'cmd': case 'wait': case 'shake': case 'fade': case 'filmPause': case 'waitNarration': break;
       }
     }
     return maps;

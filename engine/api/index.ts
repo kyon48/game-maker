@@ -40,6 +40,10 @@ export interface EngineApi {
   readonly engineVersion: string;
   commands: { register<S extends TSchema>(name: `x_${string}`, definition: CommandDefinition<S>): void };
   conditions: { register<S extends TSchema>(name: `x_${string}`, definition: { args: S; test(args: Static<S>, state: ReadonlyGameState): boolean }): void };
+  scenes: {
+    register<A extends TSchema, S>(name: `x_${string}`, definition: Omit<SceneDefinition<Static<A>, S>, 'args'> & { args: A }): void;
+    register<A, S>(name: `x_${string}`, definition: SceneDefinition<A, S>): void;
+  };
   text: { register<S extends TSchema>(name: `x_${string}`, definition: TextDefinition<S>): void };
   hooks: {
     on(event: 'mapEnter' | 'mapLeave', handler: (ctx: HookContext, mapId: string) => void): void;
@@ -48,3 +52,21 @@ export interface EngineApi {
   };
 }
 export interface PluginModule { apiVersion: 1; id: string; register(api: EngineApi): void }
+
+export type { DrawList, DrawCommand } from '../data/scenes';
+export interface SceneContext {
+  readonly textMeasurer: import('../sim/ports').TextMeasurer;
+  readonly lineHeight: number;
+  state: GameStateAccess;
+  readonly screen: { width: number; height: number };
+  readonly labels: { newGame: string; continue: string };
+  showText(request: TextRequest): void;
+  rng(): number;
+  openScene(name: string, args?: unknown): { readonly done: boolean; readonly value?: number };
+}
+export interface SceneDefinition<A, S> {
+  args: TSchema;
+  init(args: A, ctx: SceneContext): S;
+  update(state: S, input: import('../sim/ports').InputFrame, ctx: SceneContext): S | { done: number };
+  view(state: S): import('../data/scenes').DrawList;
+}

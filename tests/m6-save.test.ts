@@ -75,7 +75,7 @@ it('save executes through registerBuiltins, persists only logical state and relo
   game.player.dir = 'right'; game.effects.startShake(4, 20);
   game.tick({ held: new Set(), pressed: new Set(['ok']) }); game.tick({ held: new Set(), pressed: new Set() });
   expect(savedStates).toHaveLength(1); expect(savedStates[0]?.vars.n).toBe(0); expect(game.state.getVar('n')).toBe(99);
-  expect(Object.keys(savedStates[0]!).sort()).toEqual(['dir', 'flags', 'map', 'selfFlags', 'vars', 'x', 'y']);
+  expect(Object.keys(savedStates[0]!).sort()).toEqual(['dir', 'flags', 'map', 'rngState', 'selfFlags', 'vars', 'x', 'y']);
   const state = savedStates[0]!;
   const reloaded = new Game({ ...pack.game, state: { flags: state.flags, vars: state.vars } }, pack.maps.get('map')!, pack.characters, events, { selfFlags: state.selfFlags });
   expect(reloaded.state.getSelf('map', 'point', 'used')).toBe(true); expect(reloaded.main.running).toBe(false);

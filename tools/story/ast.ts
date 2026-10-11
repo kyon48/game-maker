@@ -22,6 +22,8 @@ export type Statement = Source & (
   | { kind: 'call'; common: string }
   | { kind: 'filmPause'; seconds: number }
   | { kind: 'filmWalkTo'; anchor: string }
+  | { kind: 'scene'; name: string; args: Record<string, unknown>; resultVar?: string }
+  | { kind: 'filmInputs'; actions: import('../../engine/api').Action[] }
   | { kind: 'cmd'; value: unknown }
 );
 export interface Option extends Source { label: string; chosen: boolean; statements: Statement[] }

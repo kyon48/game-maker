@@ -105,7 +105,7 @@ export class FilmDriver {
       else if ('expect' in step) { if (!this.evaluate(step.expect)) throw new Error('Film expectation failed'); }
       else if ('waitFor' in step) {
         let elapsed = 0;
-        while (!this.view.message && !this.view.choice) { if (++elapsed > 36000) throw new Error('waitFor message timed out'); yield empty(); }
+        while (step.waitFor === 'scene' ? !this.view.scene : !this.view.message && !this.view.choice) { if (++elapsed > 36000) throw new Error(`waitFor ${step.waitFor} timed out`); yield empty(); }
       }
       else if ('pause' in step) yield* this.wait(Math.ceil(step.pause * 60));
       else if ('wait' in step) yield* this.wait(step.wait);

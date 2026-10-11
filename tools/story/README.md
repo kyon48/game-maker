@@ -339,3 +339,13 @@ portraits.json·PNG도 .compiled.json의 소유권 대상이다. art는 모든 �
 | S039 | 경고 | 원본 없는 check: 별칭 캐시·복사본·소유권 해시만 검사(팩당 1회) |
 | S040 | 경고 | CREDITS.md에 얼굴 에셋 출처 항목 없음 |
 | S041 | 경고 | 표정을 지정한 화자에게 art가 없어 얼굴 없음 |
+
+## 씬 (G3)
+
+`@scene ending {"title":"함께 켜는 불","lines":["약속이 남았습니다."]}` 또는 `@scene x_puzzle {} -> puzzle_result`를 이벤트·공통 이벤트에 쓴다. args는 JSON 객체이며 결과 변수는 @var 선언이 필요하다(S003). 잘못된 JSON은 S001, 등록 이름/스키마는 compile 뒤 엔진 validate가 확인한다.
+
+플러그인 씬 바로 다음 줄에 `@film press left,up,up`처럼 쉼표로 구분한 입력을 쓴다(up/down/left/right/ok/cancel). 일반 게임에는 힌트를 넣지 않는다. story film은 waitFor:scene 뒤 지정 입력을 보내고 닫힘을 확인한다. 힌트가 없거나 입력 뒤에도 열려 있으면 S042 오류다. ending은 선택 입력 없이 2초 화면을 담고 촬영 경로를 종료한다. 시나리오는 같은 경로의 결말 화면까지 재생하며 음성과 무관하다.
+
+| 코드 | 수준 | 의미 |
+|---|---|---|
+| S042 | 오류 | 플러그인 씬 입력 힌트 누락 또는 입력 후 미종료 |

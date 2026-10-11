@@ -267,6 +267,37 @@
             {
               "cmd": "text",
               "text": "여정을 기록했다. 다음에는 이 자리에서 이어갈 수 있다."
+            },
+            {
+              "cmd": "if",
+              "cond": {
+                "flag": "ending_public",
+                "is": true
+              },
+              "then": [
+                {
+                  "cmd": "scene",
+                  "name": "ending",
+                  "args": {
+                    "title": "함께 켜는 불",
+                    "lines": [
+                      "여러 사람의 약속이 등대를 지킨다."
+                    ]
+                  }
+                }
+              ],
+              "else": [
+                {
+                  "cmd": "scene",
+                  "name": "ending",
+                  "args": {
+                    "title": "오래 지키는 불",
+                    "lines": [
+                      "소라의 첫 약속이 등대를 지킨다."
+                    ]
+                  }
+                }
+              ]
             }
           ]
         }

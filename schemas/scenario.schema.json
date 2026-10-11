@@ -464,6 +464,18 @@
               "expect": {
                 "anyOf": [
                   {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "required": [
+                      "scene"
+                    ],
+                    "properties": {
+                      "scene": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  {
                     "anyOf": [
                       {
                         "additionalProperties": false,
@@ -704,6 +716,33 @@
   "$defs": {
     "Command": {
       "anyOf": [
+        {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "name",
+            "cmd"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "args": {
+              "type": "object",
+              "patternProperties": {
+                "^(.*)$": {}
+              }
+            },
+            "resultVar": {
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "type": "string"
+            },
+            "cmd": {
+              "const": "scene",
+              "type": "string"
+            }
+          }
+        },
         {
           "additionalProperties": false,
           "type": "object",

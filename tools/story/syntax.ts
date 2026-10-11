@@ -53,6 +53,18 @@ export function simple(text: string, source: Source): Statement {
     if (expression && !speaker) throw new Error('화자 없이 표정을 지정할 수 없습니다');
     return { ...source, kind: 'dialogue', speaker, expression, text: dialogue[3]! };
   }
+  const scene = /^@scene\s+([a-z][a-z0-9_]*)\s+(\{.*\})(?:\s+->\s+([a-z][a-z0-9_]*))?$/.exec(text);
+  if (scene) {
+    const args = JSON.parse(scene[2]!) as unknown;
+    if (!args || typeof args !== 'object' || Array.isArray(args)) throw new Error('씬 args는 JSON 객체입니다');
+    return { ...source, kind: 'scene', name: scene[1]!, args: args as Record<string, unknown>, resultVar: scene[3] };
+  }
+  const inputs = /^@film\s+press\s+(\S+)$/.exec(text);
+  if (inputs) {
+    const actions = inputs[1]!.split(',');
+    if (actions.some(action => !['up', 'down', 'left', 'right', 'ok', 'cancel'].includes(action))) throw new Error('촬영 입력은 up/down/left/right/ok/cancel입니다');
+    return { ...source, kind: 'filmInputs', actions: actions as import('../../engine/api').Action[] };
+  }
   const raw = /^@cmd\s+(.+)$/.exec(text);
   if (raw) return { ...source, kind: 'cmd', value: JSON.parse(raw[1]!) as unknown };
   const t = tokens(text).map(token => token.value), [command, a, b] = t;

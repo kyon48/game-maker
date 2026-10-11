@@ -353,7 +353,7 @@
       "advanceText": "auto"
     },
     {
-      "settle": true
+      "waitFor": "scene"
     },
     {
       "expect": {

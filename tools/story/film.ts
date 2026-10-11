@@ -23,7 +23,7 @@ export async function generateFilm(stories: readonly Story[], pack: ValidatedPac
   const steps: FilmStep[] = [], scenario: ScenarioStep[] = [], narration: string[] = [`# ${name}`, ''];
   const locations = stories.flatMap(s => s.locations), common = new Map(stories.flatMap(s => s.common.map(c => [c.id, c.statements] as const)));
   let source: Scene | Event = stories.flatMap(s => s.scenes)[0]!;
-  let total = 0;
+  let total = 0, endingReached = false;
   const appendInput = (list: ScenarioStep[], input: InputFrame) => {
     const action = [...input.held][0], last = list.at(-1);
     if (!action) {
@@ -54,7 +54,7 @@ export async function generateFilm(stories: readonly Story[], pack: ValidatedPac
   const waitReady = async (initial = false, boundary?: string, auto = false) => {
     let count = 0;
     if (initial) { await tick(empty()); count++; }
-    while ((!boundary || runtime.game.map.id === boundary) && !gate.pending && !runtime.game.message.opened && !runtime.game.choice.opened && (runtime.game.main.running || runtime.game.player.moving || (auto && pendingAuto()))) {
+    while ((!boundary || runtime.game.map.id === boundary) && !runtime.game.scenes.opened && !gate.pending && !runtime.game.message.opened && !runtime.game.choice.opened && (runtime.game.main.running || runtime.game.player.moving || (auto && pendingAuto()))) {
       if (++count > 36000) compileError(source, 'S032', '메시지/이벤트 완료 대기 시간 초과');
       await tick(empty());
     }
@@ -65,10 +65,21 @@ export async function generateFilm(stories: readonly Story[], pack: ValidatedPac
     const map = runtime.game.map.id;
     const auto = trigger === 'auto';
     await waitReady(trigger !== 'action', map, auto);
-    let selected = 0, cueIndex = 0;
+    let selected = 0, cueIndex = 0, sceneIndex = 0;
+    const sceneNodes = selectedPath.filter(node => node.kind === 'scene');
     const queued = selectedPath.filter(node => node.kind === 'narration' || node.kind === 'waitNarration');
     while (runtime.game.map.id === map && (runtime.game.main.running || runtime.game.message.opened || runtime.game.choice.opened)) {
-      if (gate.pending) {
+      if (runtime.game.scenes.opened) {
+        const node = sceneNodes[sceneIndex++];
+        const name = runtime.game.snapshot.scenes.at(-1)!.name;
+        if (!node || node.kind !== 'scene' || node.name !== name) compileError(source, 'S031', `원고 경로와 다른 씬: ${name}`);
+        steps.push({ waitFor: 'scene' });
+        if (name === 'ending') { steps.push({ pause: 2 }); endingReached = true; break; }
+        const hint = selectedPath[selectedPath.indexOf(node) + 1];
+        if (hint?.kind !== 'filmInputs') compileError(node, 'S042', '플러그인 씬 바로 다음에 @film press 입력 힌트가 필요합니다');
+        for (const action of hint.actions) await emit({ press: action });
+        if (runtime.game.scenes.opened) compileError(node, 'S042', '촬영 입력 힌트로 씬이 닫히지 않았습니다');
+      } else if (gate.pending) {
         const node = queued[cueIndex++];
         if (!node || cues.get(node) !== gate.pending) compileError(source, 'S031', `원고 경로와 다른 cue: ${gate.pending}`);
         if (pack.voices) steps.push(node.kind === 'narration' ? { narrate: node.text, cue: gate.pending } : { waitNarration: true, cue: gate.pending });
@@ -101,6 +112,8 @@ export async function generateFilm(stories: readonly Story[], pack: ValidatedPac
       if (node.kind === 'set' || node.kind === 'unset') { flags[node.flag] = node.kind === 'set'; expected.set(node.flag, node.kind === 'set'); }
       if (node.kind === 'add' || node.kind === 'sub') vars[node.variable] = vars[node.variable]! + (node.kind === 'add' ? node.amount : -node.amount);
       if (node.kind === 'call') result.push(...pathStatements(common.get(node.common)!, flags, vars, choices, expected, depth + 1));
+      const last = result.at(-1);
+      if (last?.kind === 'scene' && last.name === 'ending') break;
     }
     return result;
   };
@@ -126,7 +139,7 @@ export async function generateFilm(stories: readonly Story[], pack: ValidatedPac
       await emit({ walkTo: { event: door.id } }); await stepInto(door.id);
       await waitReady();
       // A destination auto event belongs to its scene, never to a door's choice queue.
-      if (!pendingAuto() && !runtime.game.message.opened && !runtime.game.choice.opened) await emit({ settle: true });
+      if (!endingReached && !pendingAuto() && !runtime.game.message.opened && !runtime.game.choice.opened) await emit({ settle: true });
     }
   };
   const hints = async (nodes: readonly Statement[], map: string) => {
@@ -143,12 +156,14 @@ export async function generateFilm(stories: readonly Story[], pack: ValidatedPac
   let chapter: string | undefined;
   const finalFlags = new Map<string, boolean>();
   for (const scene of stories.flatMap(s => s.scenes)) {
+    if (endingReached) break;
     source = scene;
     if (scene.chapter && scene.chapter !== chapter) { chapter = scene.chapter; await emit({ chapter }); narration.push(`## ${chapter}`, ''); }
     narration.push(`### ${scene.title}`, '');
     await travel(scene.location);
     const expected = new Map<string, boolean>();
     for (const item of scene.items) {
+      if (endingReached) break;
       if (item.kind === 'narration') {
         narration.push(item.text, '');
         if (pack.voices) {
@@ -193,7 +208,7 @@ export async function generateFilm(stories: readonly Story[], pack: ValidatedPac
         }
         await drain(choices, selected, item.trigger);
         if (item.trigger === 'auto') await hints(selected, runtime.game.map.id);
-        if (!pendingAuto() && !runtime.game.message.opened && !runtime.game.choice.opened) await emit({ settle: true });
+        if (!endingReached && !pendingAuto() && !runtime.game.message.opened && !runtime.game.choice.opened) await emit({ settle: true });
       }
     }
     for (const [flag, is] of expected) { await emit({ expect: { flag, is } }); finalFlags.set(flag, is); }

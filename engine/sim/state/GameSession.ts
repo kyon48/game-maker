@@ -15,11 +15,11 @@ export class GameSession {
   constructor(private readonly pack: ValidatedPack, private readonly options: GameOptions = {}, start = pack.game.start, state = pack.game.state) {
     this.game = this.create(start, state);
   }
-  private create(start: ValidatedPack['game']['start'], state: ValidatedPack['game']['state'], selfFlags?: Record<string, boolean>): Game {
+  private create(start: ValidatedPack['game']['start'], state: ValidatedPack['game']['state'], selfFlags?: Record<string, boolean>, rngState?: number): Game {
     const data = this.pack.maps.get(start.map), events = this.pack.events.get(start.map);
     if (!data || !events || !new Collision(data).passable(start.x, start.y)) throw new Error('Invalid session start');
     return new Game({ ...this.pack.game, start, state }, data, this.pack.characters, events, {
-      skin: this.pack.skin, commonEvents: this.pack.common, ...this.options, selfFlags,
+      skin: this.pack.skin, commonEvents: this.pack.common, ...this.options, selfFlags, rngState: rngState ?? this.options.rngState,
       mapLoader: this.options.mapLoader ?? { load: id => { const data = this.pack.maps.get(id), events = this.pack.events.get(id); return data && events ? Promise.resolve({ data, events }) : Promise.reject(new Error(`Unknown map: ${id}`)); } },
       save: value => {
         this.saved = { ...value, flags: { ...value.flags }, vars: { ...value.vars }, selfFlags: { ...value.selfFlags }, saveVersion: SAVE_VERSION, packId: this.pack.game.id, gameVersion: this.pack.game.version, engineVersion: this.options.plugins?.engineVersion ?? '', savedAt: '1970-01-01T00:00:00.000Z' };
@@ -36,7 +36,7 @@ export class GameSession {
     }).state;
     if (!restored) throw new Error('Saved data cannot be loaded');
     this.game.main.abort();
-    this.game = this.create({ map: restored.map, x: restored.x, y: restored.y, dir: restored.dir }, { flags: restored.flags, vars: restored.vars }, restored.selfFlags);
+    this.game = this.create({ map: restored.map, x: restored.x, y: restored.y, dir: restored.dir }, { flags: restored.flags, vars: restored.vars }, restored.selfFlags, restored.rngState);
   }
   expectSave(condition: SaveExpect): boolean {
     if (!this.saved) throw new Error('No saved data');

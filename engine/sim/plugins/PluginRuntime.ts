@@ -1,3 +1,6 @@
+import type { SceneDefinition } from '@engine/api';
+import type { RuntimeScene } from '../scenes/SceneStack';
+import { EndingArgs } from '../../data/scenes';
 import { Value } from '@sinclair/typebox/value';
 import type { Static, TSchema } from '@sinclair/typebox';
 import type { EngineApi, PluginModule, HookContext, SaveData, CommandDefinition, TextDefinition } from '@engine/api';
@@ -13,6 +16,7 @@ export interface NamedPlugin { name: string; module: PluginModule }
 type HookName = 'mapEnter' | 'mapLeave' | 'tick' | 'loadSave';
 type HookHandler = (...args: never[]) => unknown;
 export class PluginRuntime {
+  readonly scenes = new Map<string, RuntimeScene>();
   readonly commands = new CommandRegistry();
   readonly diagnostics: Diagnostic[] = [];
   readonly conditions = new Map<string, { args: TSchema; test: (args: unknown, state: GameState) => boolean }>();
@@ -39,6 +43,10 @@ export class PluginRuntime {
       conditions: Object.freeze({ register: <S extends TSchema>(name: `x_${string}`, definition: { args: S; test: (args: Static<S>, state: import('@engine/api').ReadonlyGameState) => boolean }) => {
         this.name(name); if (this.conditions.has(name)) throw new Error(`Duplicate condition: ${name}`);
         this.conditions.set(name, { args: definition.args, test: (args, state) => definition.test(args as Static<S>, readonlyState(state)) });
+      } }),
+      scenes: Object.freeze({ register: <A extends TSchema, S>(name: `x_${string}`, definition: Omit<SceneDefinition<Static<A>, S>, 'args'> & { args: A }) => {
+        this.name(name); if (this.scenes.has(name)) throw new Error(`Duplicate scene: ${name}`);
+        this.scenes.set(name, definition as RuntimeScene);
       } }),
       text: Object.freeze({ register: <S extends TSchema>(name: `x_${string}`, definition: TextDefinition<S>) => {
         this.name(name); if (this.text.has(name)) throw new Error(`Duplicate text function: ${name}`);
@@ -81,9 +89,9 @@ export class PluginRuntime {
   loadSave(state: PersistentState, data: Readonly<Record<string, unknown>>, fromGameVersion: string): PersistentState {
     const save: SaveData = { ...state, saveVersion: 1, packId: String(data.packId ?? ''), gameVersion: String(data.gameVersion ?? ''), engineVersion: String(data.engineVersion ?? ''), savedAt: String(data.savedAt ?? '') };
     this.emit('loadSave', save, fromGameVersion);
-    return { map: save.map, x: save.x, y: save.y, dir: save.dir, flags: save.flags, vars: save.vars, selfFlags: save.selfFlags };
+    return { map: save.map, x: save.x, y: save.y, dir: save.dir, flags: save.flags, vars: save.vars, selfFlags: save.selfFlags, rngState: save.rngState };
   }
   get validationOptions() {
-    return { commands: this.commands.catalog, conditions: new Map([...this.conditions].map(([name, definition]) => [name, definition.args])), text: new Map([...this.text].map(([name, definition]) => [name, definition.args])), pluginDiagnostics: this.diagnostics };
+    return { scenes: new Map([['ending', EndingArgs], ...[...this.scenes].map(([name, definition]) => [name, definition.args] as const)]), commands: this.commands.catalog, conditions: new Map([...this.conditions].map(([name, definition]) => [name, definition.args])), text: new Map([...this.text].map(([name, definition]) => [name, definition.args])), pluginDiagnostics: this.diagnostics };
   }
 }

@@ -106,7 +106,7 @@ flowchart LR
 | `waitNarration: true, cue?: id` | 진행·대기 중인 나레이션 전체가 끝날 때까지 빈 입력 |
 | `music: {file, volume?, fadeIn?, loop?: true}` | 팩 상대 경로의 음악 시작. volume 0~1, 페이드 초 단위 |
 | `music: null, fadeOut?: 초` | 현재 음악 정지·페이드 아웃 |
-| `waitFor: "message"` | 메시지 또는 선택지 준비까지 빈 입력으로 최대 36000틱 대기(V2a) |
+| `waitFor: "message"` / `"scene"` | 메시지·선택지 또는 씬 준비까지 빈 입력으로 최대 36000틱 대기(V2a/G3) |
 | `choose: n, dwell: 초` | 커서를 한 칸씩 옮길 때마다 dwell만큼 머뭇거려 "사람이 고르는" 느낌 |
 | `chapter: 제목` | 타임라인에 챕터 표시 → 유튜브 챕터·부분 렌더링 단위 |
 | `expect` | 그대로 사용. 대본이 의도와 다르게 흘러가면 렌더링 전에 실패 |

@@ -23,7 +23,8 @@
   },
   "player": "investigator",
   "plugins": [
-    "evidence"
+    "evidence",
+    "lamps"
   ],
   "labels": {
     "continue": "조사 이어하기",
@@ -44,9 +45,12 @@
       "clue_seal": false,
       "clue_letter": false,
       "clue_ledger": false,
-      "clue_receipt": false
+      "clue_receipt": false,
+      "puzzle_solved": false
     },
-    "vars": {}
+    "vars": {
+      "puzzle_result": 0
+    }
   },
   "mapNames": {
     "hall": "현관홀",

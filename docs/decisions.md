@@ -174,3 +174,12 @@
 - 2026-10-11 / V3a-perf / 브라우저의 1080p 합성은 유지하고 RGBA를 네이티브 deflate 압축 후 base64 전송, Node 표준 zlib로 복원 / 측정상 인코딩·전송이 약 94%를 차지하며 픽셀 변경·새 의존성 없이 병목을 제거함. 단계별 측정은 tools/film/README.md에 기록.
 - 2026-10-11 / V3a-perf / film:verify에 같은 상태의 무압축 브라우저 캡처와 복원 프레임 바이트 비교를 추가 / 얼굴 합성 화면 일치·반복 녹화·챕터 구간 결정론을 함께 확인함. 이전 V3a demo visit 79프레임 해시는 모두 동일.
 - 2026-10-11 / V3a-perf / 엔진 patch 0.11.1, formatVersion·API_VERSION·saveVersion 유지 / sim·렌더 결과 변경 없는 녹화 전송 성능 수정.
+
+- 2026-10-12 / G3 / 씬 showText는 메시지를 열고 닫힐 때까지 씬 update를 보류하며, 닫는 입력을 씬에 재사용하지 않음 / 기존 메시지 규칙을 유지하고 메시지 중 씬 결과가 확정되지 않게 함.
+- 2026-10-12 / G3 / 씬이 열려 있으면 save는 오류, 시드 고정 uint32 난수 상태는 선택 rngState 필드로 저장하며 구 세이브는 seed 1 / 씬 상태를 저장하지 않고 saveVersion 1·formatVersion 1을 유지하면서 난수 순서를 복원함.
+- 2026-10-12 / G3 / ending의 이어하기 대상 세이브가 없으면 새 게임으로 시작, 녹화·헤드리스에는 재시작 포트를 제공하지 않음 / 첫 결말에서도 기존 labels 두 선택지를 유지하며 platform에서만 IO·게임 교체를 처리함.
+- 2026-10-12 / G3 / @scene 이름 {JSON args} -> 변수, 플러그인 씬 바로 다음 @film press 쉼표 입력, ending은 화면을 2초 촬영 후 입력 없이 종료 / 플러그인 퍼즐 풀이를 추측하지 않고 명시한 입력만 사용함. film waitFor:scene으로 씬 준비를 기다림.
+- 2026-10-12 / G3 / DrawList image는 정적 ending 인자에서 V4 검사, 동적 view 경로는 런타임 팩 이미지 목록 대조 및 미리 로드 / 플러그인 상태별 출력을 검증 시 실행하지 않으면서 잘못된 이미지 참조를 거부함.
+- 2026-10-12 / G3 / 씬 화면 확인에 scenario/film expect:scene을 추가, 엔진 0.12.0·API_VERSION 1 유지 / 기존 대사 창 검사와 구별해 헤드리스에서도 실제 결과 화면 진입을 확인하는 하위 호환 확장.
+- 2026-10-12 / G3 / SceneContext에 읽기 전용 textMeasurer·lineHeight를 제공하고 ending 본문은 기존 wrapText로 줄바꿈 / 브라우저와 헤드리스 측정 포트 원칙을 유지하며 긴 결말 문장이 창 밖으로 잘리지 않게 함.
+- 2026-10-12 / G3 / DrawList image는 frame 생략 시 원본 크기, 지정 시 game.tileSize 정사각형의 가로 타일 인덱스로 그림 / 별도 이미지 프레임 규격이 없는 초기 씬 API에서 기존 타일 좌표계를 재사용함.

@@ -17,6 +17,12 @@
       "advanceText": true
     },
     {
+      "press": "ok"
+    },
+    {
+      "press": "ok"
+    },
+    {
       "settle": true
     },
     {
@@ -42,7 +48,7 @@
     },
     {
       "expect": {
-        "textContains": "닫힌 문"
+        "scene": "ending"
       }
     }
   ],

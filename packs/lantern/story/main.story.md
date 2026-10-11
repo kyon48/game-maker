@@ -188,4 +188,9 @@ x......................#
   @end
   @cmd {"cmd":"save"}
   : 여정을 기록했다. 다음에는 이 자리에서 이어갈 수 있다.
+  @if ending_public
+    @scene ending {"title":"함께 켜는 불","lines":["여러 사람의 약속이 등대를 지킨다."]}
+  @else
+    @scene ending {"title":"오래 지키는 불","lines":["소라의 첫 약속이 등대를 지킨다."]}
+  @end
 @end

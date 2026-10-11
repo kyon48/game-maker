@@ -11,6 +11,7 @@ export type CommandCatalog = ReadonlyMap<string, { args: TSchema; parallelSafe: 
 export interface ValidationOptions {
   pluginDiagnostics?: readonly Diagnostic[];
   commands: CommandCatalog;
+  scenes?: ReadonlyMap<string, TSchema>;
   text?: ReadonlyMap<string, TSchema>;
   conditions?: ReadonlyMap<string, TSchema>;
   plugins?: readonly { id: string; apiVersion: number }[];

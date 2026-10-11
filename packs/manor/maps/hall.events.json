@@ -418,6 +418,50 @@
           }
         }
       ]
+    },
+    {
+      "id": "memory_lamps",
+      "x": 20,
+      "y": 14,
+      "pages": [
+        {
+          "trigger": "action",
+          "through": false,
+          "character": "evidence",
+          "commands": [
+            {
+              "cmd": "scene",
+              "name": "x_lamps",
+              "resultVar": "puzzle_result"
+            },
+            {
+              "cmd": "if",
+              "cond": {
+                "var": "puzzle_result",
+                "op": "==",
+                "value": 1
+              },
+              "then": [
+                {
+                  "cmd": "set_flag",
+                  "flag": "puzzle_solved",
+                  "value": true
+                },
+                {
+                  "cmd": "text",
+                  "text": "세 조명의 순서를 기억했다. 오래된 기억도 차근차근 돌아온다."
+                }
+              ],
+              "else": [
+                {
+                  "cmd": "text",
+                  "text": "조명의 순서가 달랐다. 원하면 다시 시도할 수 있다."
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ]
 }

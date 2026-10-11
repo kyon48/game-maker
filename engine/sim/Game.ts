@@ -1,3 +1,6 @@
+import { SceneStack } from './scenes/SceneStack';
+import { Random } from './scenes/Random';
+import type { SceneContext } from '@engine/api';
 import { voiceKey } from '../data/voice';
 import type { Voices } from '../data/schema/voices';
 import { plainText } from '../data/text';
@@ -37,6 +40,9 @@ import { portraitSlot } from '../data/portraits';
 import { MessageState } from './ui/MessageState';
 import { ChoiceState } from './ui/ChoiceState';
 export interface GameSnapshot {
+  readonly scenes: import('./scenes/SceneStack').SceneSnapshot[];
+  readonly rngState: number;
+  readonly sceneResult: { name: string; value: number } | null;
   readonly mapId: string;
   readonly mapName: MapNameSnapshot | null;
   readonly fade: number;
@@ -47,6 +53,9 @@ export interface GameSnapshot {
   readonly choice: ChoiceSnapshot | null;
 }
 export interface GameOptions {
+  rngState?: number;
+  sceneImages?: ReadonlySet<string>;
+  sceneEnd?: (name: string, result: number) => void;
   filmCues?: import('./ports').FilmCuePort;
   voices?: Voices; voiceLengths?: Readonly<Record<string, number>>; recording?: boolean;
   plugins?: PluginRuntime;
@@ -56,6 +65,9 @@ export interface GameOptions {
   hooks?: { mapLeave?: (id: string) => void; mapEnter?: (id: string) => void; tick?: () => void };
 }
 export class Game {
+  readonly scenes: SceneStack;
+  readonly rng: Random;
+  private sceneResult: { name: string; value: number } | null = null;
   readonly state: GameState;
   readonly player: Player;
   map: MapState;
@@ -99,11 +111,23 @@ export class Game {
       const key = voiceKey(voice, text), frames = options.voiceLengths?.[key];
       return { voiceKey: key, voiceFrames: frames, auto: !!options.recording && frames !== undefined, gapTicks: Math.ceil((options.skin?.message.voiceGap ?? 0.4) * 60) };
     });
+    this.rng = new Random(options.rngState ?? 1);
+    this.scenes = new SceneStack(() => this.sceneContext(), options.sceneImages, (name, value) => {
+      this.sceneResult = { name, value }; if (!options.recording) options.sceneEnd?.(name, value);
+    });
+    for (const [name, definition] of options.plugins?.scenes ?? []) this.scenes.definitions.set(name, definition);
     this.showMapName();
     this.options.plugins?.mapEnter(this.hookContext());
     this.current = this.capture();
   }
   tick(input: InputFrame): void {
+    if (this.scenes.opened) {
+      const consumed = this.message.opened || this.choice.opened;
+      if (this.message.opened) this.message.update(input);
+      else if (this.choice.opened) this.choice.update(input);
+      if (!consumed) this.scenes.update(input);
+      this.current = this.capture(); return;
+    }
     this.nameShownThisTick = false;
     // §7.1(1): 페이지 재계산은 직전 틱에서 변경된 상태에만 적용.
     if (this.state.dirty) {
@@ -129,6 +153,7 @@ export class Game {
         this.main.update();
       }
     }
+    if (this.scenes.opened) { this.current = this.capture(); return; }
     // (4): 이동을 막는 동안에도 새 방향 입력 이력은 유지.
     this.player.observeInput(input);
     if (!this.main.running && !this.message.opened && !this.choice.opened) {
@@ -187,9 +212,11 @@ export class Game {
     return {
       filmCues: this.options.recording ? this.options.filmCues : undefined,
       showMapName: () => this.showMapName(),
+      openScene: (name, args) => this.scenes.open(name, args),
       save: () => {
+        if (this.scenes.opened) throw new Error('Cannot save while a scene is open');
         if (!this.options.save) throw new Error('Save port unavailable');
-        this.options.save({ map: this.map.id, x: this.player.x, y: this.player.y, dir: this.player.dir, ...this.state.snapshot() });
+        this.options.save({ map: this.map.id, x: this.player.x, y: this.player.y, dir: this.player.dir, rngState: this.rng.state, ...this.state.snapshot() });
       },
       state: this.state, thisEvent: scope,
       get player() { return { mapId: mapId(), x: player.x, y: player.y, dir: player.dir }; },
@@ -273,11 +300,17 @@ export class Game {
     // (5); the generator resumes its original caller and command list in (6).
     if (request.fade !== false) { const fade = this.effects.startFade('clear', 15); yield { kind: 'until', test: () => fade.done }; }
   }
+  private sceneContext(): SceneContext {
+    const measurer = this.options.textMeasurer ?? new HeadlessTextMeasurer(this.options.skin?.font.size ?? 12);
+    return { textMeasurer: Object.freeze({ width: (text: string) => measurer.width(text) }), lineHeight: this.options.skin?.font.lineHeight ?? 16, state: stateAccess(this.state), screen: Object.freeze({ ...this.config.screen }), labels: Object.freeze({ ...this.config.labels }),
+      rng: () => this.rng.next(), openScene: (name, args) => this.scenes.open(name, args),
+      showText: request => { if (this.message.opened || this.choice.opened) throw new Error('Scene UI already open'); this.message.open(request, 'plugin'); } };
+  }
   private showMapName(): void { this.mapName.show(this.config.mapNames?.[this.map.id]); this.nameShownThisTick = true; }
   private capture(): GameSnapshot {
     const characters = this.map.characters.map(character => character.snapshot());
     const player = characters[0]!;
     characters.sort((a, b) => a.pixelY - b.pixelY);
-    return { mapId: this.map.id, mapName: this.mapName.snapshot, fade: this.effects.alpha, shake: this.effects.offset, player, characters, message: this.message.snapshot, choice: this.choice.snapshot };
+    return { scenes: this.scenes.snapshot, rngState: this.rng.state, sceneResult: this.sceneResult, mapId: this.map.id, mapName: this.mapName.snapshot, fade: this.effects.alpha, shake: this.effects.offset, player, characters, message: this.message.snapshot, choice: this.choice.snapshot };
   }
 }

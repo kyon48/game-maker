@@ -20,7 +20,7 @@
 | P5 | 잘못된 팩은 실행 전에 거부 | 검증기(§10)가 빌드와 개발 서버 로딩에서 오류를 파일 경로 + JSON 포인터로 보고 |
 | P6 | main은 항상 모든 팩이 통과 | 엔진 변경은 모든 팩의 검증과 시나리오 테스트가 통과해야 머지(§13) |
 
-**MVP 밖**: 전투, 인벤토리, 메뉴 화면, 사운드, 다국어, 터치 입력, 멀티플레이, 애니메이션 타일, 타일 뒤집기, 텍스트 제어문자·변수 치환, 플러그인 씬(미니게임 화면), 팩 간 공유 라이브러리(§14).
+**MVP 밖**: 전투, 인벤토리, 메뉴 화면, 사운드, 다국어, 터치 입력, 멀티플레이, 애니메이션 타일, 타일 뒤집기, 텍스트 제어문자·변수 치환, 팩 간 공유 라이브러리(§14).
 
 ---
 
@@ -400,6 +400,7 @@ interface PackSource {
 
 | `cmd` | 필드 (기본값) | 동작 | 대기 | parallel |
 |---|---|---|---|---|
+| `scene` | `name`, `args?`(`{}`), `resultVar?` | 씬 스택에 화면을 열고 정수 결과를 변수에 저장(§8.4) | 씬 종료까지 | 금지 |
 | `text` | `text`, `speaker?`, `portrait?`, `expression?` | 메시지 창 표시(§8.1) | 창이 닫힐 때까지 | 금지 |
 | `choice` | `prompt?`, `options[{label, when?, commands}]`(1~6개), `cancel?`(null) | 선택지 표시(§8.2), 고른 옵션의 `commands` 실행. `when`이 거짓인 옵션은 **숨김**. `cancel`은 cancel 키를 눌렀을 때 선택할 옵션 인덱스(원래 배열 기준). null이면 cancel 키 무시 | 선택 + 하위 실행 끝까지 | 금지 |
 | `if` | `cond`, `then`, `else`(`[]`) | 조건에 따라 분기 | 하위 실행 끝까지 | 허용 |
@@ -552,6 +553,18 @@ type CommandHandler<A> = (args: A, ctx: CommandContext) => CommandGen | void;
 
 ---
 
+### 8.4 씬 (G3)
+
+`scene {name, args?, resultVar?}`는 독립 화면을 스택에 연다. 맨 위 씬만 매 틱 update하며, 씬이 있는 동안 맵의 이동·parallel·wander·auto 시작·맵 tick 훅·효과 진행을 모두 정지한다. 씬을 연 틱에도 이후 맵 진행을 생략한다. 닫힌 다음 틱에 인터프리터가 정수 결과를 resultVar에 넣고 이어진다. 결과는 safe integer여야 한다.
+
+씬의 init/update/view는 DOM 없이 실행한다. view의 순수 DrawList는 rect·image·text·window이며 좌표계는 game.screen이다. image.asset은 팩 상대 경로, frame은 선택적인 가로 타일 프레임 인덱스다. platform이 skin 폰트·창을 사용해 픽셀 레이어에 그리고 녹화도 같은 화면을 캡처한다. 스냅샷은 씬별 이름·상태·DrawList, 마지막 sceneResult, rngState를 포함한다. 상태는 JSON으로 복사할 수 있어야 한다.
+
+SceneContext는 state(GameStateAccess), showText(request), rng(), openScene(name,args?), 읽기 전용 screen·labels·textMeasurer·lineHeight를 제공한다. 내장 ending은 같은 측정 포트로 본문을 창 폭 안에 줄바꿈한다. showText는 창을 열고 UI가 닫힐 때까지 씬 update를 보류한다. 창을 닫는 입력은 씬에 재사용하지 않는다. openScene은 자식 씬을 쌓고 done/value 핸들을 돌려준다. 부모는 자식 종료 뒤 다시 진행한다.
+
+난수는 seed 1의 uint32 LCG(`state = 1664525*state + 1013904223 mod 2^32`)이고 반환값은 state/2^32다. 선택 SaveData.rngState에 보존하고 로드 시 uint32가 아니면 1, 구 세이브에 없으면 초기 seed 1을 쓴다. 씬 상태는 저장하지 않으며 씬 중 save는 오류다. formatVersion·saveVersion은 1을 유지한다.
+
+내장 ending args는 `{title, lines: string[], image?}`다. 확인 키를 누르면 labels.newGame/continue를 표시하고 방향키로 선택, 다시 확인하면 0/1로 닫힌다. 일반 플레이의 platform이 새 게임/마지막 세이브를 복원하고, 세이브가 없으면 새 게임을 만든다. 헤드리스·녹화는 결과만 남기고 재시작하지 않는다.
+
 ## 9. 플러그인 API v1
 
 팩 전용 기능은 `packs/<id>/plugins/<이름>.ts`에 둔다. 엔진 코어를 고치지 않는다.
@@ -605,6 +618,7 @@ export interface EngineApi {
       test(args: Static<S>, state: ReadonlyGameState): boolean;
     }): void;
   };
+  scenes: { register<A extends TSchema, S>(name: `x_${string}`, definition: Omit<SceneDefinition<Static<A>, S>, 'args'> & { args: A }): void };
   text: {
     register<S extends TSchema>(name: `x_${string}`, def: {
       args: S;
@@ -636,7 +650,7 @@ export interface CommandContext {
 - `HookContext`는 `state`, `player`, `mapId`를 제공한다. 훅 안에서는 대기할 수 없다.
 - 플러그인 `id`는 팩 안에서 유일해야 하고 파일명과 같아야 한다.
 - 같은 이름의 커맨드나 조건을 두 번 등록하면 로드 오류.
-- **플러그인 씬(미니게임 화면)은 v1에 없다.** 나중에 `api.scenes`로 추가할 예정이며, 하위 호환을 유지하는 추가라서 API v1.x에 들어간다.
+- G3의 `api.scenes`는 API v1 하위 호환 추가다. SceneDefinition·SceneContext·DrawList/DrawCommand를 함께 공개한다(§8.4).
 
 ### 9.2 버전 규칙
 
@@ -685,6 +699,7 @@ export interface CommandContext {
 ```ts
 interface SaveData {
   saveVersion: 1;
+  rngState?: number; // G3: uint32 시드 상태, 구 세이브는 1
   packId: string;
   gameVersion: string;
   engineVersion: string;
@@ -832,3 +847,9 @@ CI 서비스 설정 파일은 레포 호스팅이 정해진 뒤에 추가한다.
 | 캐릭터 시트 | 선택 | 없으면 `placeholder` 사용 |
 | 한글 픽셀 폰트 | M3 | 예: Galmuri(SIL OFL). `assets/fonts/` |
 | RPG Maker 기본 에셋(RTP) | **사용 금지** | 라이선스상 RPG Maker로 만든 게임에서만 쓸 수 있음 |
+
+### G3 API v1 하위 호환 추가
+
+`api.scenes.register<A extends TSchema, S>(name: x_이름, definition: Omit<SceneDefinition<Static<A>,S>, 'args'> & {args:A})`를 공개한다. definition은 args(TypeBox), init(args,ctx):S, update(state,input,ctx):S|{done:number}, view(state):DrawList다. x_ 접두사와 중복 오류 규칙은 기존 등록 API와 같다. 내장 scene 커맨드는 CommandRegistry.register를 쓰고 ending은 같은 씬 스택에서 실행한다. API_VERSION=1 유지(§9.2).
+
+씬 이름·args·resultVar는 V1/V3, parallel은 V7로 검사한다. 정적으로 아는 ending image는 V4 파일 검사, 동적 DrawList는 실행 시 형식·팩 내부 이미지 경로를 검사한다. 브라우저는 팩의 이미지 목록을 미리 로드한다. 시나리오/film expect에 `{scene: 이름}`을 지원하고 film `waitFor: scene`은 씬이 열릴 때까지 빈 입력으로 대기한다.

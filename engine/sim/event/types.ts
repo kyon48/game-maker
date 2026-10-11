@@ -12,6 +12,7 @@ export interface CommandContext {
   readonly filmCues?: import('../ports').FilmCuePort;
   showMapName(): void;
   save(): void;
+  openScene(name: string, args?: unknown): { done: boolean; value?: number };
   state: GameState;
   thisEvent: EventScope | null;
   readonly player: { readonly mapId: string; readonly x: number; readonly y: number; readonly dir: Dir };
