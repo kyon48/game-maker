@@ -6,6 +6,7 @@ import { StartSchema } from './game';
 export const ActionSchema = Type.Union([Type.Literal('up'), Type.Literal('down'), Type.Literal('left'), Type.Literal('right'), Type.Literal('ok'), Type.Literal('cancel')]);
 export const SaveExpectSchema = Type.Union([ConditionSchema, Type.Object({ self: Id, is: Type.Boolean(), map: Id, event: Id }, objectOptions)]);
 const expected = Type.Union([
+  Type.Object({ scene: Type.String() }, objectOptions),
   ConditionSchema, Type.Object({ self: Id, is: Type.Boolean(), map: Id, event: Id }, objectOptions),
   Type.Object({ map: Id, x: Type.Optional(SafeInteger), y: Type.Optional(SafeInteger), dir: Type.Optional(DirSchema) }, objectOptions),
   Type.Object({ textContains: Type.String() }, objectOptions),

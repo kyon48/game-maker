@@ -1,7 +1,7 @@
 import { portraitSlot } from '../../data/portraits';
 import type { Skin } from '../../data/skin';
 import type { GameSnapshot } from '../../sim/Game';
-function windowBox(context: CanvasRenderingContext2D, skin: Skin, images: ReadonlyMap<string, CanvasImageSource>,
+export function windowBox(context: CanvasRenderingContext2D, skin: Skin, images: ReadonlyMap<string, CanvasImageSource>,
   x: number, y: number, width: number, height: number): void {
   if (skin.window.image) {
     const image = images.get(skin.window.image) as HTMLImageElement | undefined;

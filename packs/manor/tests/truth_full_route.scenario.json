@@ -600,6 +600,12 @@
       "advanceText": true
     },
     {
+      "press": "ok"
+    },
+    {
+      "press": "ok"
+    },
+    {
       "settle": true
     },
     {

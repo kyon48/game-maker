@@ -1,3 +1,4 @@
+import { drawScene } from './renderer/scenes';
 import { Presentation } from './presentation';
 import { drawPortrait } from './renderer/portraits';
 import { portraitFiles } from '../data/portraits';
@@ -88,6 +89,8 @@ async function boot(): Promise<void> {
   const savedData = candidate.data ? await loader.load(savedMap) : undefined;
   const restored = restoreSave(candidate, game, new Map(entries), new Map(savedData ? [[savedMap, savedData.data]] : []));
   for (const warning of restored.warnings) console.warn(warning);
+  const sceneImages = new Set((runtime.sceneImages ?? await source.listFiles()).filter(file => /\.(png|webp|jpe?g)$/i.test(file)));
+  await Promise.all([...sceneImages].map(path => loader.image(path)));
   const playerGraphic = characters[game.player];
   if (playerGraphic?.sheet) await loader.image(playerGraphic.sheet);
   if (skin.window.image) await loader.image(skin.window.image);
@@ -112,6 +115,7 @@ async function boot(): Promise<void> {
   const options: GameOptions = {
     voices, voiceLengths: voiceLengths(voiceManifest), filmCues, recording: !!film?.steps.some(s => 'cue' in s || 'advanceText' in s && s.advanceText === 'voice'),
     plugins, skin, textMeasurer: new CanvasTextMeasurer(context), mapLoader: prepared ? { load: id => { const map = prepared.get(id); return map ? Promise.resolve(map) : Promise.reject(new Error(`Unknown map: ${id}`)); } } : loader, commonEvents,
+    rngState: state?.rngState, sceneImages,
     selfFlags: state?.selfFlags, save: value => { if (!film) storage.write(value); },
   };
   let saveSession: GameSession | undefined;
@@ -119,22 +123,25 @@ async function boot(): Promise<void> {
     const { GameSession } = await import('../sim/state/GameSession');
     saveSession = new GameSession({ game, characters, skin, common: commonEvents, events: new Map(entries), maps: new Map([...prepared].map(([id, map]) => [id, map.data])) }, options, start, { flags: { ...game.state.flags, ...film.state?.flags }, vars: { ...game.state.vars, ...film.state?.vars } });
   }
-  const simulation = saveSession?.game ?? new Game({ ...game, start, state: film ? { flags: { ...game.state.flags, ...film.state?.flags }, vars: { ...game.state.vars, ...film.state?.vars } } : state ? { flags: state.flags, vars: state.vars } : game.state }, initial.data, characters, initial.events, options);
+  let simulation = saveSession?.game ?? new Game({ ...game, start, state: film ? { flags: { ...game.state.flags, ...film.state?.flags }, vars: { ...game.state.vars, ...film.state?.vars } } : state ? { flags: state.flags, vars: state.vars } : game.state }, initial.data, characters, initial.events, options);
   const render = (active = simulation) => {
     context.clearRect(0, 0, canvas.width, canvas.height);
     const snapshot = active.snapshot;
-    const map = active.map.data;
-    const size = { width: map.width * map.tilewidth, height: map.height * map.tileheight };
-    const view = camera({ x: snapshot.player.pixelX + game.tileSize / 2,
-      y: snapshot.player.pixelY + game.tileSize / 2 }, size, game.screen, { x: snapshot.shake, y: 0 });
-    drawTileMap(context, map, images, view, 'below');
-    drawCharacters(context, snapshot.characters, images, game.tileSize, view);
-    drawTileMap(context, map, images, view, 'over');
-    if (snapshot.fade > 0) {
-      context.save(); context.globalAlpha = snapshot.fade; context.fillStyle = skin.colors.fade;
-      context.fillRect(0, 0, canvas.width, canvas.height); context.restore();
+    if (!snapshot.scenes.length) {
+      const map = active.map.data;
+      const size = { width: map.width * map.tilewidth, height: map.height * map.tileheight };
+      const view = camera({ x: snapshot.player.pixelX + game.tileSize / 2,
+        y: snapshot.player.pixelY + game.tileSize / 2 }, size, game.screen, { x: snapshot.shake, y: 0 });
+      drawTileMap(context, map, images, view, 'below');
+      drawCharacters(context, snapshot.characters, images, game.tileSize, view);
+      drawTileMap(context, map, images, view, 'over');
+      if (snapshot.fade > 0) {
+        context.save(); context.globalAlpha = snapshot.fade; context.fillStyle = skin.colors.fade;
+        context.fillRect(0, 0, canvas.width, canvas.height); context.restore();
+      }
+      drawMapName(context, snapshot.mapName, skin);
     }
-    drawMapName(context, snapshot.mapName, skin);
+    if (snapshot.scenes.length) drawScene(context, snapshot.scenes.at(-1)!.draw, skin, images, game.tileSize);
     drawUi(context, snapshot, skin, images);
     drawPortrait(presentation.hdContext, snapshot.message, skin, portraits, images, canvas.width, canvas.height);
   };
@@ -146,8 +153,24 @@ async function boot(): Promise<void> {
     window.__recorder = createRecorder(simulation, film, window.__filmRequest?.fps ?? film.fps ?? 30, capture, renderCapture, saveSession, narrationOptions(() => saveSession?.game ?? simulation, voices, voiceLengths(voiceManifest), false, plugins), filmCues, window.__filmRequest?.transport ?? 'deflate');
     render(); return;
   }
+  let restarting = false;
+  options.sceneEnd = (name, result) => {
+    if (name !== 'ending') return;
+    restarting = true;
+    queueMicrotask(() => { void (async () => {
+      const raw = result === 1 ? storage.read() : null, candidate = readSave(raw, game.id);
+      const mapId = typeof candidate.data?.map === 'string' && game.maps.includes(candidate.data.map) ? candidate.data.map : game.start.map;
+      const data = await loader.load(mapId);
+      const restored = restoreSave(candidate, game, new Map(entries), new Map([[mapId, data.data]]), { loadSave: (state, from) => plugins.loadSave(state, candidate.data!, from) }).state;
+      const start = restored ? { map: restored.map, x: restored.x, y: restored.y, dir: restored.dir } : game.start;
+      const initial = await loader.load(start.map);
+      simulation.main.abort();
+      simulation = new Game({ ...game, start, state: restored ? { flags: restored.flags, vars: restored.vars } : game.state }, initial.data, characters, initial.events, { ...options, selfFlags: restored?.selfFlags, rngState: restored?.rngState });
+      restarting = false;
+    })().catch(fail); });
+  };
   window.addEventListener('resize', () => render(), { signal: resizeController.signal });
-  const stop = startLoop(new FixedTickLoop(input => simulation.tick(input), () => keyboard!.consume(), render), error => { keyboard?.dispose(); fail(error); });
+  const stop = startLoop(new FixedTickLoop(input => { if (!restarting) simulation.tick(input); }, () => keyboard!.consume(), render), error => { keyboard?.dispose(); fail(error); });
   cleanup = () => { stop(); keyboard?.dispose(); resizeController.abort(); window.removeEventListener('resize', resize); };
   window.addEventListener('pagehide', () => cleanup(), { once: true });
 }

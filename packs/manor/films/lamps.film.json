@@ -1,0 +1,50 @@
+{
+  "name": "조명 퍼즐",
+  "start": {
+    "map": "hall",
+    "x": 20,
+    "y": 15,
+    "dir": "up"
+  },
+  "state": {
+    "flags": {
+      "introduced": true
+    }
+  },
+  "steps": [
+    {
+      "chapter": "조명 퍼즐"
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "waitFor": "scene"
+    },
+    {
+      "pause": 0.3
+    },
+    {
+      "press": "left"
+    },
+    {
+      "press": "up"
+    },
+    {
+      "press": "up"
+    },
+    {
+      "advanceText": "press"
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "var": "puzzle_result",
+        "op": "==",
+        "value": 1
+      }
+    }
+  ]
+}

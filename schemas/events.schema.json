@@ -126,6 +126,33 @@
           "additionalProperties": false,
           "type": "object",
           "required": [
+            "name",
+            "cmd"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "args": {
+              "type": "object",
+              "patternProperties": {
+                "^(.*)$": {}
+              }
+            },
+            "resultVar": {
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "type": "string"
+            },
+            "cmd": {
+              "const": "scene",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
             "id",
             "cmd"
           ],

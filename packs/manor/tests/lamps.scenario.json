@@ -1,0 +1,47 @@
+{
+  "name": "조명 퍼즐을 풀고 결과 분기 확인",
+  "start": {
+    "map": "hall",
+    "x": 20,
+    "y": 15,
+    "dir": "up"
+  },
+  "state": {
+    "flags": {
+      "introduced": true
+    }
+  },
+  "steps": [
+    {
+      "press": "ok"
+    },
+    {
+      "press": "left"
+    },
+    {
+      "press": "up"
+    },
+    {
+      "press": "up"
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "var": "puzzle_result",
+        "op": "==",
+        "value": 1
+      }
+    },
+    {
+      "expect": {
+        "flag": "puzzle_solved",
+        "is": true
+      }
+    }
+  ]
+}

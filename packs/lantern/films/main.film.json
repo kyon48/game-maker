@@ -281,7 +281,10 @@
       "count": 1
     },
     {
-      "settle": true
+      "waitFor": "scene"
+    },
+    {
+      "pause": 2
     },
     {
       "expect": {

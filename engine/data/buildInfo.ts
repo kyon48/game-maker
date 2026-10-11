@@ -3,6 +3,7 @@ export interface BuildInfo {
   apiVersion: number; commit: string; builtAt: string;
 }
 export interface PackRuntime {
+  sceneImages?: string[];
   fixedPackId: string | null; roots: Record<string, string>; inventory: string | null;
   cacheKey: string | null; buildInfo: BuildInfo | null; engineVersion: string;
 }

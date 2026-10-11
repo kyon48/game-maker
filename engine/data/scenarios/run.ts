@@ -13,7 +13,7 @@ export interface ScenarioGame {
   readonly main: { readonly running: boolean };
   readonly message: { readonly opened: boolean };
   readonly choice: { readonly opened: boolean; readonly snapshot: { options: readonly { index: number }[]; selected: number } | null };
-  readonly snapshot: { readonly message: { text: string } | null };
+  readonly snapshot: { readonly message: { text: string } | null; readonly scenes?: readonly { name: string }[] };
   reload?(): void;
   expectSave?(condition: SaveExpect): boolean;
   tick(input: InputFrame): void;
@@ -63,7 +63,8 @@ export async function runScenario(pack: ValidatedPack, value: unknown, factory: 
       }
       else {
         const e = step.expect;
-        if ('textContains' in e) assert(!!game.snapshot.message?.text.includes(e.textContains), 'Expected text not open');
+        if ('scene' in e) assert(game.snapshot.scenes?.at(-1)?.name === e.scene, 'Expected scene not open');
+        else if ('textContains' in e) assert(!!game.snapshot.message?.text.includes(e.textContains), 'Expected text not open');
         else if ('map' in e && !('self' in e)) {
           assert(game.map.id === e.map, `Expected map ${e.map}`);
           for (const field of ['x', 'y', 'dir'] as const) if (e[field] !== undefined) assert(game.player[field] === e[field], `Expected ${field} ${e[field]}`);

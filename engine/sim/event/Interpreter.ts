@@ -19,6 +19,7 @@ export class Interpreter {
     const context: CommandContext = {
       filmCues: host.filmCues,
       showMapName: () => host.showMapName(),
+      openScene: host.openScene,
       save: host.save, state: host.state, thisEvent: host.thisEvent,
       get player() { return host.player; },
       waitFrames: host.waitFrames, waitUntil: host.waitUntil,

@@ -5,7 +5,7 @@ import type { TileMapData } from '../../data/loader/tiled';
 import { Collision } from '../world/Collision';
 import { migrateSave, SAVE_VERSION, saveMigrations } from './saveMigrations';
 import type { SaveMigration } from './saveMigrations';
-export type PersistentState = Pick<import('../../data/saveData').SaveData, 'map' | 'x' | 'y' | 'dir' | 'flags' | 'vars' | 'selfFlags'>;
+export type PersistentState = Pick<import('../../data/saveData').SaveData, 'rngState' | 'map' | 'x' | 'y' | 'dir' | 'flags' | 'vars' | 'selfFlags'>;
 export interface SaveCandidate { data: Record<string, unknown> | null; warnings: string[]; fromGameVersion?: string }
 export interface LoadedSave { state: PersistentState | null; fromGameVersion: string; warnings: string[] }
 export interface LoadOptions {
@@ -47,7 +47,7 @@ export function restoreSave(candidate: SaveCandidate, game: GameConfig, events: 
     position = { map: data.map as string, x: data.x as number, y: data.y as number, dir: directions.includes(data.dir as Dir) ? data.dir as Dir : game.start.dir };
   }
   const fromGameVersion = candidate.fromGameVersion ?? (typeof data.gameVersion === 'string' ? data.gameVersion : '');
-  let state: PersistentState = { ...position, flags, vars, selfFlags };
+  let state: PersistentState = { ...position, flags, vars, selfFlags, ...(data.rngState === undefined ? {} : { rngState: Number.isSafeInteger(data.rngState) && (data.rngState as number) >= 0 && (data.rngState as number) <= 0xffffffff ? data.rngState as number : 1 }) };
   if (options.loadSave) {
     const changed = options.loadSave(state, fromGameVersion);
     // Repeat steps 3–5 only; a hook must never run recursively.

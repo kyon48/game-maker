@@ -1,3 +1,4 @@
+import { EndingArgs } from '../scenes';
 import { textRules } from './textRules';
 import type { TSchema } from '@sinclair/typebox';
 import { RouteTokenSchema } from '../schema/routes';
@@ -9,7 +10,8 @@ import { escapePointer } from './context';
 import type { ValidationContext, Usage } from './context';
 import type { PackBasics } from './coreRules';
 import type { MapChecks } from './mapRules';
-export function eventRules(context: ValidationContext, basics: PackBasics, checks: MapChecks, usage: Usage): void {
+export async function eventRules(context: ValidationContext, basics: PackBasics, checks: MapChecks, usage: Usage): Promise<void> {
+  const sceneAssets: { file: string; pointer: string; path: string }[] = [];
   const { check, options, report, references } = context;
   const { game, common } = basics;
   const { maps, events, arrival } = checks;
@@ -40,6 +42,13 @@ export function eventRules(context: ValidationContext, basics: PackBasics, check
         if (schemaErrors(definition.args.properties.route.items as TSchema, references, token).length > 0) report('V9', file, `${p}/route/${index}`, 'Invalid route token');
       });
       if (!check(definition.args, args, file, p)) return;
+      if (command.cmd === 'scene') {
+        const schema = options.scenes?.get(command.name as string) ?? (command.name === 'ending' ? EndingArgs : undefined);
+        if (!schema) report('V1', file, p + '/name', 'Unknown scene');
+        else check(schema, command.args ?? {}, file, p + '/args');
+        if (command.resultVar !== undefined) { const name = command.resultVar as string; usedVars.add(name); if (!Object.hasOwn(game.state.vars, name)) report('V3', file, p + '/resultVar', 'Undeclared variable'); }
+        if (command.name === 'ending' && typeof (command.args as Record<string, unknown>)?.image === 'string') sceneAssets.push({ file, pointer: p + '/args/image', path: (command.args as { image: string }).image });
+      }
       if (command.cmd === 'text') {
         if ((command.portrait === undefined) !== (command.expression === undefined)) report('V1', file, p, 'portrait and expression must be supplied together');
         else if (command.portrait !== undefined && !basics.portraits?.[command.portrait as string]?.[command.expression as string]) report('V3', file, p + '/expression', 'Unknown portrait/expression combination');
@@ -113,6 +122,9 @@ export function eventRules(context: ValidationContext, basics: PackBasics, check
     const changes = list(page.commands ?? [], file, p + '/commands', mapId, page.trigger === 'parallel');
     if (page.trigger === 'auto' && !changes) report('V10', file, p, 'Auto page may repeat indefinitely');
   }));
+  for (const asset of sceneAssets) {
+    if (asset.path.startsWith('/') || /[\\?#:]/.test(asset.path) || asset.path.split('/').some(part => part === '..' || part === '.') || !await context.source.exists(asset.path)) report('V4', asset.file, asset.pointer, 'Missing or unsafe scene image');
+  }
   function cycle(name: string, stack: string[], visited: Set<string>) {
     if (stack.includes(name)) { report('V8', 'common-events.json', `/${escapePointer(name)}/commands`, `Call cycle: ${[...stack, name].join(' -> ')}`); return; }
     if (visited.has(name)) return;

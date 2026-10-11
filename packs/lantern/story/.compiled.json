@@ -146,14 +146,14 @@
     "assets/portraits/sora/determined.png": "fa1c40717892db3521a15d39622b9fa1913ac27d7b1c75af7f191dbe9b77941e",
     "assets/portraits/sora/neutral.png": "d4677fe6d28253d4da8c1f7ed59c0c49113567f8139cd2aede628cfdd1c5fe3e",
     "common-events.json": "bed9839ab56ba2696ca65819f7f9b8ab9c80f1ad7d8a1116b3fda0436ca88b43",
-    "films/main.film.json": "5e5ec1fed29d275ce55e4fa42a3623b94b5e96a49ce5e020a95777893d57ee2f",
+    "films/main.film.json": "e0acf96efed46633578f03de99e8087d3bdd49a28d1df235407e664502b947c2",
     "films/main.narration.md": "7498ea7738126fe577099530fec067c98037d0990ee47ae3327fe97478c4ce75",
     "game.json": "f35842b2d285ce9cb4d6a34cbddd68382ba3db5369de245e832b61a589581b82",
     "maps/garden.events.json": "2ffe5d7e3f96600da17817a35d3762383b2f7785b275fd1b4ca66d0beab39536",
-    "maps/pier.events.json": "939c90e81ca8c78aa2f293549b6a9d13f53b31f5b02098a2bf230ab1011b2041",
+    "maps/pier.events.json": "a64b42fde4cae5bd83f4005c7bf32167c6bd7e33dea078d12a0a7049567fba6e",
     "maps/tower.events.json": "4ae47168058ee5d1b6de5c4445de019a0eaf723843a16d69808c8c8fc1fa1ef3",
     "portraits.json": "2e360b1177e2addc39f3c9f0353da4384bd1547aa070f1de0394aea8761c2a33",
-    "tests/story_main.scenario.json": "05515236432b9e242895ad57a54f951fe6ce3507a024fea64c0cc799e3175517",
+    "tests/story_main.scenario.json": "c5ba1477037a89599036f3bb5e6813956edcead6c92865691138c997dc0d2903",
     "voices.json": "740fe13ad4bfbe75a1e237a8683033c0fc9b19de467470051e6b22b615f8b1e6"
   },
   "maps": {

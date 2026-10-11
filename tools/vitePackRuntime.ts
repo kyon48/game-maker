@@ -36,6 +36,7 @@ export function packRuntimePlugin(info?: BuildInfo): Plugin {
       const engine = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8')) as { version: string };
       const runtime: PackRuntime = { fixedPackId: info?.gameId ?? null, buildInfo: info ?? null,
         roots: {}, inventory: info ? null : base + '__pack-files', cacheKey: info ? `${info.gameVersion}-${info.commit}` : null, engineVersion: engine.version };
+      if (info) runtime.sceneImages = (await new FsSource(path.join(root, 'packs', info.gameId)).listFiles()).filter(file => /\.(png|webp|jpe?g)$/i.test(file) && !/^(tests|films|plugins)\//.test(file));
       if (!info) for (const pack of packs) runtime.roots[pack] = base + 'packs/' + encodeURIComponent(pack) + '/';
       return `export default ${JSON.stringify(runtime)};`;
     },
