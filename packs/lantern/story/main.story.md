@@ -12,6 +12,7 @@
 @flag ending_public
 @flag ending_kept
 @var trust 0
+@item lighthouse_key "등대 열쇠" category=item desc="촌장이 맡긴 오래된 등대 열쇠. 약속을 잇는 문을 연다."
 
 @location pier "선착장"
 @layout
@@ -120,14 +121,19 @@ x......................#
   소라(결의): 우선 제가 불을 밝히고, 그다음 약속을 정하고 싶어요. 지금 나눈 신뢰는 {var:trust}이에요.
   ? 열쇠를 받으며 뭐라고 약속할까?
     *> 이웃들과 함께 지킬 방법을 찾는다
+      @give lighthouse_key silent
       @set met_elder
       @add trust 1
       촌장(부드러운 미소): 서로의 밤을 나누면 불도 오래 갈 게다.
     * 먼저 혼자 지킬 준비를 한다
+      @give lighthouse_key silent
       @set met_elder
       @sub trust 1
       촌장: 서두르지 말고 네가 감당할 수 있는 약속부터 시작하렴.
 @page when=met_elder
+  @if item:lighthouse_key==0
+    @give lighthouse_key silent
+  @end
   촌장(무표정): 열쇠는 받았지? 오른쪽 문 너머 등대 중앙의 노란 불씨를 살펴보렴.
 @end
 
@@ -136,7 +142,7 @@ x......................#
 > 불을 켜는 일은 어렵지 않았습니다. 어려운 것은 그다음 밤을 맡기는 일이었지요.
 @waitNarration
 @event light at lamp_spot trigger=action character=lamp
-  @if met_elder
+  @if item:lighthouse_key>=1
     @call relight
     @set lamp_lit
     소라: 이제 불빛이 보여요. 등대 뒤 마당에서 앞으로의 약속을 생각해 봐야겠어요.

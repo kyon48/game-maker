@@ -1,3 +1,4 @@
+import { ItemCategory } from '../items';
 import { RouteSchema } from './routes';
 import { Type } from '@sinclair/typebox';
 import type { Static } from '@sinclair/typebox';
@@ -5,6 +6,8 @@ import { DirSchema, Id, SafeInteger, objectOptions } from './primitives';
 export const ConditionSchema = Type.Recursive(Self => Type.Union([
   Type.Object({ flag: Id, is: Type.Boolean() }, objectOptions),
   Type.Object({ var: Id, op: Type.Union([Type.Literal('=='), Type.Literal('!='), Type.Literal('>'), Type.Literal('>='), Type.Literal('<'), Type.Literal('<=')]), value: SafeInteger }, objectOptions),
+  Type.Object({ item: Id, op: Type.Union(['==', '!=', '>', '>=', '<', '<='].map(op => Type.Literal(op))), value: SafeInteger }, objectOptions),
+  Type.Object({ itemCount: ItemCategory, op: Type.Union(['==', '!=', '>', '>=', '<', '<='].map(op => Type.Literal(op))), value: SafeInteger }, objectOptions),
   Type.Object({ self: Id, is: Type.Boolean() }, objectOptions),
   Type.Object({ all: Type.Array(Self) }, objectOptions), Type.Object({ any: Type.Array(Self) }, objectOptions),
   Type.Object({ not: Self }, objectOptions),

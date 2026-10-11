@@ -111,6 +111,12 @@
                   "label": "이웃들과 함께 지킬 방법을 찾는다",
                   "commands": [
                     {
+                      "cmd": "give_item",
+                      "item": "lighthouse_key",
+                      "count": 1,
+                      "notify": false
+                    },
+                    {
                       "cmd": "set_flag",
                       "flag": "met_elder",
                       "value": true
@@ -133,6 +139,12 @@
                 {
                   "label": "먼저 혼자 지킬 준비를 한다",
                   "commands": [
+                    {
+                      "cmd": "give_item",
+                      "item": "lighthouse_key",
+                      "count": 1,
+                      "notify": false
+                    },
                     {
                       "cmd": "set_flag",
                       "flag": "met_elder",
@@ -171,6 +183,23 @@
               "cmd": "face",
               "target": "this",
               "dir": "player"
+            },
+            {
+              "cmd": "if",
+              "cond": {
+                "item": "lighthouse_key",
+                "op": "==",
+                "value": 0
+              },
+              "then": [
+                {
+                  "cmd": "give_item",
+                  "item": "lighthouse_key",
+                  "count": 1,
+                  "notify": false
+                }
+              ],
+              "else": []
             },
             {
               "cmd": "text",

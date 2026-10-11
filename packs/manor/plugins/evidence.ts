@@ -1,21 +1,10 @@
-import { Type } from '@sinclair/typebox';
-import type { PluginModule, ReadonlyGameState } from '@engine/api';
-
-// The clue flags are the source of truth; revisiting evidence never inflates a counter.
-const clues = ["clue_clock", "clue_seal", "clue_letter", "clue_ledger", "clue_receipt"] as const;
-const count = (state: Pick<ReadonlyGameState, 'getFlag'>) => clues.reduce((total, flag) => total + (state.getFlag(flag) ? 1 : 0), 0);
-const plugin: PluginModule = {
-  apiVersion: 1,
-  id: 'evidence',
-  register(api) {
-    api.conditions.register('x_enough_clues', {
-      args: Type.Object({ minimum: Type.Integer({ minimum: 0, maximum: 5 }) }, { additionalProperties: false }),
-      test: (args, state) => count(state) >= args.minimum,
-    });
-    api.text.register('x_clue_count', {
-      args: Type.Object({}, { additionalProperties: false }),
-      format: (_args, state) => String(count(state)),
-    });
-  },
-};
+import type { PluginModule } from '@engine/api';
+// Before G2, these once-only examinations granted clue flags instead of items.
+const examined = { clue_clock: 'hall:clock:examined', clue_seal: 'study:seal:examined', clue_letter: 'study:letter:examined', clue_ledger: 'library:ledger:examined', clue_receipt: 'greenhouse:receipt:examined' };
+const plugin: PluginModule = { id: 'evidence', apiVersion: 1, register(api) {
+  api.hooks.on('loadSave', (save, from) => {
+    if (from !== '0.1.0') return;
+    for (const [item, key] of Object.entries(examined)) if (save.selfFlags[key] && !save.items[item]) save.items[item] = 1;
+  });
+} };
 export default plugin;

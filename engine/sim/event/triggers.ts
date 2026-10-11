@@ -2,6 +2,7 @@ import type { Player } from '../entity/Player';
 import type { EventObject } from '../entity/EventObject';
 export class TriggerSlot {
   private pending: EventObject | undefined;
+  get occupied(): boolean { return this.pending !== undefined; }
   enqueue(event: EventObject): void { this.pending ??= event; }
   take(): EventObject | undefined { const event = this.pending; this.pending = undefined; return event; }
 }

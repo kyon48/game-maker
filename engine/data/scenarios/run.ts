@@ -26,7 +26,8 @@ export async function runScenario(pack: ValidatedPack, value: unknown, factory: 
   if (errors.length) throw new Error(`Invalid scenario: ${errors.map(error => error.path + ' ' + error.message).join('; ')}`);
   const scenario = value as Scenario;
   const start = scenario.start ?? pack.game.start;
-  const state = { flags: { ...pack.game.state.flags, ...scenario.state?.flags }, vars: { ...pack.game.state.vars, ...scenario.state?.vars } };
+  const state = { items: { ...pack.game.state.items, ...scenario.state?.items }, flags: { ...pack.game.state.flags, ...scenario.state?.flags }, vars: { ...pack.game.state.vars, ...scenario.state?.vars } };
+  for (const id of Object.keys(state.items)) if (!Object.hasOwn(pack.items ?? {}, id)) throw new Error(`Unknown scenario item: ${id}`);
   for (const name of Object.keys(state.flags)) if (!Object.hasOwn(pack.game.state.flags, name)) throw new Error(`Unknown scenario flag: ${name}`);
   for (const name of Object.keys(state.vars)) if (!Object.hasOwn(pack.game.state.vars, name)) throw new Error(`Unknown scenario variable: ${name}`);
   const game = factory(pack, start, state);

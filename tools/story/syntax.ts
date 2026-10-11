@@ -72,7 +72,13 @@ export function simple(text: string, source: Source): Statement {
     if (t.length !== 1) throw new Error('인자 없는 명령입니다');
     return { ...source, kind: command === '@shake' ? 'shake' : 'waitNarration' };
   }
-  if (command === '@set' || command === '@unset') {
+  if (command === '@give' || command === '@take') {
+    const tail = t.slice(2), silent = command === '@give' && tail.at(-1) === 'silent';
+    if (silent) tail.pop();
+    if (t.length < 2 || tail.length > 1) throw new Error('아이템 ID와 선택 개수, give silent 형식입니다');
+    return { ...source, kind: command === '@give' ? 'give' : 'take', item: id(a!), count: tail.length ? integer(tail[0]!, true) : 1, ...(silent ? { silent: true } : {}) };
+  }
+  if (command === '@set'  || command === '@unset') {
     if (t.length !== 2) throw new Error('플래그 이름 한 개가 필요합니다');
     return { ...source, kind: command === '@set' ? 'set' : 'unset', flag: id(a!) };
   }

@@ -349,3 +349,16 @@ portraits.json·PNG도 .compiled.json의 소유권 대상이다. art는 모든 �
 | 코드 | 수준 | 의미 |
 |---|---|---|
 | S042 | 오류 | 플러그인 씬 입력 힌트 누락 또는 입력 후 미종료 |
+
+## 아이템 (G2)
+
+`@item lighthouse_key "등대 열쇠" category=item desc="촌장이 맡긴 열쇠." [icon=assets/items/key.png]`처럼 한 줄로 선언한다. 대괄호는 선택 항목 표시이므로 실제 원고에서는 쓰지 않는다. category·desc·icon 순서이며 desc는 JSON 큰따옴표 문자열(빈 설명 허용)이다. compile은 선언이 있으면 items.json을 생성·소유권 검사하며 선언을 모두 제거하면 이전에 소유한 items.json만 삭제한다. 수기 items.json은 기존 S025/--force 규칙을 따른다.
+
+`@give id [n] [silent]`, `@take id [n]`에서 n은 1 이상의 안전 정수(기본 1)다. silent는 give에만 쓰며 알림을 생략한다. 알림을 쓰려면 수기 game.json.labels.itemGet과 메뉴 라벨 menuItems/menuClues/menuClose/menuEmpty를 준비한다. lantern은 기존 대사와 음성을 유지하며 열쇠를 silent로 준다. 후속 촌장 페이지는 열쇠가 없으면 다시 주므로 구 세이브에서도 여정을 계속할 수 있다.
+
+조건은 `item:key>=1`, `items:clue>=3`이고 기존 all/any 안에도 쓸 수 있다. 비교 연산·정수 규칙은 변수와 같다. 대사의 `{item:key}`·`{itemCount:clue}`도 그대로 컴파일한다. 촬영 경로 분석은 선택한 분기의 give/take와 아이템 조건을 함께 계산한다.
+
+| 코드 | 수준 | 의미 |
+|---|---|---|
+| S043 | 오류 | 미선언 아이템(명령·조건·텍스트) |
+| S044 | 오류 | 모르는 아이템 카테고리(조건·텍스트) |

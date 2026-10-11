@@ -49,9 +49,9 @@
                   "label": "수첩에 기록한다",
                   "commands": [
                     {
-                      "cmd": "set_flag",
-                      "flag": "clue_seal",
-                      "value": true
+                      "cmd": "give_item",
+                      "item": "clue_seal",
+                      "notify": false
                     },
                     {
                       "cmd": "set_self_flag",
@@ -134,9 +134,9 @@
                   "label": "수첩에 기록한다",
                   "commands": [
                     {
-                      "cmd": "set_flag",
-                      "flag": "clue_letter",
-                      "value": true
+                      "cmd": "give_item",
+                      "item": "clue_letter",
+                      "notify": false
                     },
                     {
                       "cmd": "set_self_flag",

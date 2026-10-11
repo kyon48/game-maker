@@ -11,3 +11,5 @@ export const DrawListSchema = Type.Array(Type.Union([
 export type DrawList = Static<typeof DrawListSchema>;
 export type DrawCommand = DrawList[number];
 export const EndingArgs = Type.Object({ title: Type.String(), lines: Type.Array(Type.String()), image: Type.Optional(Type.String()) }, objectOptions);
+
+export const MenuArgs = Type.Object({}, { additionalProperties: false });

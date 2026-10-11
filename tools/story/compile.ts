@@ -34,6 +34,7 @@ export function anchorPoints(location: Location): ReadonlyMap<string, Point> {
 }
 function engineCondition(value: Condition): unknown {
   if (value.kind === 'flag') return { flag: value.name, is: value.enabled };
+  if (value.kind === 'item' || value.kind === 'itemCount') return { [value.kind]: value.name, op: value.op, value: value.value };
   if (value.kind === 'variable') return { var: value.name, op: value.op, value: value.value };
   return { [value.kind]: value.conditions.map(engineCondition) };
 }
@@ -41,6 +42,8 @@ export function compileStories(stories: readonly Story[], gameValue: unknown, ti
   const game = object(gameValue), tileSize = game.tileSize;
   if (!Number.isSafeInteger(tileSize) || (tileSize as number) < 1) throw new Error('game.json에 양의 tileSize가 필요합니다');
   const size = tileSize as number, tiles = parseTiles(tileValue), diagnostics: Diagnostic[] = [], files = new Map<string, string>(), maps = new Map<string, string>();
+  const items = stories.flatMap(s => s.items);
+  if (items.length) files.set('items.json', jsonBytes(Object.fromEntries(items.map(({ id, name, description, category, icon }) => [id, { name, description, category, ...(icon ? { icon } : {}) }]))));
   const locations = stories.flatMap(s => s.locations), scenes = stories.flatMap(s => s.scenes);
   const points = new Map(locations.map(location => [location.id, anchorPoints(location)]));
   const point = (map: string, anchor: string, source: Source): Point => points.get(map)?.get(anchor) ?? compileError(source, 'S022', `앵커 좌표 없음: ${map}:${anchor}`);
@@ -61,6 +64,8 @@ export function compileStories(stories: readonly Story[], gameValue: unknown, ti
       case 'wait': return [{ cmd: 'wait', frames: node.frames }];
       case 'shake': return [{ cmd: 'shake' }];
       case 'call': return [{ cmd: 'call', common: node.common }];
+      case 'give': return [{ cmd: 'give_item', item: node.item, count: node.count, ...(node.silent ? { notify: false } : {}) }];
+      case 'take': return [{ cmd: 'take_item', item: node.item, count: node.count }];
       case 'scene': return [{ cmd: 'scene', name: node.name, args: node.args, ...(node.resultVar ? { resultVar: node.resultVar } : {}) }];
       case 'cmd': return [node.value];
       case 'narration': case 'waitNarration': return [{ cmd: 'film_cue', id: cues.get(node)! }];

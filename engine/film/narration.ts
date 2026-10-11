@@ -8,6 +8,7 @@ export function narrationOptions(game: () => Game, voices: Voices | undefined, l
   return { narration(text) {
     const current = game();
     const resolved = plainText(text, {
+      item: name => String(current.state.getItem(name)), itemCount: name => String(current.state.itemCount(name as 'item' | 'clue')),
       variable: name => String(current.state.getVar(name)),
       plugin: name => {
         if (!plugins) throw new Error(`Unknown plugin text function: ${name}`);

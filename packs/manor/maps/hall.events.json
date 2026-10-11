@@ -272,9 +272,9 @@
                   "label": "수첩에 기록한다",
                   "commands": [
                     {
-                      "cmd": "set_flag",
-                      "flag": "clue_clock",
-                      "value": true
+                      "cmd": "give_item",
+                      "item": "clue_clock",
+                      "notify": false
                     },
                     {
                       "cmd": "set_self_flag",

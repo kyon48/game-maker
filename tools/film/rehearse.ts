@@ -30,7 +30,7 @@ export async function rehearse(pack: ValidatedPack, film: Film, plugins: PluginR
   const cues = new FilmCueGate();
   const start = film.start ?? pack.game.start;
   const runtime = new GameSession(pack, { plugins, voices: pack.voices, voiceLengths: extraction ? {} : voiceLengths(pack.voiceManifest), filmCues: cues, recording: film.steps.some(s => 'cue' in s || 'advanceText' in s && s.advanceText === 'voice') }, start, {
-    flags: { ...pack.game.state.flags, ...film.state?.flags }, vars: { ...pack.game.state.vars, ...film.state?.vars },
+    items: { ...pack.game.state.items, ...film.state?.items }, flags: { ...pack.game.state.flags, ...film.state?.flags }, vars: { ...pack.game.state.vars, ...film.state?.vars },
   });
   const session = new FilmSession(runtime.game, film, runtime, narrationOptions(() => runtime.game, pack.voices, voiceLengths(pack.voiceManifest), extraction, plugins), cues), events: TimelineEvent[] = [];
   while (await session.tick()) events.push(...session.events());

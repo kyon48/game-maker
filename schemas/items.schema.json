@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "type": "object",
+  "patternProperties": {
+    "^[a-z][a-z0-9_]*$": {
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "name",
+        "description",
+        "category"
+      ],
+      "properties": {
+        "name": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "icon": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "category": {
+          "anyOf": [
+            {
+              "const": "item",
+              "type": "string"
+            },
+            {
+              "const": "clue",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

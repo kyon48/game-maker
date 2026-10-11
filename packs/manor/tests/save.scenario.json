@@ -42,8 +42,10 @@
   },
   "state": {
     "flags": {
-      "introduced": true,
-      "clue_clock": true
+      "introduced": true
+    },
+    "items": {
+      "clue_clock": 1
     }
   }
 }

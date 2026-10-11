@@ -11,7 +11,7 @@ const expected = Type.Union([
   Type.Object({ map: Id, x: Type.Optional(SafeInteger), y: Type.Optional(SafeInteger), dir: Type.Optional(DirSchema) }, objectOptions),
   Type.Object({ textContains: Type.String() }, objectOptions),
 ]);
-export const ScenarioSchema = Type.Object({ name: Type.String({ minLength: 1 }), start: Type.Optional(StartSchema), state: Type.Optional(Type.Object({ flags: Type.Optional(Type.Record(Id, Type.Boolean(), objectOptions)), vars: Type.Optional(Type.Record(Id, SafeInteger, objectOptions)) }, objectOptions)),
+export const ScenarioSchema = Type.Object({ name: Type.String({ minLength: 1 }), start: Type.Optional(StartSchema), state: Type.Optional(Type.Object({ items: Type.Optional(Type.Record(Id, Nonnegative, objectOptions)), flags: Type.Optional(Type.Record(Id, Type.Boolean(), objectOptions)), vars: Type.Optional(Type.Record(Id, SafeInteger, objectOptions)) }, objectOptions)),
   steps: Type.Array(Type.Union([
     Type.Object({ press: ActionSchema }, objectOptions), Type.Object({ hold: ActionSchema, frames: Positive }, objectOptions),
     Type.Object({ wait: Nonnegative }, objectOptions), Type.Object({ walk: Type.Array(DirSchema) }, objectOptions),

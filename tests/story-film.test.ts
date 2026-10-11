@@ -120,7 +120,7 @@ describe('story film generation (one baseline, memory mutations)', () => {
     expect(replay.game.state.getFlag('lamp_lit')).toBe(true);
   });
   it('keeps a transferred destination auto choice in the next scene', async () => {
-    const text = baseline.replace('@page when=met_elder', '  @go tower:entry\n@page when=met_elder').replace('trigger=action character=lamp', 'trigger=auto once character=lamp').replace('  @if met_elder\n    @call relight', '  ? 등대에 도착했다. 불을 켤까?\n    *> 불을 켠다\n      @set lamp_lit\n  @if met_elder\n    @call relight').replace('@page when=lamp_lit\n  : 심지는 고르게 타고 있다. 오른쪽 아래 금빛 문으로 나가면 마당이다.\n', '');
+    const text = baseline.replace('@page when=met_elder', '  @go tower:entry\n@page when=met_elder').replace('trigger=action character=lamp', 'trigger=auto once character=lamp').replace('  @if item:lighthouse_key>=1\n    @call relight', '  ? 등대에 도착했다. 불을 켤까?\n    *> 불을 켠다\n      @set lamp_lit\n  @if met_elder\n    @call relight').replace('@page when=lamp_lit\n  : 심지는 고르게 타고 있다. 오른쪽 아래 금빛 문으로 나가면 마당이다.\n', '');
     const { film, replay } = await generate(text);
     const chapter = film.steps.findIndex(s => 'chapter' in s && s.chapter.startsWith('2장'));
     expect(film.steps.slice(0, chapter).filter(s => 'choose' in s)).toHaveLength(1);

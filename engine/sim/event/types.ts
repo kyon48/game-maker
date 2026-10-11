@@ -11,6 +11,7 @@ export interface TransferRequest { map: string; marker?: string; x?: number; y?:
 export interface CommandContext {
   readonly filmCues?: import('../ports').FilmCuePort;
   showMapName(): void;
+  itemNotice(item: string, count: number): string;
   save(): void;
   openScene(name: string, args?: unknown): { done: boolean; value?: number };
   state: GameState;

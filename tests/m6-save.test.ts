@@ -25,13 +25,13 @@ it('step 1 rejects missing/broken JSON and wrong pack before version checks or h
 });
 it('step 2 rejects future/invalid versions and warns, without continuing the load', () => {
   const hook = vi.fn(state => state);
-  expect(load(saved({ saveVersion: 2 }), { loadSave: hook }).warnings).toContain('Save version is newer than this engine');
+  expect(load(saved({ saveVersion: 3 }), { loadSave: hook }).warnings).toContain('Save version is newer than this engine');
   for (const version of ['1', -1, null, 1.5]) expect(load(saved({ saveVersion: version })).state).toBeNull();
-  expect(hook).not.toHaveBeenCalled(); expect(saveMigrations).toEqual([]);
+  expect(hook).not.toHaveBeenCalled(); expect(saveMigrations.map(step => [step.from, step.to])).toEqual([[1, 2]]);
 });
 it('step 2 runs older saves through migrations before merging declarations', () => {
   const migration = { from: 0, to: 1, up: (data: Record<string, unknown>) => ({ ...data, saveVersion: 1, gameVersion: 'migrated', vars: { n: 42 } }) };
-  const result = load(saved({ saveVersion: 0 }), { migrations: [migration] });
+  const result = load(saved({ saveVersion: 0 }), { migrations: [migration, ...saveMigrations] });
   expect(result.state?.vars.n).toBe(42); expect(result.fromGameVersion).toBe('0.0.9');
 });
 it('step 3 restores only declared keys, falls back for invalid types/new declarations and reports removed keys', () => {
@@ -75,7 +75,7 @@ it('save executes through registerBuiltins, persists only logical state and relo
   game.player.dir = 'right'; game.effects.startShake(4, 20);
   game.tick({ held: new Set(), pressed: new Set(['ok']) }); game.tick({ held: new Set(), pressed: new Set() });
   expect(savedStates).toHaveLength(1); expect(savedStates[0]?.vars.n).toBe(0); expect(game.state.getVar('n')).toBe(99);
-  expect(Object.keys(savedStates[0]!).sort()).toEqual(['dir', 'flags', 'map', 'rngState', 'selfFlags', 'vars', 'x', 'y']);
+  expect(Object.keys(savedStates[0]!).sort()).toEqual(['dir', 'flags', 'items', 'map', 'rngState', 'selfFlags', 'vars', 'x', 'y']);
   const state = savedStates[0]!;
   const reloaded = new Game({ ...pack.game, state: { flags: state.flags, vars: state.vars } }, pack.maps.get('map')!, pack.characters, events, { selfFlags: state.selfFlags });
   expect(reloaded.state.getSelf('map', 'point', 'used')).toBe(true); expect(reloaded.main.running).toBe(false);
@@ -84,5 +84,5 @@ it('save executes through registerBuiltins, persists only logical state and relo
 it('platform writes the exact SaveData header, localStorage key and injected timestamp', () => {
   const data = new Map<string, string>(); const store = new SaveStorage({ getItem: key => data.get(key) ?? null, setItem: (key, value) => { data.set(key, value); } }, { packId: 'base', gameVersion: '0.1.0', engineVersion: '0.2.0' }, () => '2026-10-07T12:00:00.000Z');
   expect(store.read()).toBeNull(); store.write(load(saved()).state!);
-  expect(JSON.parse(data.get('game-maker:base:slot1')!)).toMatchObject({ saveVersion: 1, packId: 'base', gameVersion: '0.1.0', engineVersion: '0.2.0', savedAt: '2026-10-07T12:00:00.000Z', vars: { n: 8 } });
+  expect(JSON.parse(data.get('game-maker:base:slot1')!)).toMatchObject({ saveVersion: 2, packId: 'base', gameVersion: '0.1.0', engineVersion: '0.2.0', savedAt: '2026-10-07T12:00:00.000Z', vars: { n: 8 } });
 });

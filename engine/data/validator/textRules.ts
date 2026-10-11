@@ -4,7 +4,9 @@ import type { PackBasics } from './coreRules';
 export function textRules(context: ValidationContext, basics: PackBasics, usage: Usage, value: string, controls: boolean, file: string, pointer: string): void {
   try {
     for (const token of parseText(value, controls)) {
-      if (token.kind === 'var') {
+      if (token.kind === 'item' && !Object.hasOwn(basics.items ?? {}, token.value)) context.report('V3', file, pointer, `Undeclared text item: ${token.value}`);
+      else if (token.kind === 'itemCount' && !['item', 'clue'].includes(token.value)) context.report('V3', file, pointer, 'Unknown item category');
+      else if (token.kind === 'var') {
         usage.usedVars.add(token.value);
         if (!Object.hasOwn(basics.game.state.vars, token.value)) context.report('V3', file, pointer, `Undeclared text variable: ${token.value} (offset ${token.offset})`);
       } else if (token.kind === 'plugin') {

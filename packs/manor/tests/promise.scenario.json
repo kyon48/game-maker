@@ -58,12 +58,14 @@
   "state": {
     "flags": {
       "introduced": true,
-      "clue_clock": true,
-      "clue_seal": true,
-      "clue_letter": true,
-      "clue_ledger": true,
-      "clue_receipt": true,
       "trusted_archivist": true
+    },
+    "items": {
+      "clue_clock": 1,
+      "clue_seal": 1,
+      "clue_letter": 1,
+      "clue_ledger": 1,
+      "clue_receipt": 1
     }
   }
 }

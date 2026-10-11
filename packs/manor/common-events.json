@@ -151,18 +151,19 @@
             "when": {
               "all": [
                 {
-                  "plugin": "x_enough_clues",
-                  "args": {
-                    "minimum": 4
-                  }
+                  "itemCount": "clue",
+                  "op": ">=",
+                  "value": 4
                 },
                 {
-                  "flag": "clue_letter",
-                  "is": true
+                  "item": "clue_letter",
+                  "op": ">=",
+                  "value": 1
                 },
                 {
-                  "flag": "clue_ledger",
-                  "is": true
+                  "item": "clue_ledger",
+                  "op": ">=",
+                  "value": 1
                 }
               ]
             }
@@ -203,14 +204,14 @@
             "when": {
               "all": [
                 {
-                  "plugin": "x_enough_clues",
-                  "args": {
-                    "minimum": 4
-                  }
+                  "itemCount": "clue",
+                  "op": ">=",
+                  "value": 4
                 },
                 {
-                  "flag": "clue_letter",
-                  "is": true
+                  "item": "clue_letter",
+                  "op": ">=",
+                  "value": 1
                 },
                 {
                   "flag": "trusted_archivist",
@@ -290,13 +291,14 @@
       {
         "cmd": "text",
         "speaker": "윤서",
-        "text": "조사 수첩 — 단서 {plugin:x_clue_count}/5\n네 가지 이상의 단서를 모으면 기록을 근거로 결론을 낼 수 있다. 약속을 조용히 잇는 길에는 편지와 해린의 신뢰도 필요하다."
+        "text": "조사 수첩 — 단서 {itemCount:clue}/5\n네 가지 이상의 단서를 모으면 기록을 근거로 결론을 낼 수 있다. 약속을 조용히 잇는 길에는 편지와 해린의 신뢰도 필요하다."
       },
       {
         "cmd": "if",
         "cond": {
-          "flag": "clue_clock",
-          "is": true
+          "item": "clue_clock",
+          "op": ">=",
+          "value": 1
         },
         "then": [
           {
@@ -308,8 +310,9 @@
       {
         "cmd": "if",
         "cond": {
-          "flag": "clue_seal",
-          "is": true
+          "item": "clue_seal",
+          "op": ">=",
+          "value": 1
         },
         "then": [
           {
@@ -321,8 +324,9 @@
       {
         "cmd": "if",
         "cond": {
-          "flag": "clue_letter",
-          "is": true
+          "item": "clue_letter",
+          "op": ">=",
+          "value": 1
         },
         "then": [
           {
@@ -334,8 +338,9 @@
       {
         "cmd": "if",
         "cond": {
-          "flag": "clue_ledger",
-          "is": true
+          "item": "clue_ledger",
+          "op": ">=",
+          "value": 1
         },
         "then": [
           {
@@ -347,8 +352,9 @@
       {
         "cmd": "if",
         "cond": {
-          "flag": "clue_receipt",
-          "is": true
+          "item": "clue_receipt",
+          "op": ">=",
+          "value": 1
         },
         "then": [
           {
@@ -362,24 +368,29 @@
         "cond": {
           "all": [
             {
-              "flag": "clue_clock",
-              "is": false
+              "item": "clue_clock",
+              "op": "==",
+              "value": 0
             },
             {
-              "flag": "clue_seal",
-              "is": false
+              "item": "clue_seal",
+              "op": "==",
+              "value": 0
             },
             {
-              "flag": "clue_letter",
-              "is": false
+              "item": "clue_letter",
+              "op": "==",
+              "value": 0
             },
             {
-              "flag": "clue_ledger",
-              "is": false
+              "item": "clue_ledger",
+              "op": "==",
+              "value": 0
             },
             {
-              "flag": "clue_receipt",
-              "is": false
+              "item": "clue_receipt",
+              "op": "==",
+              "value": 0
             }
           ]
         },

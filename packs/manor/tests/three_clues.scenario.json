@@ -25,10 +25,9 @@
     {
       "expect": {
         "not": {
-          "plugin": "x_enough_clues",
-          "args": {
-            "minimum": 4
-          }
+          "itemCount": "clue",
+          "op": ">=",
+          "value": 4
         }
       }
     }
@@ -41,10 +40,12 @@
   },
   "state": {
     "flags": {
-      "introduced": true,
-      "clue_clock": true,
-      "clue_letter": true,
-      "clue_ledger": true
+      "introduced": true
+    },
+    "items": {
+      "clue_clock": 1,
+      "clue_letter": 1,
+      "clue_ledger": 1
     }
   }
 }

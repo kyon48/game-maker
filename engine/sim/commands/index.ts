@@ -1,3 +1,5 @@
+import { registerGiveItem } from './give_item';
+import { registerTakeItem } from './take_item';
 import { registerScene } from './scene';
 import { registerFilmCue } from './film_cue';
 import { registerShowMapName } from './show_map_name';
@@ -20,6 +22,7 @@ import { registerIf } from './if';
 import { registerChoice } from './choice';
 import type { CommandRegistry } from '../event/CommandRegistry';
 export function registerBuiltins(registry: CommandRegistry): void {
+  registerGiveItem(registry); registerTakeItem(registry);
   registerScene(registry);
   registerFilmCue(registry);
   registerShowMapName(registry);

@@ -15,7 +15,7 @@ class Parser {
   private scene?: Scene;
   private chapter?: string;
   constructor(text: string, file: string) {
-    this.story = { file, line: 1, headers: [], characters: [], flags: [], variables: [], locations: [], chapters: [], scenes: [], common: [] };
+    this.story = { file, line: 1, items: [], headers: [], characters: [], flags: [], variables: [], locations: [], chapters: [], scenes: [], common: [] };
     this.lines = text.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n').split('\n').map((raw, i) => ({ raw, text: raw.trim(), indent: raw.match(/^ */)![0].length, file, line: i + 1 }));
     for (const line of this.lines) if (/^ *\t/.test(line.raw)) this.error(line, '들여쓰기에 탭을 사용할 수 없습니다');
   }
@@ -69,6 +69,8 @@ class Parser {
       if (!this.scene) throw new Error('촬영/나레이션 줄은 장면 안에 선언합니다');
       this.scene.items.push(simple(text, src)); return;
     }
+    const item = /^@item\s+(\S+)\s+("(?:[^"\\]|\\.)*")\s+category=(item|clue)\s+desc=("(?:[^"\\]|\\.)*")(?:\s+icon=(\S+))?$/.exec(text);
+    if (item) { this.story.items.push({ ...src, id: id(item[1]!), name: JSON.parse(item[2]!) as string, category: item[3] as 'item' | 'clue', description: JSON.parse(item[4]!) as string, ...(item[5] ? { icon: item[5] } : {}) }); return; }
     const t = tokens(text), values = t.map(token => token.value), [command, a, b] = values;
     const count = (n: number) => { if (t.length !== n) throw new Error('헤더 인자 수가 잘못되었습니다'); };
     const quoted = () => { if (!t[2]?.quoted || !b?.trim()) throw new Error('비어 있지 않은 큰따옴표 문자열이 필요합니다'); };

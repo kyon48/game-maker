@@ -18,8 +18,9 @@
     },
     {
       "expect": {
-        "flag": "clue_letter",
-        "is": false
+        "item": "clue_letter",
+        "op": "==",
+        "value": 0
       }
     },
     {
@@ -47,8 +48,9 @@
     },
     {
       "expect": {
-        "flag": "clue_letter",
-        "is": true
+        "item": "clue_letter",
+        "op": ">=",
+        "value": 1
       }
     },
     {

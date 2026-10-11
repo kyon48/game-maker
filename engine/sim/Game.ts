@@ -1,3 +1,5 @@
+import { itemNotice, menuLabelKeys } from '../data/items';
+import type { Items, Category } from '../data/items';
 import { SceneStack } from './scenes/SceneStack';
 import { Random } from './scenes/Random';
 import type { SceneContext } from '@engine/api';
@@ -41,6 +43,7 @@ import { MessageState } from './ui/MessageState';
 import { ChoiceState } from './ui/ChoiceState';
 export interface GameSnapshot {
   readonly scenes: import('./scenes/SceneStack').SceneSnapshot[];
+  readonly items: Readonly<Record<string, number>>;
   readonly rngState: number;
   readonly sceneResult: { name: string; value: number } | null;
   readonly mapId: string;
@@ -53,6 +56,7 @@ export interface GameSnapshot {
   readonly choice: ChoiceSnapshot | null;
 }
 export interface GameOptions {
+  items?: Items;
   rngState?: number;
   sceneImages?: ReadonlySet<string>;
   sceneEnd?: (name: string, result: number) => void;
@@ -88,7 +92,7 @@ export class Game {
     this.commands = options.plugins?.commands ?? new CommandRegistry();
     if (!options.plugins) registerBuiltins(this.commands);
     this.main = new Interpreter(this.commands);
-    this.state = new GameState(config.state);
+    this.state = new GameState(config.state, options.items);
     for (const [key, value] of Object.entries(options.selfFlags ?? {})) {
       const [map, event, name] = key.split(':'); this.state.setSelf(map!, event!, name!, value);
     }
@@ -99,7 +103,7 @@ export class Game {
       return new EventObject(event, config.tileSize, characters, this.state, config.start.map, options.plugins ? this.pluginCondition : undefined);
     });
     this.map = new MapState(config.start.map, map, [this.player, ...this.events]);
-    const resolver: TextResolver = { variable: name => String(this.state.getVar(name)), plugin: name => {
+    const resolver: TextResolver = { item: name => String(this.state.getItem(name)), itemCount: name => String(this.state.itemCount(name as Category)), variable: name => String(this.state.getVar(name)), plugin: name => {
       if (!options.plugins) throw new Error(`Unknown plugin text function: ${name}`);
       return options.plugins.format(name, {}, this.state);
     }, color: name => options.skin ? Object.hasOwn(options.skin.colors, name) : false };
@@ -127,6 +131,9 @@ export class Game {
       else if (this.choice.opened) this.choice.update(input);
       if (!consumed) this.scenes.update(input);
       this.current = this.capture(); return;
+    }
+    if (input.pressed.has('cancel') && !this.main.running && !this.message.opened && !this.choice.opened && !this.leaving && !this.triggers.occupied && menuLabelKeys.every(key => this.config.labels[key])) {
+      this.scenes.open('menu'); this.current = this.capture(); return;
     }
     this.nameShownThisTick = false;
     // §7.1(1): 페이지 재계산은 직전 틱에서 변경된 상태에만 적용.
@@ -212,6 +219,7 @@ export class Game {
     return {
       filmCues: this.options.recording ? this.options.filmCues : undefined,
       showMapName: () => this.showMapName(),
+      itemNotice: (id, count) => { const item = this.options.items?.[id], label = this.config.labels.itemGet; if (!item || !label) throw new Error('Missing item or itemGet label'); return itemNotice(label, item.name, count); },
       openScene: (name, args) => this.scenes.open(name, args),
       save: () => {
         if (this.scenes.opened) throw new Error('Cannot save while a scene is open');
@@ -302,7 +310,7 @@ export class Game {
   }
   private sceneContext(): SceneContext {
     const measurer = this.options.textMeasurer ?? new HeadlessTextMeasurer(this.options.skin?.font.size ?? 12);
-    return { textMeasurer: Object.freeze({ width: (text: string) => measurer.width(text) }), lineHeight: this.options.skin?.font.lineHeight ?? 16, state: stateAccess(this.state), screen: Object.freeze({ ...this.config.screen }), labels: Object.freeze({ ...this.config.labels }),
+    return { textMeasurer: Object.freeze({ width: (text: string) => measurer.width(text) }), lineHeight: this.options.skin?.font.lineHeight ?? 16, items: Object.freeze(Object.fromEntries(Object.entries(this.options.items ?? {}).map(([id, item]) => [id, Object.freeze({ ...item })]))), state: stateAccess(this.state), screen: Object.freeze({ ...this.config.screen }), labels: Object.freeze({ ...this.config.labels }),
       rng: () => this.rng.next(), openScene: (name, args) => this.scenes.open(name, args),
       showText: request => { if (this.message.opened || this.choice.opened) throw new Error('Scene UI already open'); this.message.open(request, 'plugin'); } };
   }
@@ -311,6 +319,6 @@ export class Game {
     const characters = this.map.characters.map(character => character.snapshot());
     const player = characters[0]!;
     characters.sort((a, b) => a.pixelY - b.pixelY);
-    return { scenes: this.scenes.snapshot, rngState: this.rng.state, sceneResult: this.sceneResult, mapId: this.map.id, mapName: this.mapName.snapshot, fade: this.effects.alpha, shake: this.effects.offset, player, characters, message: this.message.snapshot, choice: this.choice.snapshot };
+    return { items: this.state.snapshot().items, scenes: this.scenes.snapshot, rngState: this.rng.state, sceneResult: this.sceneResult, mapId: this.map.id, mapName: this.mapName.snapshot, fade: this.effects.alpha, shake: this.effects.offset, player, characters, message: this.message.snapshot, choice: this.choice.snapshot };
   }
 }

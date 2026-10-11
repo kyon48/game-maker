@@ -1,7 +1,7 @@
 import { expect, it, vi } from 'vitest';
 import { SaveStorage } from '../engine/platform/storage';
 const metadata = { packId: 'test', gameVersion: '1.0.0', engineVersion: '0.2.0' };
-const state = { map: 'map', x: 1, y: 1, dir: 'down' as const, flags: {}, vars: {}, selfFlags: {} };
+const state = { map: 'map', x: 1, y: 1, dir: 'down' as const, flags: {}, vars: {}, selfFlags: {}, items: {} };
 it('treats a throwing storage getter/read as no save without interrupting startup', () => {
   const inaccessible = { getItem() { throw new Error('blocked'); }, setItem() {} };
   expect(new SaveStorage(inaccessible, metadata).read()).toBeNull();
