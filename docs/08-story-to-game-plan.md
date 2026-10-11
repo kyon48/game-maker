@@ -274,7 +274,7 @@ Codex에게 story.md를 직접 쓰게 해도 된다. 어느 쪽이든 검증 명
 | **V2a** TTS·길이 동기화 | Codex | voices.json, `tts` 도구와 제공자 1개, 매니페스트, sim 음성 길이표·자동 진행, `advanceText: "voice"` | 대사 음성이 든 mp4. 대사 하나 고치면 그 줄만 재생성 |
 | **V2b** 나레이션·합성 | Codex | film `narrate`/`waitNarration`/`music`, 오디오 합성·덕킹·LUFS | 나레이션+대사 음성이 든 mp4, SRT에 나레이션 포함 |
 | **S2** 나레이션 연결 **(완료)** | Codex | `story film`이 `>` 줄을 `narrate`로, `@waitNarration`을, `advanceText: "voice"`를 내도록 | lantern 영상에 나레이션이 흐름 |
-| **V3a** 얼굴 칸 | Codex | §4.3: `portraits.json` 스키마·검증, `text.portrait/expression`, MessageState 폭 반영, HD 레이어와 얼굴 그리기, 녹화 1080p 합성 캡처 | lantern 대화에 표정 얼굴 표시. `film:verify` 통과. 헤드리스 시나리오 결과 불변 |
+| **V3a** 얼굴 칸 **(완료)** | Codex | §4.3: `portraits.json` 스키마·검증, `text.portrait/expression`, MessageState 폭 반영, HD 레이어와 얼굴 그리기, 녹화 1080p 합성 캡처 | 대화에 표정 얼굴 표시(데모로 확인, lantern 얼굴 데이터 준비). `film:verify` 통과. 헤드리스 시나리오 결과 불변 |
 | **S3** 표정·에셋 연결 | Codex | `story art`: 표정 이름 정규화(key·en·ko·core), fallback 체인, 쓰인 표정만 복사, `portraits.json` 생성, 컴파일러가 `portrait/expression` 필드 출력 | lantern이 base 에셋으로 얼굴을 바꿔 가며 대화. 모르는 표정 이름은 lint 오류 |
 | **첫 영상 제작** | 사용자+GPT | 비공개 팩의 story.md 작성(§7 IP), 표정 배정, 나레이션, `story build` → `tts` → `film` | §5 마일스톤 5개 항목 |
 | 이후 G3 → G2 → V3b+G5 → G4 → V4 | — | 기존 설계. V3b 전에 05 바이블 규격의 고해상도 표정 세트를 생성한다(사용자) | 06·04 기준 |
@@ -306,4 +306,4 @@ Codex에게 story.md를 직접 쓰게 해도 된다. 어느 쪽이든 검증 명
 - 명세 P1~P6은 그대로다. S 트랙은 `tools/story/`에만 있고 `engine/`을 import하되 반대 방향은 없다.
 - S2의 `film_cue`는 일반 모드에서 즉시 통과하며 녹화 모드에서 외부 포트의 해제만 기다린다. 음성·나레이션 텍스트와 길이는 sim에 넣지 않는다.
 - 그 밖에 엔진에 들어가는 변경은 V3a의 `portraits.json`·`text` 선택 필드·HD 레이어뿐이며 formatVersion·API_VERSION·saveVersion은 유지한다.
-- V3a 확정 후 `portraits.json`과 `text` 필드는 02 명세에 정식 절로 옮기고, 04 §6은 V3b 범위로 고쳐 쓴다. 06 §2의 권장 순서도 §5의 새 순서로 갱신한다.
+- V3a의 `portraits.json`·`text` 얼굴 필드는 02 §8.2.1에 정식으로 정의했다. 04 §6은 V3b 범위로 구분했다. 06 §2의 권장 순서도 §5의 새 순서로 갱신한다.

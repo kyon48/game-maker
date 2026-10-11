@@ -1,9 +1,11 @@
+import { portraitSlot } from '../../data/portraits';
 import type { TextMeasurer, InputFrame } from '../ports';
 import type { TextRequest } from '../event/types';
 import { resolveText } from '../../data/text';
 import type { DisplaySegment, TextResolver } from '../../data/text';
 import { wrapSegments } from './wrapSegments';
 export interface MessageSnapshot {
+  readonly portrait?: string; readonly expression?: string;
   readonly textOrigin?: 'command' | 'plugin';
   readonly messageId?: number;
   readonly sourceText?: string;
@@ -13,7 +15,7 @@ export interface MessageSnapshot {
   readonly page: number; readonly pageCount: number; readonly fullyShown: boolean;
 }
 export interface VoiceTiming { voiceKey: string; voiceFrames?: number; auto: boolean; gapTicks: number }
-export interface MessageConfig { readonly width: number; readonly rows: number; readonly charsPerTick: number }
+export interface MessageConfig { readonly width: number; readonly rows: number; readonly charsPerTick: number; readonly portrait?: { width: number; gap: number } }
 const literal: TextResolver = { variable: name => { throw new Error(`Unresolved variable: ${name}`); }, plugin: name => { throw new Error(`Unresolved plugin: ${name}`); } };
 export class MessageState {
   private textOrigin: 'command' | 'plugin' | undefined;
@@ -40,11 +42,13 @@ export class MessageState {
     if (this.opened) throw new Error('Message already open');
     const parsed = resolveText(request.text, this.resolver);
     const speaker = request.speaker === undefined ? undefined : resolveText(request.speaker, this.resolver, false).plainText;
-    const lines = wrapSegments(parsed.segments, this.config.width, this.measurer);
+    const slot = this.config.portrait ?? portraitSlot();
+    const hasPortrait = request.portrait !== undefined && request.expression !== undefined;
+    const lines = wrapSegments(parsed.segments, this.config.width - (hasPortrait ? slot.width + slot.gap : 0), this.measurer);
     this.textOrigin = origin; this.messageId++; this.sourceText = request.text;
     this.voice = this.voiceTiming?.(parsed.plainText, speaker); this.elapsed = 0; this.pageStartedAt = 0; this.finishedAt = undefined;
     this.resolved = parsed.segments;
-    this.request = { text: parsed.plainText, speaker }; this.page = 0; this.reset(); this.pages = [];
+    this.request = { ...request, text: parsed.plainText, speaker }; this.page = 0; this.reset(); this.pages = [];
     for (let i = 0; i < lines.length; i += this.config.rows) this.pages.push(lines.slice(i, i + this.config.rows));
     this.flatPages = this.pages.map(page => page.flat());
     const counts = this.flatPages.map(page => page.reduce((count, s) => count + [...s.text].length, 0));
@@ -101,7 +105,7 @@ export class MessageState {
     if (!this.request) return null;
     let left = this.shown;
     const segments = this.pages[this.page]!.map(points => { const visible = points.slice(0, Math.max(0, left)); left -= points.length; return visible; });
-    return { textOrigin: this.textOrigin, messageId: this.messageId, sourceText: this.sourceText, voiceKey: this.voice?.voiceKey, voiceFrames: this.voice?.voiceFrames, voiceAuto: this.voice?.auto, text: this.request.text, plainText: this.request.text, speaker: this.request.speaker,
+    return { ...(this.request.portrait !== undefined && this.request.expression !== undefined ? { portrait: this.request.portrait, expression: this.request.expression } : {}), textOrigin: this.textOrigin, messageId: this.messageId, sourceText: this.sourceText, voiceKey: this.voice?.voiceKey, voiceFrames: this.voice?.voiceFrames, voiceAuto: this.voice?.auto, text: this.request.text, plainText: this.request.text, speaker: this.request.speaker,
       lines: segments.map(line => line.map(s => s.text).join('')), segments,
       page: this.page, pageCount: this.pages.length, fullyShown: this.shown === this.points.length };
   }

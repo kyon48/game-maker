@@ -40,7 +40,8 @@ export async function recordFilm(packId: string, filmId: string, options: Record
     await page.goto(`http://127.0.0.1:${address.port}/?record=${encodeURIComponent(filmId)}`);
     await page.waitForFunction(() => !!(window as unknown as { __recorder?: unknown }).__recorder || !!document.querySelector('[role=alert]'));
     if (await page.locator('[role=alert]').count()) throw new Error(await page.locator('[role=alert]').innerText());
-    video = encoder(pack.game.screen.width, pack.game.screen.height, fps, path.join(out, 'video.mp4'));
+    const size = await page.evaluate(() => { const r = (window as unknown as { __recorder: { width: number; height: number } }).__recorder; return { width: r.width, height: r.height }; });
+    video = encoder(size.width, size.height, fps, path.join(out, 'video.mp4'));
     while (true) {
       options.signal?.throwIfAborted();
       if (errors.length) throw new Error(errors.join('\n'));

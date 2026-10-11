@@ -8,3 +8,5 @@
 - `maps/house.tmj`: 이 프로젝트에서 직접 작성한 12×10 Tiled JSON 실내 맵. CC0-1.0.
 - `assets/tilesets/house.png`: 자체 생성 단색 타일셋. CC0-1.0. 재생성: `npm run tiles -- packs/demo/assets/tilesets/house.png house`.
 - `assets/characters/keeper.png`: 자체 생성 집주인 캐릭터 시트. CC0-1.0. 재생성: `npm run characters -- packs/demo/assets/characters/keeper.png keeper`.
+
+- 메시지 얼굴: 사용자 소유 플러시 캐릭터 에셋 `Plush_Character_Game_Assets/characters/base/portrait/`에서 복사.

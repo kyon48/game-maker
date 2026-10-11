@@ -1200,6 +1200,14 @@
             "speaker": {
               "type": "string"
             },
+            "portrait": {
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "type": "string"
+            },
+            "expression": {
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "type": "string"
+            },
             "cmd": {
               "const": "text",
               "type": "string"

@@ -26,7 +26,7 @@ async function generate(text = baseline) {
   compilation.files.set('voices.json', JSON.stringify(voices));
   const outputs = await planFilm('lantern', process.cwd(), compilation.files, [parsed.story], 'main');
   const fs = new FsSource('packs/lantern');
-  const source: PackSource = { readJson: async f => compilation.files.has(f) ? JSON.parse(compilation.files.get(f)!) as unknown : fs.readJson(f), exists: async f => compilation.files.has(f) || await fs.exists(f), listFiles: async () => [...new Set([...(await fs.listFiles()).filter(f => !/^films\/|^tests\//.test(f)), ...compilation.files.keys()])] };
+  const source: PackSource = { readBytes: f => fs.readBytes(f), readJson: async f => compilation.files.has(f) ? JSON.parse(compilation.files.get(f)!) as unknown : fs.readJson(f), exists: async f => compilation.files.has(f) || await fs.exists(f), listFiles: async () => [...new Set([...(await fs.listFiles()).filter(f => !/^films\/|^tests\//.test(f)), ...compilation.files.keys()])] };
   const plugins = await nodePluginRuntime(source, fs.root);
   const result = await validatePack(source, 'lantern', plugins.validationOptions);
   expect(result.pack).toBeDefined();

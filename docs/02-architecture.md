@@ -400,7 +400,7 @@ interface PackSource {
 
 | `cmd` | 필드 (기본값) | 동작 | 대기 | parallel |
 |---|---|---|---|---|
-| `text` | `text`, `speaker?` | 메시지 창 표시(§8.1) | 창이 닫힐 때까지 | 금지 |
+| `text` | `text`, `speaker?`, `portrait?`, `expression?` | 메시지 창 표시(§8.1) | 창이 닫힐 때까지 | 금지 |
 | `choice` | `prompt?`, `options[{label, when?, commands}]`(1~6개), `cancel?`(null) | 선택지 표시(§8.2), 고른 옵션의 `commands` 실행. `when`이 거짓인 옵션은 **숨김**. `cancel`은 cancel 키를 눌렀을 때 선택할 옵션 인덱스(원래 배열 기준). null이면 cancel 키 무시 | 선택 + 하위 실행 끝까지 | 금지 |
 | `if` | `cond`, `then`, `else`(`[]`) | 조건에 따라 분기 | 하위 실행 끝까지 | 허용 |
 | `call` | `common` | 공통 이벤트 실행 | 끝날 때까지 | 공통 이벤트 내용에 따름 |
@@ -530,9 +530,19 @@ type CommandHandler<A> = (args: A, ctx: CommandContext) => CommandGen | void;
 
 ### 8.2 메시지 (`MessageState`, sim)
 
-- 열기: `ctx.showText({ text, speaker })` → `CommandGen`. 창이 닫힐 때 끝난다.
+- 열기: `ctx.showText({ text, speaker, portrait?, expression? })` → `CommandGen`. 창이 닫힐 때 끝난다.
 - 줄바꿈: `TextMeasurer`로 창 내부 폭에 맞춰 단어 단위로 줄을 나눈다. 단어 하나가 폭보다 길면 글자 단위로 나눈다. `\n`은 강제 줄바꿈이다. `rows`줄씩 끊어 페이지를 만든다.
 - 진행: 틱마다 `charsPerTick`글자씩 드러낸다. `ok`를 누르면, 아직 다 드러나지 않았으면 전부 드러내고, 다 드러났으면 다음 페이지로 넘어가거나 마지막 페이지면 닫는다. `cancel`은 `ok`와 같다.
+
+#### 8.2.1 메시지 얼굴 칸 (V3a)
+
+- 선택 파일 `portraits.json`: `{ "<characterId>": { "<expressionKey>": "assets/portraits/<characterId>/<expressionKey>.png" } }`. ID·표정 키는 §5의 ID 문법을 따른다. 캐릭터는 `characters.json`에 선언한다. 검증기는 스키마(V1), 선언·조합(V3), 팩 내부 파일 존재·PNG 크기 읽기(V4)를 확인한다.
+- `text` 및 플러그인 `ctx.showText`는 선택 필드 `portrait`, `expression`을 받는다. 둘 다 있어야 얼굴을 표시하고, 하나만 있으면 V1, 등록되지 않은 조합이면 V3 오류다. 화자 표시 이름과 얼굴 ID는 독립적이다.
+- `skin.json`의 선택 필드 `portrait: { width, gap? }`는 논리 픽셀 단위다. 기본 폭 56, 간격 4. 폭은 양의 정수, 간격은 0 이상의 정수이며 본문 폭을 양수로 남겨야 한다.
+- 얼굴은 창 왼쪽 내부 높이(화자 줄 포함)에 비율을 유지해 맞추고 칸 안에서 가운데 정렬한다. 본문과 화자 이름의 시작점을 `width + gap`만큼 옮긴다. 얼굴이 있으면 sim 줄바꿈 폭은 `screen.width - padding × 2 - width - gap`, 없으면 기존 폭 그대로다. 스냅샷에 얼굴이 있는 메시지만 `portrait`, `expression`을 포함한다.
+- platform은 부팅 시 모든 얼굴 이미지를 미리 로드한다. 픽셀 캔버스 위에 표시 크기·기기 픽셀 비율에 맞춘 HD 캔버스를 겹쳐 원본 이미지를 부드럽게 그린다. V3a에서 창·글자는 픽셀 레이어에 남는다. sim·헤드리스는 얼굴 상태만 유지한다.
+- 녹화는 브라우저에서 픽셀 레이어를 최근접 정수배 확대하고 HD 레이어를 겹친 1920×1080 RGBA를 반환한다. 남는 공간은 중앙 정렬한 검은 여백이다. ffmpeg는 이 합성 프레임을 인코딩하며 얼굴을 후합성하지 않는다.
+- 검증용 `PackSource.readBytes?`는 DOM 없는 바이트 읽기 포트다. 얼굴이 있는 팩의 검증에는 이 포트가 필요하며 Node·브라우저 어댑터가 구현한다. formatVersion·API_VERSION·saveVersion은 유지한다(선택 파일·필드의 하위 호환 추가).
 
 ### 8.3 선택지 (`ChoiceState`, sim)
 
@@ -615,7 +625,7 @@ export interface CommandContext {
   waitFrames(n: number): Wait;
   waitUntil(test: () => boolean): Wait;
   runCommands(list: readonly Command[]): CommandGen;
-  showText(req: { text: string; speaker?: string }): CommandGen;
+  showText(req: { text: string; speaker?: string; portrait?: string; expression?: string }): CommandGen;
   showChoice(req: { prompt?: string; labels: (string | null)[]; cancelIndex: number | null }): CommandGen<number>;
   readonly stopped: boolean;
   stop(): void;

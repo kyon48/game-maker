@@ -31,9 +31,10 @@ it('closes the preview server if browser launch fails', async () => {
 it.each(['next', 'abort', 'close'] as const)('cleans server/browser/encoder on %s failure or interruption', async mode => {
   const controller = new AbortController();
   const browserClose = vi.fn(async () => { if (mode === 'close') throw new Error('close failed'); });
-  const page = { on: vi.fn(), addInitScript: vi.fn(), goto: vi.fn(), waitForFunction: vi.fn(), locator: () => ({ count: async () => 0 }), evaluate: vi.fn(async () => { if (mode === 'abort') controller.abort(); throw new Error('next failed'); }) };
+  const page = { on: vi.fn(), addInitScript: vi.fn(), goto: vi.fn(), waitForFunction: vi.fn(), locator: () => ({ count: async () => 0 }), evaluate: vi.fn(async (): Promise<unknown> => { if (mode === 'abort') controller.abort(); throw new Error('next failed'); }).mockResolvedValueOnce({ width: 1920, height: 1080 }) };
   mocks.launch.mockResolvedValue({ newPage: async () => page, close: browserClose });
   const abort = vi.fn(async () => {}); mocks.encoder.mockReturnValue({ abort, write: vi.fn(), finish: vi.fn() });
   await expect(recordFilm('demo', 'visit', { out: '/private/tmp/g0-cleanup', signal: controller.signal } as Parameters<typeof recordFilm>[2])).rejects.toThrow();
+  expect(mocks.encoder).toHaveBeenCalledWith(1920, 1080, 30, expect.stringContaining('video.mp4'));
   expect(abort).toHaveBeenCalledOnce(); expect(browserClose).toHaveBeenCalled(); expect(mocks.close).toHaveBeenCalledOnce();
 });

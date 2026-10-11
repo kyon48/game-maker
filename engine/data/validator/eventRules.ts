@@ -41,6 +41,8 @@ export function eventRules(context: ValidationContext, basics: PackBasics, check
       });
       if (!check(definition.args, args, file, p)) return;
       if (command.cmd === 'text') {
+        if ((command.portrait === undefined) !== (command.expression === undefined)) report('V1', file, p, 'portrait and expression must be supplied together');
+        else if (command.portrait !== undefined && !basics.portraits?.[command.portrait as string]?.[command.expression as string]) report('V3', file, p + '/expression', 'Unknown portrait/expression combination');
         const speaker = (command.speaker as string | undefined) ?? 'narrator';
         if (basics.voices && !/[{}]/.test(speaker) && !Object.hasOwn(basics.voices, speaker)) report('VOICE', file, p + '/speaker', `Missing voice: ${speaker}`);
         textRules(context, basics, usage, command.text as string, true, file, p + '/text');

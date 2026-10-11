@@ -10,3 +10,5 @@
 표정 이름은 스토리 원고에만 있으며 표정 이미지는 아직 복사하지 않았다(S3 범위).
 
 - 음악 `assets/music/harbor.ogg`: 이 프로젝트에서 사인파 화음으로 직접 생성한 원본 루프. 저작자: game-maker 프로젝트 기여자. CC0-1.0으로 공개. 외부 음원 없음. 재생성: `node --import tsx tools/generate-film-music.ts lantern`.
+
+- 메시지 얼굴: 사용자 소유 플러시 캐릭터 에셋 `Plush_Character_Game_Assets/characters/base/portrait/`에서 복사.

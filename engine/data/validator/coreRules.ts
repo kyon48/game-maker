@@ -1,3 +1,6 @@
+import { PortraitsSchema, portraitSlot, pngSize } from '../portraits';
+import type { Portraits } from '../portraits';
+import { packPath } from '../loader/path';
 import { escapePointer } from './context';
 import { VoicesSchema, VoiceManifestSchema } from '../schema/voices';
 import type { Voices, VoiceManifest } from '../schema/voices';
@@ -32,6 +35,21 @@ export async function coreRules(context: ValidationContext) {
   const voices = await source.exists('voices.json') ? await read('voices.json', VoicesSchema) as Voices | undefined : undefined;
   const voiceManifest = await source.exists('voice-manifest.json') ? await read('voice-manifest.json', VoiceManifestSchema) as VoiceManifest | undefined : undefined;
   for (const [speaker, voice] of Object.entries(voices ?? {})) if (!['macos-say', 'fake'].includes(voice.provider)) report('V1', 'voices.json', `/${escapePointer(speaker)}/provider`, 'Unknown TTS provider');
-  return { voices, voiceManifest, game, characters, skin, common };
+  const portraits = await source.exists('portraits.json') ? await read('portraits.json', PortraitsSchema) as Portraits | undefined : undefined;
+  const slot = portraitSlot(skin);
+  if ((skin.portrait || portraits && Object.keys(portraits).length) && slot.width + slot.gap >= game.screen.width - 2 * skin.window.padding) report('V9', 'skin.json', '/portrait', 'Portrait must leave positive message width');
+  for (const [character, expressions] of Object.entries(portraits ?? {})) {
+    if (!Object.hasOwn(characters, character)) report('V3', 'portraits.json', `/${escapePointer(character)}`, 'Unknown portrait character');
+    for (const [expression, path] of Object.entries(expressions)) {
+      const pointer = `/${escapePointer(character)}/${escapePointer(expression)}`;
+      try {
+        packPath('', path);
+        if (!await source.exists(path)) throw new Error('Missing portrait image');
+        if (!source.readBytes) throw new Error('PackSource.readBytes required for portrait dimensions');
+        pngSize(await source.readBytes(path));
+      } catch (error) { report('V4', 'portraits.json', pointer, String(error)); }
+    }
+  }
+  return { portraits, voices, voiceManifest, game, characters, skin, common };
 }
 export type PackBasics = NonNullable<Awaited<ReturnType<typeof coreRules>>>;
