@@ -1,5 +1,6 @@
+import { copyStoryAssets } from './storyAssets';
 import { expect, it } from 'vitest';
-import { readFile, mkdtemp, mkdir, writeFile, rm, symlink } from 'node:fs/promises';
+import { readFile, mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { parseStory } from '../tools/story/parser';
@@ -25,6 +26,7 @@ const baseline = await readFile('packs/lantern/story/main.story.md', 'utf8');
 const game = JSON.parse(await readFile('packs/lantern/game.json', 'utf8')) as unknown;
 const tiles = JSON.parse(await readFile('packs/lantern/story/tiles.json', 'utf8')) as unknown;
 const config = parseStoryConfig(JSON.parse(await readFile('packs/lantern/story/story.config.json', 'utf8')));
+config.artRoot = path.resolve('tests/fixtures/art');
 config.voices = Object.fromEntries(Object.entries(config.voices!).map(([key, voice]) => [key, { ...voice, provider: 'fake' }]));
 async function prepare(text = baseline, voiced = true) {
   const { story, diagnostics } = parseStory(text, 'main.story.md'); expect(diagnostics).toEqual([]);
@@ -110,7 +112,7 @@ it('owns voices.json, refuses a manual file/edit until force, and checks manifes
   try {
     await mkdir(path.join(folder, 'story'), { recursive: true });
     for (const file of ['game.json', 'characters.json', 'skin.json', 'CREDITS.md', 'story/tiles.json']) await writeFile(path.join(folder, file), await readFile(`packs/lantern/${file}`));
-    await symlink(path.resolve('packs/lantern/assets'), path.join(folder, 'assets'));
+    await copyStoryAssets(folder);
     await writeFile(path.join(folder, 'story/main.story.md'), baseline); await writeFile(path.join(folder, 'story/story.config.json'), jsonBytes(config));
     await writeFile(path.join(folder, 'voices.json'), '{}\n');
     expect((await prepareCompilation('lantern', root)).diagnostics).toContainEqual(expect.objectContaining({ code: 'S025', file: 'packs/lantern/voices.json' }));
@@ -131,7 +133,7 @@ it('fake-only story build completes TTS and replay, reuses cache, and missing ma
   try {
     await mkdir(path.join(folder, 'story'), { recursive: true });
     for (const file of ['game.json', 'characters.json', 'skin.json', 'CREDITS.md', 'story/tiles.json']) await writeFile(path.join(folder, file), await readFile(`packs/lantern/${file}`));
-    await symlink(path.resolve('packs/lantern/assets'), path.join(folder, 'assets'));
+    await copyStoryAssets(folder);
     await writeFile(path.join(folder, 'story/main.story.md'), baseline); await writeFile(path.join(folder, 'story/story.config.json'), jsonBytes(config));
     const first = cli('story/index', 'build', 'lantern'); expect(first.status, first.stdout + first.stderr).toBe(0);
     const before = await readFile(path.join(folder, 'voice-manifest.json'), 'utf8');
@@ -151,7 +153,7 @@ it('fake-only story build completes TTS and replay, reuses cache, and missing ma
     const broken = cli('films', 'lantern'); expect(broken.status).toBe(1); expect(broken.stderr).toContain('npm run story -- build lantern');
     const check = cli('story/index', 'check', 'lantern'); expect(check.status).toBe(1); expect(check.stdout).toContain('npm run story -- build lantern');
     // Removing voice configuration switches the generated path back to silent mode, with no stale owned voices.
-    await writeFile(path.join(folder, 'story/story.config.json'), '{}\n');
+    await writeFile(path.join(folder, 'story/story.config.json'), jsonBytes({ artRoot: path.resolve('tests/fixtures/art') }));
     await writeFile(path.join(folder, 'story/main.story.md'), baseline.replace(/ voice=[^\s]+/g, ''));
     const silent = cli('story/index', 'build', 'lantern'); expect(silent.status, silent.stdout + silent.stderr).toBe(0);
     expect(JSON.parse(await readFile(path.join(folder, 'films/main.film.json'), 'utf8')).steps).not.toContainEqual({ advanceText: 'voice', count: 1 });

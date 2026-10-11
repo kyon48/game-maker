@@ -1,0 +1,10 @@
+{
+  "id": "base",
+  "fallback": null,
+  "portrait": {
+    "neutral": "neutral.png",
+    "soft_smile": "soft_smile.png",
+    "suspicious": "suspicious.png",
+    "determined": "determined.png"
+  }
+}

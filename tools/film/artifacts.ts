@@ -19,7 +19,7 @@ export function artifacts(events: readonly FramedEvent[], fps: number, frames: n
     const at = timestamp(event.frame, fps);
     if (event.type === 'chapter') script.push(`## ${at} ${event.title}`, '');
     if (event.type === 'narration-start') script.push(`**${at} · 나레이션**`, '', event.text, '');
-    if (event.type === 'text-start') script.push(`**${at} · ${event.speaker ?? '내레이션'}**`, '', event.text, '');
+    if (event.type === 'text-start') script.push(`**${at} · ${event.speaker ?? '내레이션'}${event.expression ? '(' + event.expression + ')' : ''}**`, '', event.text, '');
     if (event.type === 'choice' && event.phase === 'open') script.push(`**${at} · 선택지${event.prompt ? ': ' + event.prompt : ''}**`, '', ...event.labels.map((label, i) => `- ${event.indices[i]}: ${label}`), '');
     if (event.type === 'choice' && event.phase === 'close') script.push(`선택 (${at}): ${event.chosen ?? '미확정'}${event.chosen === null ? '' : ' — ' + (event.labels[event.indices.indexOf(event.chosen)] ?? '')}`, '');
     if (event.type === 'map') script.push(`맵 (${at}): ${event.mapId}`, '');

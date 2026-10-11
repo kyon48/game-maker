@@ -1,16 +1,11 @@
 {
-  "sora": {
-    "neutral": "assets/portraits/sora/neutral.png",
-    "soft_smile": "assets/portraits/sora/soft_smile.png",
-    "determined": "assets/portraits/sora/determined.png",
-    "suspicious": "assets/portraits/sora/suspicious.png",
-    "unimpressed": "assets/portraits/sora/unimpressed.png"
-  },
   "elder": {
     "neutral": "assets/portraits/elder/neutral.png",
     "soft_smile": "assets/portraits/elder/soft_smile.png",
-    "determined": "assets/portraits/elder/determined.png",
-    "suspicious": "assets/portraits/elder/suspicious.png",
-    "unimpressed": "assets/portraits/elder/unimpressed.png"
+    "suspicious": "assets/portraits/elder/suspicious.png"
+  },
+  "sora": {
+    "determined": "assets/portraits/sora/determined.png",
+    "neutral": "assets/portraits/sora/neutral.png"
   }
 }

@@ -68,7 +68,7 @@ flowchart LR
 | 줄 | 의미 |
 |---|---|
 | `@pack id "제목"` `@player id` `@screen 480x270` | 팩 헤더 |
-| `@character id "표시 이름" art=<에셋 폴더> voice=<voices.json 키>` | 인물. `art`는 표정 에셋의 캐릭터 폴더 ID(§5) |
+| `@character id "표시 이름" art=<에셋 폴더> voice=<voices.json 키>` | 인물. `art`는 표정 에셋의 캐릭터 폴더 ID(§4.1) |
 | `@flag name` `@var name 0` | 상태 선언 → `game.json.state` |
 | `@location id "이름"` + `@layout … @end` + `@anchor 글자 = 이름 [-> 맵:앵커]` | 장소와 레이아웃. `->`가 있으면 문(touch transfer + 양쪽 marker) |
 | `## 장 제목` | 챕터 → film `chapter`, 유튜브 챕터 |
@@ -78,7 +78,7 @@ flowchart LR
 | `@event … when=<조건>` | 기본 페이지의 등장 조건. 거짓이고 다른 페이지도 선택되지 않으면 이벤트 비활성. 후속 페이지는 자체 조건을 사용하며 once의 셀프 플래그와 결합 |
 | `@event … film=skip` | 게임 이벤트는 생성하되 촬영 순회에서 제외. 본문 플래그 변경은 lint 경고 |
 | `@page when=<조건>` | 같은 이벤트의 다음 페이지. 조건은 `flag`, `!flag`, `var>=3`, `all(...)`, `any(...)` |
-| `이름(표정): 대사` | `text`. 이름은 `@character`의 표시 이름. 표정은 key·영문·한글·핵심 별칭 모두 허용(§5). 표정 생략 가능 |
+| `이름(표정): 대사` | `text`. 이름은 `@character`의 표시 이름. 표정은 key·영문·한글·핵심 별칭 모두 허용(§4.1). 표정 생략 시 같은 페이지·공통 이벤트의 같은 화자 직전 key, 없으면 neutral. art 없는 화자는 얼굴 없음 |
 | `: 대사` | 화자 없는 지문 |
 | `? 질문` + `* 선택지` / `*> 선택지`(촬영 시 고르는 것) + 들여쓴 하위 줄 | `choice`. 옵션은 최대 6개(엔진 제약) |
 | `@set flag` `@unset flag` `@add var 1` `@sub var 1` | 상태 변경 |
@@ -178,8 +178,8 @@ S2부터 voices가 있으면 `advanceText: "voice", count: 1`과 `narrate`를 �
 | `story lint` | `story/*.story.md` | 진단 목록(파일:줄, 코드) | 문법 오류, 미선언 플래그·인물·앵커, 모르는 표정 이름, 선택지 7개 이상, 레이아웃 폭 불일치, 앵커 중복, 도달 불가 장소, 챕터 제목 중복. 종료 코드 1 |
 | `story compile` | story.md, `story/tiles.json`, 기존 `.tmj` | `game.json`(state·maps·start·mapNames 갱신), `maps/*.events.json`, `common-events.json`, 없는 `.tmj`, `story/.compiled.json`(생성 파일 해시) | lint 통과 후 실행. 마지막 컴파일 이후 **손으로 고친 생성 파일**이 있으면 중단(`--force`로 덮어씀). 끝나면 `validate`를 호출 |
 | `story film` | story.md | `films/<name>.film.json`, `films/<name>.narration.md`, `tests/story_<name>.scenario.json`(촬영 경로 전체) | 끝나면 `films`(리허설)와 `scenarios` 호출 |
-| `story art` | story.md의 `@character art=…`, 에셋 루트(`--art-root`, 기본은 `story/story.config.json`) | `assets/portraits/<char>/<expr>.png`(**쓰인 표정만** 복사), `portraits.json` | fallback 체인으로도 못 찾는 표정은 오류. CREDITS.md에 에셋 출처 항목이 없으면 경고 |
-| `story build` | 위 전부 | — | `lint → compile → art → film → validate → scenarios → films` 한 번에 |
+| `story art` | story.md의 `@character art=…`, story/story.config.json의 artRoot(설정 파일 기준 상대 경로 권장) | `assets/portraits/<char>/<expr>.png`(**쓰인 표정만** 복사), `portraits.json` | fallback 체인으로도 못 찾는 표정은 오류. 소유권 해시로 복사본 보호·미사용 추적 PNG 삭제. 원본 없는 check는 별칭 캐시·복사본 해시만 검사. CREDITS.md 출처 누락은 경고 |
+| `story build` | 위 전부 | — | `lint → compile → art → film → tts → validate → scenarios → films` 한 번에 |
 | 기존 `film`, `tts`(V2) | 생성물 | mp4, 음성 | 변경 없음 |
 
 LLM이 끼는 지점은 두 곳이고 둘 다 **파일을 입력받아 파일을 내는** 방식이다.
@@ -217,7 +217,7 @@ Codex에게 story.md를 직접 쓰게 해도 된다. 어느 쪽이든 검증 명
 
 - 정본은 에셋의 `expressions.json`(64종 `key`, `en`, `ko`, 핵심 8종 `core` 별칭). 팩에는 `portraits.json`에 **key만** 남긴다.
 - story.md에서는 `촌장(의심)`, `촌장(suspicious)`, `촌장(surprised)`(core → `startled`) 모두 허용. 한글 이름 64개는 서로 다르므로 모호성이 없다. 컴파일러가 key로 정규화한다.
-- 표정을 생략하면 이전 줄의 같은 화자 표정을 잇고, 장면 첫 줄이면 `neutral`.
+- 표정을 생략하면 같은 이벤트 페이지·공통 이벤트의 같은 화자 직전 표정을 잇고, 없으면 `neutral`. 분기는 진입 전 값에서 각자 시작하며 변경을 분기 밖으로 이어 쓰지 않는다. 공통 이벤트는 호출자와 독립 문맥이다.
 - 인물은 `@character … art=<폴더>`로 에셋 캐릭터 폴더에 대응한다. 그 폴더의 `character.json`에 없는 표정은 `fallback` 체인(의상 캐릭터 → `base`)을 따라 찾는다. 지금은 `base`만 있으므로 모든 인물이 같은 얼굴이다. 의상 캐릭터는 에셋 README 절차로 추가한다.
 
 ### 4.2 해상도: 지금은 얼굴 칸, 전신은 나중에
@@ -275,7 +275,7 @@ Codex에게 story.md를 직접 쓰게 해도 된다. 어느 쪽이든 검증 명
 | **V2b** 나레이션·합성 | Codex | film `narrate`/`waitNarration`/`music`, 오디오 합성·덕킹·LUFS | 나레이션+대사 음성이 든 mp4, SRT에 나레이션 포함 |
 | **S2** 나레이션 연결 **(완료)** | Codex | `story film`이 `>` 줄을 `narrate`로, `@waitNarration`을, `advanceText: "voice"`를 내도록 | lantern 영상에 나레이션이 흐름 |
 | **V3a** 얼굴 칸 **(완료)** | Codex | §4.3: `portraits.json` 스키마·검증, `text.portrait/expression`, MessageState 폭 반영, HD 레이어와 얼굴 그리기, 녹화 1080p 합성 캡처 | 대화에 표정 얼굴 표시(데모로 확인, lantern 얼굴 데이터 준비). `film:verify` 통과. 헤드리스 시나리오 결과 불변 |
-| **S3** 표정·에셋 연결 | Codex | `story art`: 표정 이름 정규화(key·en·ko·core), fallback 체인, 쓰인 표정만 복사, `portraits.json` 생성, 컴파일러가 `portrait/expression` 필드 출력 | lantern이 base 에셋으로 얼굴을 바꿔 가며 대화. 모르는 표정 이름은 lint 오류 |
+| **S3** 표정·에셋 연결 **(완료)** | Codex | `story art`: 표정 이름 정규화(key·en·ko·core), fallback 체인, 쓰인 표정만 복사, `portraits.json` 생성, 컴파일러가 `portrait/expression` 필드 출력 | lantern이 base 에셋으로 얼굴을 바꿔 가며 대화. 모르는 표정 이름은 lint 오류 |
 | **첫 영상 제작** | 사용자+GPT | 비공개 팩의 story.md 작성(§7 IP), 표정 배정, 나레이션, `story build` → `tts` → `film` | §5 마일스톤 5개 항목 |
 | 이후 G3 → G2 → V3b+G5 → G4 → V4 | — | 기존 설계. V3b 전에 05 바이블 규격의 고해상도 표정 세트를 생성한다(사용자) | 06·04 기준 |
 
@@ -297,7 +297,7 @@ Codex에게 story.md를 직접 쓰게 해도 된다. 어느 쪽이든 검증 명
 | 나레이션 대사 비율 | 07 §4 밀도(분당 120~170자) | `story film`이 narration.md에 분당 글자 수·무나레이션 비율 추정치를 적어 준다(영상 길이는 리허설 틱으로 계산) |
 | 맵의 단조로움 | ASCII 뼈대 + 단색 타일은 밋밋하다 | 첫 영상은 감수한다. 영상 가치는 나레이션·표정에 둔다. 이후 Tiled 손질 또는 타일셋 교체 |
 | 결정 1 | 예시 팩 이름·소재(공개 레포, 저작권 소멸 소재 또는 창작) | `lantern`(등대지기, 창작) 권장 |
-| 결정 2 | 표정 생략 시 기본값 | 직전 같은 화자 표정 → 없으면 `neutral` |
+| 결정 2 | 표정 생략 시 기본값 | 같은 페이지·공통 이벤트의 직전 같은 화자 → 없으면 neutral. 분기는 진입 전 값을 복사, 분기 밖에는 변경을 전달하지 않음 |
 | 결정 3 | V3a 얼굴 칸 위치·크기 | 창 왼쪽, 창 높이에 맞춤. skin.json에 `portrait: { width }` 선택 필드 |
 | 결정 4 | S1a~S1c를 프롬프트 세 개로 나눌지 두 개로 합칠지 | 세 개. 각각 테스트가 독립적이고 리뷰가 짧다 |
 

@@ -1,0 +1,9 @@
+{
+  "expressions": [
+    { "key": "neutral", "en": "Neutral", "ko": "무표정" },
+    { "key": "soft_smile", "en": "Soft Smile", "ko": "부드러운 미소" },
+    { "key": "suspicious", "en": "Suspicious", "ko": "의심" },
+    { "key": "determined", "en": "Determined", "ko": "결의" }
+  ],
+  "core": { "smile": "soft_smile", "neutral": "neutral" }
+}
