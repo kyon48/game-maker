@@ -103,6 +103,7 @@ export function lintStories(stories: readonly Story[], options: LintOptions = {}
           if (node.speaker && !names.has(node.speaker)) report(node, 'S004', `미선언 화자: ${node.speaker}`);
           const speaker = node.speaker ? names.get(node.speaker) : undefined;
           if (speaker && !speaker.voice) report(speaker, 'S036', `대사가 있지만 voice가 없는 인물: ${speaker.name} (무음)`, 'warning');
+          if (node.expression && !speaker?.art) report(node, 'S041', '표정이 있지만 art가 없는 화자입니다 (얼굴 없음)', 'warning');
           if (node.expression && options.expressions && !options.expressions.has(node.expression.trim().toLocaleLowerCase('en-US'))) report(node, 'S007', `모르는 표정: ${node.expression}`);
           break;
         case 'narration':

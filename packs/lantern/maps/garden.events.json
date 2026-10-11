@@ -25,6 +25,8 @@
                 {
                   "cmd": "text",
                   "text": "불을 다시 켰어요. 이제 누구와 이 약속을 나눌까요?",
+                  "portrait": "sora",
+                  "expression": "neutral",
                   "speaker": "소라"
                 },
                 {

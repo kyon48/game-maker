@@ -25,6 +25,8 @@
             {
               "cmd": "text",
               "text": "불이 꺼진 뒤로 돌아오는 배들이 길을 잃었다고 들었어요.",
+              "portrait": "sora",
+              "expression": "neutral",
               "speaker": "소라"
             },
             {
@@ -86,6 +88,8 @@
             {
               "cmd": "text",
               "text": "오래 비워 둔 등대를 다시 켜겠다고? 누가 불을 지킬지 생각해 보았나?",
+              "portrait": "elder",
+              "expression": "suspicious",
               "speaker": "촌장"
             },
             {
@@ -95,6 +99,8 @@
             {
               "cmd": "text",
               "text": "우선 제가 불을 밝히고, 그다음 약속을 정하고 싶어요. 지금 나눈 신뢰는 {var:trust}이에요.",
+              "portrait": "sora",
+              "expression": "determined",
               "speaker": "소라"
             },
             {
@@ -118,6 +124,8 @@
                     {
                       "cmd": "text",
                       "text": "서로의 밤을 나누면 불도 오래 갈 게다.",
+                      "portrait": "elder",
+                      "expression": "soft_smile",
                       "speaker": "촌장"
                     }
                   ]
@@ -139,6 +147,8 @@
                     {
                       "cmd": "text",
                       "text": "서두르지 말고 네가 감당할 수 있는 약속부터 시작하렴.",
+                      "portrait": "elder",
+                      "expression": "suspicious",
                       "speaker": "촌장"
                     }
                   ]
@@ -165,6 +175,8 @@
             {
               "cmd": "text",
               "text": "열쇠는 받았지? 오른쪽 문 너머 등대 중앙의 노란 불씨를 살펴보렴.",
+              "portrait": "elder",
+              "expression": "neutral",
               "speaker": "촌장"
             }
           ]

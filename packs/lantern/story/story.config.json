@@ -1,4 +1,5 @@
 {
+  "artRoot": "../../../../Plush_Character_Game_Assets/characters",
   "voices": {
     "narrator": {
       "provider": "macos-say",

@@ -1,3 +1,4 @@
+import { artPack } from './art';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
@@ -26,12 +27,14 @@ async function runTools(id: string, tools: readonly string[]): Promise<boolean> 
   return true;
 }
 const runChecks = (id: string) => runTools(id, ['scenarios', 'films']);
-const usage = () => { console.error('story:1 S019 사용법: npm run story -- lint <packId> | compile <packId> [--force] [--force-maps] | film <packId> [--name main] [--force] | build <packId> | check <packId>|--all'); process.exitCode = 1; };
+const usage = () => { console.error('story:1 S019 사용법: npm run story -- lint <packId> | compile <packId> [--force] [--force-maps] | art <packId> [--force] | film <packId> [--name main] [--force] | build <packId> | check <packId>|--all'); process.exitCode = 1; };
 try {
   if (command === 'lint' && packId && !extra.length) print(await lintPack(packId));
   else if (command === 'compile' && packId && extra.every(value => ['--force', '--force-maps'].includes(value))) {
     const diagnostics = await compilePack(packId, process.cwd(), { force: extra.includes('--force'), forceMaps: extra.includes('--force-maps') });
     if (!print(diagnostics) && !await validateCompiledPack(packId, process.cwd(), true)) process.exitCode = 1;
+  } else if (command === 'art' && packId && extra.every(value => value === '--force')) {
+    print(await artPack(packId, process.cwd(), extra.includes('--force')));
   } else if (command === 'film' && packId) {
     let name = 'main', force = false, valid = true;
     for (let i = 0; i < extra.length; i++) {
@@ -41,7 +44,7 @@ try {
     }
     if (!valid) usage(); else if (!print(await filmPack(packId, process.cwd(), name, force))) await runChecks(packId);
   } else if (command === 'build' && packId && !extra.length) {
-    if (!print(await lintPack(packId)) && !print(await compilePack(packId)) && !print(await filmPack(packId))) {
+    if (!print(await lintPack(packId)) && !print(await compilePack(packId, process.cwd(), { suppressFilmWarning: true })) && !print(await artPack(packId)) && !print(await filmPack(packId))) {
       const { FsSource } = await import('../fsSource');
       const hasVoices = await new FsSource(`packs/${packId}`).exists('voices.json');
       if ((!hasVoices || await runTools(packId, ['tts'])) && await validateCompiledPack(packId)) await runChecks(packId);

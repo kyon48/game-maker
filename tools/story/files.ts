@@ -1,3 +1,4 @@
+import { parseManifest } from './ownership';
 import { parseStoryConfig } from './config';
 import type { StoryConfig } from './config';
 import { readFile, readdir } from 'node:fs/promises';
@@ -7,7 +8,7 @@ import { lintStories } from './lint';
 import { expressionAliases } from './expressions';
 import type { Diagnostic, Story } from './ast';
 export interface StoryInput { stories: Story[]; diagnostics: Diagnostic[]; expressions?: ReadonlyMap<string, string> | null; config?: StoryConfig }
-export async function readStories(packId: string, root = process.cwd()): Promise<StoryInput> {
+export async function readStories(packId: string, root = process.cwd(), allowMissingArt = false): Promise<StoryInput> {
   const folder = path.join(root, 'packs', packId, 'story'), diagnostics: Diagnostic[] = [], stories: Story[] = [];
   const display = (file: string) => path.relative(root, file).split(path.sep).join('/');
   const io = (file: string, error: unknown) => diagnostics.push({ file: display(file), line: 1, level: 'error', code: 'S019', message: error instanceof Error ? error.message : String(error) });
@@ -35,10 +36,26 @@ export async function readStories(packId: string, root = process.cwd()): Promise
         if (typeof artRoot !== 'string' || !artRoot.trim()) throw new Error('artRoot는 비어 있지 않은 경로여야 합니다');
         const manifest = path.resolve(folder, artRoot, 'expressions.json');
         try { expressions = expressionAliases(JSON.parse(await readFile(manifest, 'utf8')) as unknown); }
-        catch (error) { expressions = null; io(manifest, error); }
+        catch (error) {
+          if (allowMissingArt && ['ENOENT', 'EACCES', 'EPERM'].includes((error as NodeJS.ErrnoException).code ?? '')) {
+            const cached = parseManifest(await readFile(path.join(folder, '.compiled.json'), 'utf8')).expressions;
+            if (!cached) throw new Error('표정 별칭 캐시가 없습니다. artRoot가 있는 환경에서 story art를 실행하세요');
+            expressions = new Map(Object.entries(cached));
+            diagnostics.push({ file: display(configPath), line: 1, level: 'warning', code: 'S039', message: 'artRoot를 읽을 수 없어 원본 대조를 생략하고 복사본·소유권 해시만 확인합니다' });
+          } else { expressions = null; io(manifest, error); }
+        }
       }
     }
   } catch (error) { expressions = null; io(configPath, error); }
+  if (allowMissingArt && expressions === undefined) {
+    try {
+      const cached = parseManifest(await readFile(path.join(folder, '.compiled.json'), 'utf8')).expressions;
+      if (cached) {
+        expressions = new Map(Object.entries(cached));
+        diagnostics.push({ file: display(configPath), line: 1, level: 'warning', code: 'S039', message: 'artRoot 설정이 없어 원본 대조를 생략하고 복사본·소유권 해시만 확인합니다' });
+      }
+    } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') diagnostics.push({ file: display(path.join(folder, '.compiled.json')), line: 1, level: 'error', code: 'S026', message: String(error) }); }
+  }
   diagnostics.push(...lintStories(stories, { packId, expressions, config: settings }));
   return { stories, expressions, config: settings, diagnostics: diagnostics.sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line || a.code.localeCompare(b.code)) };
 }

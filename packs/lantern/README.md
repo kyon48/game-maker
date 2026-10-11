@@ -17,18 +17,19 @@ npm run dev
 
 - `story/main.story.md`: 유일한 스토리 원고. 인물·상태·레이아웃·앵커·장면·대사·선택·공통 이벤트.
 - `story/tiles.json`: wall/floor/door GID와 외부 타일셋 경로.
-- `story/story.config.json`: 인물별 macos-say 목소리 키와 narrator 설정. artRoot가 없으므로 표정 이름 검사 생략 경고가 난다. 표정 이미지 복사는 S3에서 연결.
+- `story/story.config.json`: 인물별 macos-say 목소리 키·narrator·원본 에셋의 상대 artRoot 설정.
 - `game.json`의 id/title/version/formatVersion/screen/tileSize/player/plugins/labels: 사람이 정하는 메타데이터.
-- `characters.json`, `skin.json`, `assets/`, `CREDITS.md`, 이 README: 스프라이트·타일·UI·폰트·출처.
+- `characters.json`, `skin.json`, `assets/`(portraits 제외), `CREDITS.md`, 이 README: 스프라이트·타일·UI·폰트·출처.
 - `assets/tilesets/colors.tsj`: 사람이 정한 8개 단색 타일의 Tiled 타일셋 메타데이터.
 
 ## 컴파일 생성물
 
 - `game.json`의 state/maps/start/mapNames 네 필드.
 - `maps/pier.events.json`, `maps/tower.events.json`, `maps/garden.events.json`.
+- `portraits.json`, `assets/portraits/<인물>/<표정>.png`: 원고에서 필요한 얼굴만 복사.
 - `common-events.json`, `voices.json`(표시 이름 → 목소리).
 - `maps/pier.tmj`, `maps/tower.tmj`, `maps/garden.tmj`: 최초 ASCII 뼈대. 이후 Tiled로 손질 가능하며 앵커 위치는 원고와 일치해야 한다.
-- `story/.compiled.json`: 생성 파일 해시와 맵의 최초/재생성 해시. 컴파일러의 소유권 기록.
+- `story/.compiled.json`: 생성 파일·얼굴 PNG의 해시, 맵의 최초/재생성 해시와 표정 별칭 캐시. 컴파일러의 소유권 기록.
 
 생성물을 직접 고치면 다음 compile이 중단된다. 원고를 바꾸고 컴파일한다.
 생성 파일을 의도적으로 덮어쓰려면 `--force`, 맵을 ASCII로 재생성하려면 `--force-maps`를 쓴다.
@@ -37,7 +38,7 @@ game.json도 전체 파일 해시로 보호하므로 사람이 메타데이터�
 
 ## 아직 연결하지 않은 것
 
-표정은 원고에 남지만 엔진 대사 필드에는 넣지 않는다(V3a 전). 컴파일 경고는 팩당 한 번이다.
+표정은 S3에서 text의 portrait/expression으로 연결한다. art가 없는 인물과 지문에는 얼굴이 없다.
 나레이션 텍스트는 film에만 둔다. 이벤트 안 나레이션은 텍스트 없는 film_cue로 연결한다. 촬영 힌트는 팩에서 생략한다.
 엔진에 결말 씬이 없으므로 결말은 대사와 두 플래그로 표현한다. 전용 결과 화면은 G3 범위다.
 
@@ -52,3 +53,5 @@ S2부터 voices.json과 main film은 원고·목소리 설정의 생성물이다
 macOS 한국어 음성이 필요하며 로컬 WAV는 .cache/voice/lantern에만 둔다. voice-manifest.json은 TTS 생성물로 커밋한다. check는 매니페스트로 리허설하며 say를 실행하지 않는다.
 원고의 장면 @waitNarration과 촌장 대사 사이 `>`는 각각 장면 대기·이벤트 대기 지점의 예시다.
 음악 원본 assets/music/harbor.ogg는 보존하지만 원고 음악 문법은 이번 단계에서 추가하지 않아 main 영상에는 쓰지 않는다.
+
+S3부터 story build는 사용 표정만 원본에서 복사하고 대사 얼굴을 연결한다. 원본이 없는 환경에서도 story check는 커밋된 얼굴·별칭·해시로 검사한다. art/build에는 설정한 원본 에셋이 필요하다.

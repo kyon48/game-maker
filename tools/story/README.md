@@ -1,11 +1,11 @@
-# 스토리 파서·lint·팩 컴파일 (S1a/S1b/S1c/S1d/S2)
+# 스토리 파서·lint·팩 컴파일 (S1a/S1b/S1c/S1d/S2/S3)
 
 ```sh
 npm run story -- lint <packId>
 ```
 
 현재 작업 디렉터리의 `packs/<packId>/story/*.story.md`를 파일명 순서로 읽는다.
-파서와 lint는 팩이나 생성물을 쓰지 않는다. compile/check는 아래에 설명하며, film/build는 마지막 절에 설명하며 art는 S3 단계다.
+파서와 lint는 팩이나 생성물을 쓰지 않는다. compile/check는 아래에 설명하며, film/build와 art는 아래에 설명한다.
 오류가 있으면 종료 코드 1, 경고만 있거나 진단이 없으면 0이다.
 `npm run check`는 story check --all을 포함한다. 파서·CLI·컴파일 단위 테스트도 check에 포함된다.
 
@@ -61,7 +61,7 @@ packs/lantern/story/main.story.md:1 S015 경고: artRoot가 없어 표정 이름
 
 위 설정은 `packs/<packId>/story/story.config.json`이다.
 `artRoot`는 설정 파일 디렉터리를 기준으로 해석하며, 절대 경로도 허용한다.
-해당 폴더의 `expressions.json`을 읽는다. 캐릭터 폴더의 파일/표정 fallback 검사는 S3 범위다.
+해당 폴더의 `expressions.json`을 읽는다. story art는 캐릭터 폴더의 character.json과 portrait 파일을 읽고 fallback 체인을 검사한다.
 
 ```json
 {
@@ -160,7 +160,7 @@ GID는 양의 정수이며 tileset은 팩 내부 .tsj 경로다. firstgid 기본
 - 선택지는 원고 options 전체와 cancel=null을 만든다. *>는 팩 명령에 넣지 않으며 S1c가 촬영 선택에 사용한다.
 - @go는 정식 marker 이름의 transfer다. 문은 앵커 이름 ID의 through=true touch transfer 이벤트다. 다른 이벤트 ID와 충돌하면 오류다.
 - @common/@call과 @if/all/any/비교 조건은 기존 엔진 데이터로 변환한다. @cmd JSON은 그대로 넣고 기존 validate가 내용 검증한다.
-- 표정이 있으면 S028 경고 팩당 1회, portrait/expression 필드는 생략한다. normalizeExpression(name, aliases)는 key/en/ko/core 별칭을 key로 반환하는 순수 함수이며 이후 V3a/S3에서 사용할 수 있다.
+- art가 있는 화자는 portrait(인물 ID)·expression(정규화한 key)을 출력한다. normalizeExpression은 key/en/ko/core 별칭을 받는다. 표정 생략·분기 규칙은 아래 S3 절을 따른다. S028은 폐기했다.
 - 이벤트·공통 이벤트의 나레이션과 @waitNarration은 ID만 가진 film_cue로 변환한다. 텍스트·음성은 film에만 둔다. @film 힌트는 팩에서 생략한다.
 
 생성 목록은 game.json, 설정에 voices가 있으면 voices.json, common-events.json, maps/<location>.events.json, 최초/강제 생성 maps/<location>.tmj, story/.compiled.json이다.
@@ -194,7 +194,7 @@ check는 쓰기/삭제 없이 lint·메모리 컴파일과 일반 생성 파일�
 | S025 | 오류 | 추적 생성 파일 변경/삭제 또는 소유권 없는 기존 출력 |
 | S026 | 오류 | 소유권 매니페스트 형식·버전·경로·해시 오류 |
 | S027 | 오류 | 자동 문 이벤트와 원고 이벤트 ID 충돌 |
-| S028 | 경고 | V3a 전이라 표정 필드 생략(팩당 1회) |
+| S028 | 폐기 | S3에서 얼굴 필드 출력으로 대체 |
 | S029 | 오류 | check에서 생성물/매니페스트 누락·차이·이전 출력 잔존 |
 
 V1~V12는 엔진의 기존 validate 진단을 그대로 출력한다.
@@ -216,8 +216,8 @@ film은 lint·팩 메모리 컴파일·검증 후 장면 순서와 `*>`(없으�
 compile만 실행하면 기존 촬영 생성물은 유지한다. 원고를 바꾼 뒤 film 또는 build를 실행해야 check가 통과한다.
 --force는 편집/삭제한 생성물을 덮어쓴다. --name은 파일 이름만 지정하며 별도 선택 경로 옵션은 없다.
 
-build는 lint → compile → film → tts → validate → scenarios → films 순서로 진행하고 실패한 단계에서 종료 코드 1로 중단한다.
-tts는 voices가 있을 때만 실행하며 캐시 음성은 다시 생성하지 않는다. art는 S3 단계다. 영상은 기존 `npm run film`으로 별도로 녹화한다.
+build는 lint → compile → art → film → tts → validate → scenarios → films 순서로 진행하고 실패한 단계에서 종료 코드 1로 중단한다.
+tts는 voices가 있을 때만 실행하며 캐시 음성은 다시 생성하지 않는다. 영상은 기존 `npm run film`으로 별도로 녹화한다.
 
 - 장마다 chapter, action/touch 이벤트에는 walkTo·pause 0.35·확인/진입 입력을 넣는다. auto는 자동 시작하므로 확인 입력과 접근 이동을 생략한다.
 - 문 연결 그래프를 선언 순서로 너비 우선 탐색한다. 각 문까지 walkTo한 뒤 현재 인접 위치에서 문을 향해 walk 한 칸·settle을 넣는다.
@@ -280,7 +280,7 @@ lantern의 선착장 뱃사공은 film=skip 예시, 옛 등대지기는 두 결�
 
 촬영 생성 전 검증에서는 .compiled.json이 소유한 film/narration/story 시나리오만 제외한다.
 메모리 컴파일의 보존 파일에도 같은 기준을 적용한다. 사람이 쓴 소유권 없는 film/시나리오는 이름이나 폴더가 같아도 제외하지 않는다.
-compile 단독 실행은 기존 촬영 파일을 보존하고 재생성 결과와 다르면 S034 `story film 필요` 경고를 낸다.
+compile 단독 실행은 기존 촬영 파일을 보존하고 재생성 결과와 다르면 S034 `story film 필요` 경고를 낸다. build는 바로 다음 단계에서 재생성하므로 이 중간 경고를 내지 않는다.
 `story film`/`story build`로 원고에서 다시 생성하면 새 film·시나리오를 정상 검증·리허설한다.
 생성 파일을 손으로 지울 필요가 없으며 S025 소유권 검사는 그대로 유지한다. `story check`는 오래된 생성물을 S029 차이로 계속 실패 처리한다.
 
@@ -309,3 +309,33 @@ compile 단독 실행은 기존 촬영 파일을 보존하고 재생성 결과�
 | S037 | 오류 | 커밋된 매니페스트의 음성 길이 누락 또는 촬영 리허설 실패(build 필요) |
 
 생성 대본의 나레이션·대사 음성 겹침은 story build/check와 films의 S037 오류다. 컴파일러가 소유하지 않은 수기 film은 기존처럼 겹침 경고만 출력한다.
+
+## 표정과 에셋 생성 (S3)
+
+```sh
+npm run story -- art lantern
+npm run story -- art lantern --force
+npm run story -- build lantern
+npm run story -- check --all
+```
+
+story/story.config.json의 artRoot는 이 설정 파일 디렉터리 기준이다. 공개 팩에서는 `../../../../Plush_Character_Game_Assets/characters`처럼 상대 경로를 쓴다. 원본 expressions.json·캐릭터 폴더 구조는 변경하지 않는다.
+
+`@character sora "소라" art=base`와 `소라(결의): …`를 연결한다. 정규화는 key·영문명·한글명·core 별칭 네 형식이며, 이름은 앞뒤 공백·영문 대소문자를 정리한다. art가 없는 화자·화자 없는 지문·나레이션에는 얼굴을 붙이지 않는다. 표정을 지정했는데 art가 없는 화자는 S041 경고다.
+
+표정은 각 이벤트 페이지·공통 이벤트에서 화자별로 추적한다. 생략하면 같은 흐름의 직전 표정, 없으면 neutral이다. if/선택지의 각 분기는 분기 전 값을 복사해 시작하고, 분기 안 변경은 다른 분기·분기 다음 줄에 이어지지 않는다. 공통 이벤트는 독립 문맥이므로 호출자의 표정을 이어받지 않는다.
+
+art는 이 규칙으로 원고의 모든 페이지·공통 이벤트·선택 분기를 검사해 실제 필요한 표정만 복사한다. character.json의 portrait에 key가 없으면 fallback 폴더로 이동한다. 순환·끝까지 없음·PNG 누락/크기 오류·에셋 루트 밖 참조는 원고 파일:줄 오류다. PNG는 원본 바이트 그대로 assets/portraits/<인물>/<key>.png에 복사하고 portraits.json에는 정규화한 key만 넣는다. 원본 에셋은 쓰지 않는다.
+
+portraits.json·PNG도 .compiled.json의 소유권 대상이다. art는 모든 소유권을 미리 확인한 뒤 복사하고 쓰이지 않는 추적 PNG를 삭제한다. 기존 수기 얼굴 목록·복사본을 전환하거나 생성물을 덮어쓰려면 art --force가 필요하다. 추적하지 않는 파일은 삭제하지 않는다. 팩 밖으로 향하는 생성 대상 심볼릭 링크는 force로도 쓰지 않는다.
+
+매니페스트의 선택 필드 expressions는 별칭→key 조회표를 보존한다. 원본 경로·시각은 기록하지 않으며 PNG 해시는 바이너리 바이트의 SHA-256이다. 원본이 있는 check는 재생성 바이트와 비교하고, 원본이 없는 check는 이 별칭과 portraits.json·복사본의 존재·소유권 해시만 검사한다(S039 경고 1회). art/build는 읽을 수 있는 artRoot가 필요하다. check는 원본 에셋 복사·TTS·say를 호출하지 않는다.
+
+새 표정으로 compile만 실행했다면 art도 실행해야 참조가 유효해진다. 한 번에 갱신하려면 story build를 쓴다. build는 art 후 film을 생성하고 마지막에 팩·시나리오·대본을 검증한다. 타임라인의 text-start/end에는 portrait·expression이 남고, script.md는 화자(표정)로 출력한다.
+
+| 코드 | 수준 | 의미 |
+|---|---|---|
+| S038 | 오류 | artRoot 설정/에셋 경로·fallback·PNG 복사 준비 실패 |
+| S039 | 경고 | 원본 없는 check: 별칭 캐시·복사본·소유권 해시만 검사(팩당 1회) |
+| S040 | 경고 | CREDITS.md에 얼굴 에셋 출처 항목 없음 |
+| S041 | 경고 | 표정을 지정한 화자에게 art가 없어 얼굴 없음 |

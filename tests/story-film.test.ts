@@ -1,3 +1,4 @@
+import { copyStoryAssets } from './storyAssets';
 import { extractFilm } from '../tools/tts/extract';
 import { fake, wavFrames } from '../tools/tts/provider';
 import { voiceKey } from '../engine/data/voice';
@@ -164,7 +165,7 @@ describe('story film generation (one baseline, memory mutations)', () => {
   });
 });
 
-import { mkdtemp, mkdir, writeFile, rm, symlink } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { filmPack } from '../tools/story/film-project';
@@ -175,9 +176,12 @@ it('tracks film/narration/scenario ownership, detects edits and check difference
   try {
     await mkdir(path.join(folder, 'story'), { recursive: true });
     for (const file of ['game.json', 'characters.json', 'skin.json', 'CREDITS.md']) await writeFile(path.join(folder, file), await readFile(`packs/lantern/${file}`));
-    await symlink(path.resolve('packs/lantern/assets'), path.join(folder, 'assets'));
+    await copyStoryAssets(folder);
     await writeFile(path.join(folder, 'story/main.story.md'), baseline);
     await writeFile(path.join(folder, 'story/tiles.json'), JSON.stringify(tiles));
+    await writeFile(path.join(folder, 'story/story.config.json'), JSON.stringify({ artRoot: path.resolve('tests/fixtures/art') }));
+    const { artPack } = await import('../tools/story/art');
+    expect((await artPack('lantern', root)).filter(d => d.level === 'error')).toEqual([]);
     expect((await compilePack('lantern', root)).filter(d => d.level === 'error')).toEqual([]);
     expect((await filmPack('lantern', root)).filter(d => d.level === 'error')).toEqual([]);
     const file = path.join(folder, 'films/main.narration.md'), original = await readFile(file, 'utf8');
@@ -200,9 +204,12 @@ async function temporaryStoryPack() {
   const root = await mkdtemp(path.join(tmpdir(), 'story-review-')), folder = path.join(root, 'packs/lantern');
   await mkdir(path.join(folder, 'story'), { recursive: true });
   for (const file of ['game.json', 'characters.json', 'skin.json', 'CREDITS.md']) await writeFile(path.join(folder, file), await readFile(`packs/lantern/${file}`));
-  await symlink(path.resolve('packs/lantern/assets'), path.join(folder, 'assets'));
+  await copyStoryAssets(folder);
   await writeFile(path.join(folder, 'story/main.story.md'), baseline);
   await writeFile(path.join(folder, 'story/tiles.json'), JSON.stringify(tiles));
+    await writeFile(path.join(folder, 'story/story.config.json'), JSON.stringify({ artRoot: path.resolve('tests/fixtures/art') }));
+    const { artPack } = await import('../tools/story/art');
+    expect((await artPack('lantern', root)).filter(d => d.level === 'error')).toEqual([]);
   return { root, folder };
 }
 function storyCli(root: string, ...args: string[]) {
@@ -228,6 +235,7 @@ it('can regenerate owned films after deleting a declared/expected flag, with com
     await writeFile(path.join(folder, 'story/main.story.md'), changed);
     const build = storyCli(root, 'build', 'lantern');
     expect(build.status, build.stdout + build.stderr).toBe(0);
+    expect(build.stdout).not.toContain('S034');
     expect(await readFile(path.join(folder, 'films/main.film.json'), 'utf8')).not.toContain('obsolete');
     expect(await readFile(path.join(folder, 'tests/story_main.scenario.json'), 'utf8')).not.toContain('obsolete');
     await writeFile(path.join(folder, 'story/main.story.md'), original);

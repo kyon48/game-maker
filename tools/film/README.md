@@ -38,3 +38,5 @@ film:verify는 얼굴이 표시되는 짧은 demo를 두 번 녹화해 RGBA SHA-
 생성 film은 `advanceText: "voice", count: 1`로 한 메시지만 진행하고 `waitFor: "message"`로 준비를 기다린다. 목소리 없는 화자는 auto로 진행한다. count를 생략한 기존 대본은 이전처럼 연속 메시지를 처리한다.
 
 `narrate: "문장", cue: "story_cue_1"`은 이벤트의 film_cue에 도달할 때까지 기다린다(최대 36000틱). 그 위치에서 앞 나레이션 뒤에 음성을 배치하고 완료 후 대기 지점을 해제해 다음 대사를 시작한다. `waitNarration: true, cue: "…"`도 같은 위치에서 대기열 전체를 기다린 뒤 해제한다. 일반 플레이·시나리오에서는 cue가 즉시 통과한다.
+
+S3: text-start/end에는 portrait·expression을 기록하고 script.md 화자는 `이름(표정 key)`로 표시한다. 얼굴 없는 메시지·SRT 형식은 그대로다.

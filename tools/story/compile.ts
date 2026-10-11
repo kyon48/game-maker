@@ -1,3 +1,4 @@
+import { storyFaces } from './faces';
 import { storyCues, sceneNarrationCues } from './cues';
 import type { Story, Location, Anchor, Source, Condition, Statement, Event, Diagnostic } from './ast';
 export interface Tiles { wall: number; floor: number; door: number; tileset: string; firstgid?: number }
@@ -36,7 +37,7 @@ function engineCondition(value: Condition): unknown {
   if (value.kind === 'variable') return { var: value.name, op: value.op, value: value.value };
   return { [value.kind]: value.conditions.map(engineCondition) };
 }
-export function compileStories(stories: readonly Story[], gameValue: unknown, tileValue: unknown, existingMaps: ReadonlyMap<string, string> = new Map(), forceMaps = false): Compilation {
+export function compileStories(stories: readonly Story[], gameValue: unknown, tileValue: unknown, existingMaps: ReadonlyMap<string, string> = new Map(), forceMaps = false, aliases?: ReadonlyMap<string, string>): Compilation {
   const game = object(gameValue), tileSize = game.tileSize;
   if (!Number.isSafeInteger(tileSize) || (tileSize as number) < 1) throw new Error('game.json에 양의 tileSize가 필요합니다');
   const size = tileSize as number, tiles = parseTiles(tileValue), diagnostics: Diagnostic[] = [], files = new Map<string, string>(), maps = new Map<string, string>();
@@ -44,12 +45,11 @@ export function compileStories(stories: readonly Story[], gameValue: unknown, ti
   const points = new Map(locations.map(location => [location.id, anchorPoints(location)]));
   const point = (map: string, anchor: string, source: Source): Point => points.get(map)?.get(anchor) ?? compileError(source, 'S022', `앵커 좌표 없음: ${map}:${anchor}`);
   const cues = storyCues(stories), sceneCues = sceneNarrationCues(stories);
-  let expressionWarning = false;
+  const faces = aliases ? storyFaces(stories, aliases) : new Map();
   const commands = (list: readonly Statement[]): unknown[] => list.flatMap(node => {
     switch (node.kind) {
       case 'dialogue':
-        if (node.expression && !expressionWarning) { expressionWarning = true; diagnostics.push({ file: node.file, line: node.line, code: 'S028', level: 'warning', message: 'V3a 전이므로 대사 표정은 팩 커맨드에서 생략합니다' }); }
-        return [{ cmd: 'text', text: node.text, ...(node.speaker ? { speaker: node.speaker } : {}) }];
+        return [{ cmd: 'text', text: node.text, ...faces.get(node), ...(node.speaker ? { speaker: node.speaker } : {}) }];
       case 'choice': return [{ cmd: 'choice', prompt: node.prompt, options: node.options.map(option => ({ label: option.label, commands: commands(option.statements) })), cancel: null }];
       case 'if': return [{ cmd: 'if', cond: engineCondition(node.condition), then: commands(node.then), else: commands(node.else) }];
       case 'set': case 'unset': return [{ cmd: 'set_flag', flag: node.flag, value: node.kind === 'set' }];

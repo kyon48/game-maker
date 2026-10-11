@@ -1,3 +1,6 @@
+import { planArt } from './art';
+import { storyFaces, portraitOutputs, StoryArtError } from './faces';
+import { artGeneratedPath, artPng } from './ownership';
 import { storyVoices } from './config';
 import { readFile, writeFile, mkdir, unlink, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
@@ -8,12 +11,13 @@ import type { Diagnostic } from './ast';
 import { planFilm, checkGeneratedFilms } from './film-project';
 import { parseManifest, ownedPath, storyGeneratedPath } from './ownership';
 import type { Manifest } from './ownership';
-export const hash = (text: string): string => createHash('sha256').update(text).digest('hex');
-export interface CompileOptions { force?: boolean; forceMaps?: boolean; check?: boolean }
+export const hash = (text: string | Uint8Array): string => createHash('sha256').update(text).digest('hex');
+export const outputHash = (file: string, text: string): string => hash(artPng(file) ? Buffer.from(text, 'base64') : text);
+export interface CompileOptions { force?: boolean; forceMaps?: boolean; check?: boolean; suppressFilmWarning?: boolean }
 export interface Prepared { diagnostics: Diagnostic[]; files?: Map<string, string>; removed?: string[] }
-async function readOptional(file: string): Promise<string | undefined> { try { return await readFile(file, 'utf8'); } catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined; throw error; } }
+async function readOptional(file: string): Promise<string | undefined> { try { return /\/assets\/portraits\/.*\.png$/.test(file.split(path.sep).join('/')) ? (await readFile(file)).toString('base64') : await readFile(file, 'utf8'); } catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined; throw error; } }
 export async function prepareCompilation(packId: string, root = process.cwd(), options: CompileOptions = {}): Promise<Prepared> {
-  const input = await readStories(packId, root), diagnostics = [...input.diagnostics];
+  const input = await readStories(packId, root, options.check), diagnostics = [...input.diagnostics];
   if (diagnostics.some(d => d.level === 'error')) return { diagnostics };
   const pack = path.join(root, 'packs', packId), display = (file: string) => `packs/${packId}/${file}`;
   const report = (file: string, code: string, message: string) => diagnostics.push({ file: display(file), line: 1, code, level: 'error', message });
@@ -32,16 +36,35 @@ export async function prepareCompilation(packId: string, root = process.cwd(), o
       const file = `maps/${location.id}.tmj`, text = await readOptional(path.join(pack, file));
       if (text !== undefined) existing.set(file, text);
     }
-    const compilation = compileStories(input.stories, game, tiles, existing, options.forceMaps);
+    const compilation = compileStories(input.stories, game, tiles, existing, options.forceMaps, input.expressions ?? undefined);
     const voices = storyVoices(input.stories, input.config ?? {});
     if (voices) compilation.files.set('voices.json', jsonBytes(voices));
     diagnostics.push(...compilation.diagnostics);
     const files = new Map(compilation.files), protectedFiles = [...files.keys()].filter(file => ownedPath.test(file)).sort();
-    for (const file of Object.keys(old?.files ?? {}).filter(f => storyGeneratedPath.test(f))) {
+    for (const file of Object.keys(old?.files ?? {}).filter(f => storyGeneratedPath.test(f) || artGeneratedPath.test(f))) {
       const text = await readOptional(path.join(pack, file));
       if (text !== undefined) files.set(file, text);
     }
+    const hasArt = input.stories.some(s => s.characters.some(c => c.art)) || Object.keys(old?.files ?? {}).some(file => artGeneratedPath.test(file));
     if (options.check) {
+      if (hasArt && (input.config?.artRoot || old?.expressions)) {
+        const aliases = input.expressions;
+        if (!aliases) throw new Error('표정 별칭이 없습니다. story art 실행 필요');
+        for (const file of [...files.keys()]) if (artGeneratedPath.test(file)) files.delete(file);
+        if (diagnostics.some(d => d.code === 'S039')) {
+          const outputs = portraitOutputs(storyFaces(input.stories, aliases));
+          const portraits = JSON.parse(outputs.get('portraits.json')!) as Record<string, Record<string, string>>;
+          for (const file of Object.values(portraits).flatMap(p => Object.values(p))) {
+            const text = await readOptional(path.join(pack, file));
+            if (text === undefined || !old?.files[file] || outputHash(file, text) !== old.files[file]) report(file, 'S029', '복사된 얼굴이 없거나 소유권 해시가 다릅니다. story art 실행 필요');
+            if (text !== undefined) outputs.set(file, text);
+          }
+          for (const [file, text] of outputs) files.set(file, text);
+        } else {
+          if (!input.config?.artRoot) throw new Error('artRoot 설정이 필요합니다');
+          for (const [file, text] of await planArt(input.stories, path.resolve(pack, 'story', input.config.artRoot), aliases)) files.set(file, text);
+        }
+      }
       for (const file of Object.keys(old?.files ?? {}).filter(f => /^films\/.*\.film\.json$/.test(f)).sort()) {
         const name = file.slice(6, -10);
         for (const [generated, text] of await planFilm(packId, root, files, input.stories, name)) files.set(generated, text);
@@ -53,15 +76,16 @@ export async function prepareCompilation(packId: string, root = process.cwd(), o
       for (const file of new Set([...Object.keys(old?.files ?? {}), ...protectedFiles])) {
         const text = await readOptional(path.join(pack, file));
         if (old?.files[file] !== undefined) {
-          if (text === undefined || hash(text) !== old.files[file]) report(file, 'S025', '생성 파일이 마지막 컴파일 이후 변경/삭제되었습니다. --force로 덮어쓸 수 있습니다');
+          if (text === undefined || outputHash(file, text) !== old.files[file]) report(file, 'S025', '생성 파일이 마지막 컴파일 이후 변경/삭제되었습니다. --force로 덮어쓸 수 있습니다');
         } else if (file !== 'game.json' && text !== undefined && text !== files.get(file)) report(file, 'S025', '소유권 없는 기존 파일입니다. --force로 덮어쓸 수 있습니다');
       }
     }
     if (diagnostics.some(d => d.level === 'error')) return { diagnostics };
     const manifest: Manifest = {
-      version: 1, files: Object.fromEntries([...files.keys()].filter(f => ownedPath.test(f)).sort().map(file => [file, !options.check && old?.files[file] && storyGeneratedPath.test(file) ? old.files[file] : hash(files.get(file)!)])),
+      version: 1, ...(old?.expressions ? { expressions: old.expressions } : {}), files: Object.fromEntries([...files.keys()].filter(f => ownedPath.test(f)).sort().map(file => [file, !options.check && old?.files[file] && (storyGeneratedPath.test(file) || artGeneratedPath.test(file)) ? old.files[file] : outputHash(file, files.get(file)!)])),
       maps: Object.fromEntries([...compilation.maps].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([file, text]) => [file, !options.forceMaps && existing.has(file) && old?.maps[file] ? old.maps[file] : hash(text)])),
     };
+    if (options.check && input.expressions && hasArt) manifest.expressions = Object.fromEntries([...input.expressions].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0));
     files.set('story/.compiled.json', jsonBytes(manifest));
     if (options.check) {
       for (const [file, expected] of files) {
@@ -72,7 +96,7 @@ export async function prepareCompilation(packId: string, root = process.cwd(), o
     }
     return { diagnostics, files, removed };
   } catch (error) {
-    if (error instanceof StoryCompileError) diagnostics.push(error.diagnostic);
+    if (error instanceof StoryCompileError || error instanceof StoryArtError) diagnostics.push(error.diagnostic);
     else report('story/tiles.json', options.check ? 'S029' : 'S021', `${String(error)}${options.check ? `; npm run story -- build ${packId} 실행 필요` : ''}`);
     return { diagnostics };
   }
@@ -81,6 +105,7 @@ export async function compilePack(packId: string, root = process.cwd(), options:
   const prepared = await prepareCompilation(packId, root, options);
   if (options.check || !prepared.files || prepared.diagnostics.some(d => d.level === 'error')) return prepared.diagnostics;
   await writePrepared(packId, root, prepared);
+  if (options.suppressFilmWarning) return prepared.diagnostics;
   const manifest = parseManifest(prepared.files.get('story/.compiled.json')!);
   for (const file of Object.keys(manifest.files).filter(f => /^films\/.*\.film\.json$/.test(f)).sort()) {
     const name = file.slice(6, -10);
@@ -100,7 +125,7 @@ export async function writePrepared(packId: string, root: string, prepared: Prep
     const destination = path.join(folder, file);
     if (file === 'story/.compiled.json') continue;
     if (await readOptional(destination) === text) continue;
-    await mkdir(path.dirname(destination), { recursive: true }); await writeFile(destination, text);
+    await mkdir(path.dirname(destination), { recursive: true }); await writeFile(destination, artPng(file) ? Buffer.from(text, 'base64') : text);
   }
   // Only tracked, preflighted non-map files can be obsolete. Edited Tiled maps stay on disk.
   for (const file of prepared.removed ?? []) { try { await unlink(path.join(folder, file)); } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; } }

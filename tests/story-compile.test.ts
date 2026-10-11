@@ -48,7 +48,7 @@ it('compiles dialogue, branches, options, every command, pages and common events
   expect(common.light_room?.commands).toEqual([{ cmd: 'fade', to: 'black', frames: 30 }, { cmd: 'wait', frames: 60 }, { cmd: 'fade', to: 'clear', frames: 30 }, { cmd: 'shake' }, { cmd: 'text', text: '잠시 바람이 잦아들었다.' }]);
   expect([...result.files.keys()].some(file => /films|scenario|portrait/.test(file))).toBe(false);
   expect(JSON.stringify([...result.files.values()])).not.toMatch(/portrait|expression|narrate|filmPause|waitNarration/);
-  expect(result.diagnostics.filter(d => d.code === 'S028')).toHaveLength(1);
+  expect(result.diagnostics.filter(d => d.code === 'S028')).toHaveLength(0);
 });
 it('once inserts a persistent self flag and idle page, and combines explicit page conditions with completion', () => {
   const light = events(build().files, 'tower').find(e => e.id === 'light')!;
