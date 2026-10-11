@@ -59,7 +59,7 @@ it('loadSave hooks are followed by declaration/type/self/position normalization 
     calls++;
     return { ...state, map: 'unknown', x: -4, dir: 'bad', flags: { met: 'bad', injected: true }, vars: { n: 1.5, injected: 7 }, selfFlags: { 'map:npc:valid': true, 'map:missing:bad': true, 'map:npc:wrong': 4 } } as unknown as typeof state;
   } });
-  expect(calls).toBe(1); expect(result.state).toEqual({ ...pack.game.start, flags: pack.game.state.flags, vars: pack.game.state.vars, selfFlags: { 'map:npc:valid': true } });
+  expect(calls).toBe(1); expect(result.state).toEqual({ ...pack.game.start, flags: pack.game.state.flags, vars: pack.game.state.vars, selfFlags: { 'map:npc:valid': true }, items: {} });
   expect(result.warnings).toContain('Dropped undeclared flag: injected');
 });
 

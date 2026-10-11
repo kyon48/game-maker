@@ -18,8 +18,9 @@
             {
               "cmd": "if",
               "cond": {
-                "flag": "met_elder",
-                "is": true
+                "item": "lighthouse_key",
+                "op": ">=",
+                "value": 1
               },
               "then": [
                 {

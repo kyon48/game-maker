@@ -89,6 +89,9 @@ flowchart LR
 | `@waitNarration` | 장면에서는 나레이션 대기열 전체 완료 대기. 이벤트·공통 이벤트 안에서는 cue 위치까지 도달 후 완료 대기 |
 | `story.config.json: voices` | 목소리 키 → `{provider, voice, speed?}`. `@character … voice=키`를 표시 이름으로 연결해 voices.json 생성 |
 | `story.config.json: narrator` | 나레이션·화자 없는 대사에 사용할 목소리 키 |
+| `@item id "이름" category=item\|clue desc="설명" [icon=경로]` | 아이템 선언, 한 줄 JSON 문자열 설명 |
+| `@give id [n] [silent]` / `@take id [n]` | 아이템 획득·소모, n 기본 1, silent는 획득 알림 생략 |
+| `item:id>=1` / `items:clue>=3` | 아이템 개수 / 카테고리 합계 비교 조건 |
 | `@scene 이름 {JSON args} [-> 변수]` | 씬 커맨드. 결과 변수는 선언된 정수 변수 |
 | `@film press ok,ok,right` | 바로 앞 플러그인 씬 풀이 입력. ending은 힌트 없이 2초 표시 후 촬영 종료 |
 | `@cmd {"cmd":"show_map_name"}` | 엔진 커맨드 직접 삽입 |

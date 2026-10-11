@@ -2,11 +2,11 @@ import type { CommandContext as PublicContext, GameStateAccess, ReadonlyGameStat
 import type { CommandContext } from '../event/types';
 import type { GameState } from '../state/GameState';
 export function readonlyState(state: GameState): ReadonlyGameState {
-  return Object.freeze({ getFlag: (name: string) => state.getFlag(name), getVar: (name: string) => state.getVar(name),
+  return Object.freeze({ getItem: (name: string) => state.getItem(name), itemCount: (category: import('../../data/items').Category) => state.itemCount(category), getFlag: (name: string) => state.getFlag(name), getVar: (name: string) => state.getVar(name),
     getSelf: (map: string, event: string, name: string) => state.getSelf(map, event, name) });
 }
 export function stateAccess(state: GameState): GameStateAccess {
-  return Object.freeze({ ...readonlyState(state), setFlag: (name: string, value: boolean) => state.setFlag(name, value),
+  return Object.freeze({ ...readonlyState(state), setItem: (name: string, value: number) => state.setItem(name, value), setFlag: (name: string, value: boolean) => state.setFlag(name, value),
     setVar: (name: string, value: number) => state.setVar(name, value), setSelf: (map: string, event: string, name: string, value: boolean) => state.setSelf(map, event, name, value) });
 }
 export function publicContext(context: CommandContext): PublicContext {

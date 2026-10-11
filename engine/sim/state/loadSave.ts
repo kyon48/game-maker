@@ -5,10 +5,11 @@ import type { TileMapData } from '../../data/loader/tiled';
 import { Collision } from '../world/Collision';
 import { migrateSave, SAVE_VERSION, saveMigrations } from './saveMigrations';
 import type { SaveMigration } from './saveMigrations';
-export type PersistentState = Pick<import('../../data/saveData').SaveData, 'rngState' | 'map' | 'x' | 'y' | 'dir' | 'flags' | 'vars' | 'selfFlags'>;
+export type PersistentState = Pick<import('../../data/saveData').SaveData, 'items' | 'rngState' | 'map' | 'x' | 'y' | 'dir' | 'flags' | 'vars' | 'selfFlags'>;
 export interface SaveCandidate { data: Record<string, unknown> | null; warnings: string[]; fromGameVersion?: string }
 export interface LoadedSave { state: PersistentState | null; fromGameVersion: string; warnings: string[] }
 export interface LoadOptions {
+  items?: import('../../data/items').Items;
   version?: number; migrations?: readonly SaveMigration[];
   loadSave?: (state: PersistentState, fromGameVersion: string) => PersistentState;
 }
@@ -36,6 +37,9 @@ export function restoreSave(candidate: SaveCandidate, game: GameConfig, events: 
   for (const [name, initial] of Object.entries(game.state.vars)) vars[name] = Number.isSafeInteger(savedVars[name]) ? savedVars[name] as number : initial;
   for (const name of Object.keys(savedFlags)) if (!Object.hasOwn(game.state.flags, name)) warnings.push(`Dropped undeclared flag: ${name}`);
   for (const name of Object.keys(savedVars)) if (!Object.hasOwn(game.state.vars, name)) warnings.push(`Dropped undeclared variable: ${name}`);
+  const items: Record<string, number> = {}, savedItems = record(data.items);
+  for (const id of Object.keys(options.items ?? {})) items[id] = Number.isSafeInteger(savedItems[id]) && (savedItems[id] as number) >= 0 ? savedItems[id] as number : 0;
+  for (const id of Object.keys(savedItems)) if (!Object.hasOwn(options.items ?? {}, id)) warnings.push(`Dropped undeclared item: ${id}`);
   const selfFlags: Record<string, boolean> = {};
   for (const [key, value] of Object.entries(record(data.selfFlags))) {
     const parts = key.split(':'), [map, event, name] = parts;
@@ -47,11 +51,11 @@ export function restoreSave(candidate: SaveCandidate, game: GameConfig, events: 
     position = { map: data.map as string, x: data.x as number, y: data.y as number, dir: directions.includes(data.dir as Dir) ? data.dir as Dir : game.start.dir };
   }
   const fromGameVersion = candidate.fromGameVersion ?? (typeof data.gameVersion === 'string' ? data.gameVersion : '');
-  let state: PersistentState = { ...position, flags, vars, selfFlags, ...(data.rngState === undefined ? {} : { rngState: Number.isSafeInteger(data.rngState) && (data.rngState as number) >= 0 && (data.rngState as number) <= 0xffffffff ? data.rngState as number : 1 }) };
+  let state: PersistentState = { ...position, flags, vars, selfFlags, items, ...(data.rngState === undefined ? {} : { rngState: Number.isSafeInteger(data.rngState) && (data.rngState as number) >= 0 && (data.rngState as number) <= 0xffffffff ? data.rngState as number : 1 }) };
   if (options.loadSave) {
     const changed = options.loadSave(state, fromGameVersion);
     // Repeat steps 3–5 only; a hook must never run recursively.
-    const normalized = restoreSave({ data: { ...changed }, warnings: [], fromGameVersion }, game, events, maps);
+    const normalized = restoreSave({ data: { ...changed }, warnings: [], fromGameVersion }, game, events, maps, { items: options.items });
     state = normalized.state!; warnings.push(...normalized.warnings);
   }
   return { state, fromGameVersion, warnings };

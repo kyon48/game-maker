@@ -19,6 +19,8 @@ export function lintStories(stories: readonly Story[], options: LintOptions = {}
   const names = declarations([...characters.values()], n => n.name, '인물 표시 이름');
   for (const character of characters.values()) if (character.voice && !Object.hasOwn(options.config?.voices ?? {}, character.voice)) report(character, 'S035', `설정에 없는 목소리 키: ${character.voice}`);
   if (options.config?.narrator && !Object.hasOwn(options.config.voices ?? {}, options.config.narrator)) report(stories[0]!, 'S035', `설정에 없는 narrator 목소리 키: ${options.config.narrator}`);
+  const items = declarations(stories.flatMap(s => s.items), n => n.id, '아이템');
+  for (const item of items.values()) if (!item.name.trim()) report(item, 'S001', '아이템 이름이 비었습니다');
   const flags = declarations(stories.flatMap(s => s.flags), n => n.name, '플래그');
   const variables = declarations(stories.flatMap(s => s.variables), n => n.name, '변수');
   const locations = declarations(stories.flatMap(s => s.locations), n => n.id, '장소');
@@ -85,11 +87,17 @@ export function lintStories(stories: readonly Story[], options: LintOptions = {}
   const condition = (value: Condition, source: Source): void => {
     if (value.kind === 'flag') { if (!flags.has(value.name)) report(source, 'S002', `미선언 조건 플래그: ${value.name}`); }
     else if (value.kind === 'variable') { if (!variables.has(value.name)) report(source, 'S003', `미선언 조건 변수: ${value.name}`); }
+    else if (value.kind === 'item') { if (!items.has(value.name)) report(source, 'S043', `미선언 아이템: ${value.name}`); }
+    else if (value.kind === 'itemCount') { if (!['item','clue'].includes(value.name)) report(source, 'S044', '모르는 아이템 카테고리'); }
     else for (const child of value.conditions) condition(child, source);
   };
   const textVariables = (text: string, source: Source, controls: boolean) => {
     try {
-      for (const token of parseText(text, controls)) if (token.kind === 'var' && !variables.has(token.value)) report(source, 'S003', `미선언 대사 변수: ${token.value}`);
+      for (const token of parseText(text, controls)) {
+        if (token.kind === 'var' && !variables.has(token.value)) report(source, 'S003', `미선언 대사 변수: ${token.value}`);
+        if (token.kind === 'item' && !items.has(token.value)) report(source, 'S043', `미선언 대사 아이템: ${token.value}`);
+        if (token.kind === 'itemCount' && !['item','clue'].includes(token.value)) report(source, 'S044', '모르는 대사 아이템 카테고리');
+      }
     } catch (error) { if (!(error instanceof TextSyntaxError)) throw error; /* Engine validate owns syntax and plugin registrations. */ }
   };
   const active = new Set<string>(), results = new Map<string, ReadonlySet<string>>();
@@ -110,6 +118,7 @@ export function lintStories(stories: readonly Story[], options: LintOptions = {}
           if (options.config?.voices && !options.config.narrator) report(node, 'S035', '나레이션에 필요한 narrator 목소리 키가 설정되지 않았습니다');
           textVariables(node.text, node, true); if ([...node.text].length > 90) report(node, 'S014', '나레이션이 90자를 넘습니다', 'warning'); break;
         case 'set': case 'unset': if (!flags.has(node.flag)) report(node, 'S002', `미선언 플래그: ${node.flag}`); break;
+        case 'give': case 'take': if (!items.has(node.item)) report(node, 'S043', `미선언 아이템: ${node.item}`); break;
         case 'scene': if (node.resultVar && !variables.has(node.resultVar)) report(node, 'S003', `미선언 변수: ${node.resultVar}`); break;
         case 'add': case 'sub': if (!variables.has(node.variable)) report(node, 'S003', `미선언 변수: ${node.variable}`); break;
         case 'if': {

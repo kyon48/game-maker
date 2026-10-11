@@ -1,3 +1,4 @@
+import { MenuArgs } from '../../data/scenes';
 import type { SceneDefinition } from '@engine/api';
 import type { RuntimeScene } from '../scenes/SceneStack';
 import { EndingArgs } from '../../data/scenes';
@@ -87,11 +88,11 @@ export class PluginRuntime {
   mapLeave(ctx: HookContext): void { this.emit('mapLeave', ctx, ctx.mapId); }
   tick(ctx: HookContext): void { this.emit('tick', ctx); }
   loadSave(state: PersistentState, data: Readonly<Record<string, unknown>>, fromGameVersion: string): PersistentState {
-    const save: SaveData = { ...state, saveVersion: 1, packId: String(data.packId ?? ''), gameVersion: String(data.gameVersion ?? ''), engineVersion: String(data.engineVersion ?? ''), savedAt: String(data.savedAt ?? '') };
+    const save: SaveData = { ...state, saveVersion: 2, packId: String(data.packId ?? ''), gameVersion: String(data.gameVersion ?? ''), engineVersion: String(data.engineVersion ?? ''), savedAt: String(data.savedAt ?? '') };
     this.emit('loadSave', save, fromGameVersion);
-    return { map: save.map, x: save.x, y: save.y, dir: save.dir, flags: save.flags, vars: save.vars, selfFlags: save.selfFlags, rngState: save.rngState };
+    return { map: save.map, x: save.x, y: save.y, dir: save.dir, flags: save.flags, vars: save.vars, selfFlags: save.selfFlags, items: save.items, rngState: save.rngState };
   }
   get validationOptions() {
-    return { scenes: new Map([['ending', EndingArgs], ...[...this.scenes].map(([name, definition]) => [name, definition.args] as const)]), commands: this.commands.catalog, conditions: new Map([...this.conditions].map(([name, definition]) => [name, definition.args])), text: new Map([...this.text].map(([name, definition]) => [name, definition.args])), pluginDiagnostics: this.diagnostics };
+    return { scenes: new Map([['ending', EndingArgs], ['menu', MenuArgs], ...[...this.scenes].map(([name, definition]) => [name, definition.args] as const)]), commands: this.commands.catalog, conditions: new Map([...this.conditions].map(([name, definition]) => [name, definition.args])), text: new Map([...this.text].map(([name, definition]) => [name, definition.args])), pluginDiagnostics: this.diagnostics };
   }
 }

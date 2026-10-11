@@ -18,14 +18,20 @@ export function parseCondition(text: string): Condition {
       }
       return { kind: name, conditions };
     }
+    let itemKind: 'item' | 'itemCount' | undefined, itemName = name;
+    if ((name === 'item' || name === 'items') && consume(':')) {
+      const id = /^[a-z][a-z0-9_]*/.exec(text.slice(cursor)); if (!id) throw new Error('아이템/카테고리 이름이 필요합니다'); cursor += id[0].length;
+      itemKind = name === 'item' ? 'item' : 'itemCount'; itemName = id[0];
+    }
     ws(); const op = /^(>=|<=|==|!=|>|<)/.exec(text.slice(cursor));
     if (op) {
       if (!enabled) throw new Error('!는 플래그에만 사용합니다');
       cursor += op[0].length; ws(); const number = /^-?\d+/.exec(text.slice(cursor));
       if (!number || !Number.isSafeInteger(Number(number[0]))) throw new Error('비교 값은 안전 정수여야 합니다');
       cursor += number[0].length;
-      return { kind: 'variable', name, op: op[0] as Extract<Condition, { kind: 'variable' }>['op'], value: Number(number[0]) };
+      return { kind: itemKind ?? 'variable', name: itemName, op: op[0] as Extract<Condition, { kind: 'variable' }>['op'], value: Number(number[0]) };
     }
+    if (itemKind) throw new Error('아이템 조건에는 비교 연산이 필요합니다');
     return { kind: 'flag', name, enabled };
   };
   const result = parse(); ws();

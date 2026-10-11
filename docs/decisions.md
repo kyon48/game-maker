@@ -183,3 +183,12 @@
 - 2026-10-12 / G3 / 씬 화면 확인에 scenario/film expect:scene을 추가, 엔진 0.12.0·API_VERSION 1 유지 / 기존 대사 창 검사와 구별해 헤드리스에서도 실제 결과 화면 진입을 확인하는 하위 호환 확장.
 - 2026-10-12 / G3 / SceneContext에 읽기 전용 textMeasurer·lineHeight를 제공하고 ending 본문은 기존 wrapText로 줄바꿈 / 브라우저와 헤드리스 측정 포트 원칙을 유지하며 긴 결말 문장이 창 밖으로 잘리지 않게 함.
 - 2026-10-12 / G3 / DrawList image는 frame 생략 시 원본 크기, 지정 시 game.tileSize 정사각형의 가로 타일 인덱스로 그림 / 별도 이미지 프레임 규격이 없는 초기 씬 API에서 기존 타일 좌표계를 재사용함.
+
+- 2026-10-12 / G2 / 획득 알림은 labels.itemGet의 {name}·{count}, {{·}} 이스케이프 템플릿이며 치환한 아이템 이름은 G1 제어문자로 재해석하지 않음 / 일반 text 메시지·TTS·자막 경로를 유지하고 팩 문구를 엔진에 넣지 않음.
+- 2026-10-12 / G2 / 메뉴 라벨은 menuItems·menuClues·menuClose·menuEmpty, items.json이 있는 팩은 필수; 라벨 없는 기존 팩은 cancel 무동작 / 선택 파일 추가의 하위 호환과 문구 데이터 원칙 유지. give_item은 알림 대기 가능성 때문에 parallel 금지, take_item은 허용.
+- 2026-10-12 / G2 / @item은 한 줄 desc="설명" 필수 형식, @give id [n] [silent]·@take id [n], item:id·items:category 비교 문법 / 들여쓴 대사·설명 블록을 혼동하지 않고 기존 AST·소유권 구조를 재사용함.
+- 2026-10-12 / G2 / manor를 0.2.0으로 올리고 evidence 플러그인은 0.1.0 세이브의 examined 셀프 플래그를 아이템으로 복원하는 loadSave 훅만 유지 / 구 단서 플래그 제거 후 재조사 불가로 진행이 막히지 않게 함. x_clue_count·x_enough_clues 등록은 제거하며 새 세이브의 의도적 소모는 복원하지 않음.
+- 2026-10-12 / G2 / 아이템은 초기 state.items·scenario/film state.items에서 시작 개수를 지정할 수 있으며 기본/로드 누락값은 0, 메뉴는 ID 순서·좌우 탭·상하 목록·확인 설명·취소 복귀 / 선언 파일과 저장 상태를 분리하고 헤드리스 시작 조건·결정론적 메뉴 입력을 지원함.
+- 2026-10-12 / G2 / lantern 후속 촌장 페이지는 열쇠가 0이면 silent로 다시 지급 / 아이템이 없던 구 세이브나 열쇠를 잃은 상태에서도 등대를 켤 수 있게 함. 기존 대사·TTS 매니페스트는 재사용.
+- 2026-10-12 / G2 / 엔진 0.13.0·saveVersion 2, formatVersion 1·API_VERSION 1 유지 / 선택 items.json·조건·커맨드·API 추가는 하위 호환이며 세이브는 1→2 마이그레이션으로 items: {}를 추가함.
+- 2026-10-12 / G2 / GameSession 최초 생성 시 전달한 selfFlags를 유지하도록 보완 / v1 이어하기 재현 테스트에서 선택 옵션이 undefined 인자로 덮여 조사 기록이 사라지는 기존 문제를 확인함. reload는 복원한 셀프 플래그를 우선함.

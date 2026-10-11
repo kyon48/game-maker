@@ -61,6 +61,17 @@
       "additionalProperties": false,
       "type": "object",
       "properties": {
+        "items": {
+          "additionalProperties": false,
+          "type": "object",
+          "patternProperties": {
+            "^[a-z][a-z0-9_]*$": {
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            }
+          }
+        },
         "flags": {
           "additionalProperties": false,
           "type": "object",
@@ -346,6 +357,110 @@
                         "additionalProperties": false,
                         "type": "object",
                         "required": [
+                          "item",
+                          "op",
+                          "value"
+                        ],
+                        "properties": {
+                          "item": {
+                            "pattern": "^[a-z][a-z0-9_]*$",
+                            "type": "string"
+                          },
+                          "op": {
+                            "anyOf": [
+                              {
+                                "const": "==",
+                                "type": "string"
+                              },
+                              {
+                                "const": "!=",
+                                "type": "string"
+                              },
+                              {
+                                "const": ">",
+                                "type": "string"
+                              },
+                              {
+                                "const": ">=",
+                                "type": "string"
+                              },
+                              {
+                                "const": "<",
+                                "type": "string"
+                              },
+                              {
+                                "const": "<=",
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "value": {
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991,
+                            "type": "integer"
+                          }
+                        }
+                      },
+                      {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "itemCount",
+                          "op",
+                          "value"
+                        ],
+                        "properties": {
+                          "itemCount": {
+                            "anyOf": [
+                              {
+                                "const": "item",
+                                "type": "string"
+                              },
+                              {
+                                "const": "clue",
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "op": {
+                            "anyOf": [
+                              {
+                                "const": "==",
+                                "type": "string"
+                              },
+                              {
+                                "const": "!=",
+                                "type": "string"
+                              },
+                              {
+                                "const": ">",
+                                "type": "string"
+                              },
+                              {
+                                "const": ">=",
+                                "type": "string"
+                              },
+                              {
+                                "const": "<",
+                                "type": "string"
+                              },
+                              {
+                                "const": "<=",
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "value": {
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991,
+                            "type": "integer"
+                          }
+                        }
+                      },
+                      {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
                           "self",
                           "is"
                         ],
@@ -506,6 +621,110 @@
                           "var": {
                             "pattern": "^[a-z][a-z0-9_]*$",
                             "type": "string"
+                          },
+                          "op": {
+                            "anyOf": [
+                              {
+                                "const": "==",
+                                "type": "string"
+                              },
+                              {
+                                "const": "!=",
+                                "type": "string"
+                              },
+                              {
+                                "const": ">",
+                                "type": "string"
+                              },
+                              {
+                                "const": ">=",
+                                "type": "string"
+                              },
+                              {
+                                "const": "<",
+                                "type": "string"
+                              },
+                              {
+                                "const": "<=",
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "value": {
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991,
+                            "type": "integer"
+                          }
+                        }
+                      },
+                      {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "item",
+                          "op",
+                          "value"
+                        ],
+                        "properties": {
+                          "item": {
+                            "pattern": "^[a-z][a-z0-9_]*$",
+                            "type": "string"
+                          },
+                          "op": {
+                            "anyOf": [
+                              {
+                                "const": "==",
+                                "type": "string"
+                              },
+                              {
+                                "const": "!=",
+                                "type": "string"
+                              },
+                              {
+                                "const": ">",
+                                "type": "string"
+                              },
+                              {
+                                "const": ">=",
+                                "type": "string"
+                              },
+                              {
+                                "const": "<",
+                                "type": "string"
+                              },
+                              {
+                                "const": "<=",
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "value": {
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991,
+                            "type": "integer"
+                          }
+                        }
+                      },
+                      {
+                        "additionalProperties": false,
+                        "type": "object",
+                        "required": [
+                          "itemCount",
+                          "op",
+                          "value"
+                        ],
+                        "properties": {
+                          "itemCount": {
+                            "anyOf": [
+                              {
+                                "const": "item",
+                                "type": "string"
+                              },
+                              {
+                                "const": "clue",
+                                "type": "string"
+                              }
+                            ]
                           },
                           "op": {
                             "anyOf": [
@@ -716,6 +935,55 @@
   "$defs": {
     "Command": {
       "anyOf": [
+        {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "item",
+            "cmd"
+          ],
+          "properties": {
+            "item": {
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "type": "string"
+            },
+            "count": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            },
+            "notify": {
+              "type": "boolean"
+            },
+            "cmd": {
+              "const": "give_item",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "item",
+            "cmd"
+          ],
+          "properties": {
+            "item": {
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "type": "string"
+            },
+            "count": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            },
+            "cmd": {
+              "const": "take_item",
+              "type": "string"
+            }
+          }
+        },
         {
           "additionalProperties": false,
           "type": "object",
@@ -1275,6 +1543,110 @@
             "var": {
               "pattern": "^[a-z][a-z0-9_]*$",
               "type": "string"
+            },
+            "op": {
+              "anyOf": [
+                {
+                  "const": "==",
+                  "type": "string"
+                },
+                {
+                  "const": "!=",
+                  "type": "string"
+                },
+                {
+                  "const": ">",
+                  "type": "string"
+                },
+                {
+                  "const": ">=",
+                  "type": "string"
+                },
+                {
+                  "const": "<",
+                  "type": "string"
+                },
+                {
+                  "const": "<=",
+                  "type": "string"
+                }
+              ]
+            },
+            "value": {
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            }
+          }
+        },
+        {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "item",
+            "op",
+            "value"
+          ],
+          "properties": {
+            "item": {
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "type": "string"
+            },
+            "op": {
+              "anyOf": [
+                {
+                  "const": "==",
+                  "type": "string"
+                },
+                {
+                  "const": "!=",
+                  "type": "string"
+                },
+                {
+                  "const": ">",
+                  "type": "string"
+                },
+                {
+                  "const": ">=",
+                  "type": "string"
+                },
+                {
+                  "const": "<",
+                  "type": "string"
+                },
+                {
+                  "const": "<=",
+                  "type": "string"
+                }
+              ]
+            },
+            "value": {
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            }
+          }
+        },
+        {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "itemCount",
+            "op",
+            "value"
+          ],
+          "properties": {
+            "itemCount": {
+              "anyOf": [
+                {
+                  "const": "item",
+                  "type": "string"
+                },
+                {
+                  "const": "clue",
+                  "type": "string"
+                }
+              ]
             },
             "op": {
               "anyOf": [

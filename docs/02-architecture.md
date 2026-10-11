@@ -20,7 +20,7 @@
 | P5 | 잘못된 팩은 실행 전에 거부 | 검증기(§10)가 빌드와 개발 서버 로딩에서 오류를 파일 경로 + JSON 포인터로 보고 |
 | P6 | main은 항상 모든 팩이 통과 | 엔진 변경은 모든 팩의 검증과 시나리오 테스트가 통과해야 머지(§13) |
 
-**MVP 밖**: 전투, 인벤토리, 메뉴 화면, 사운드, 다국어, 터치 입력, 멀티플레이, 애니메이션 타일, 타일 뒤집기, 텍스트 제어문자·변수 치환, 팩 간 공유 라이브러리(§14).
+**MVP 밖**: 전투, 아이템 사용, 사운드, 다국어, 터치 입력, 멀티플레이, 애니메이션 타일, 타일 뒤집기, 텍스트 제어문자·변수 치환, 팩 간 공유 라이브러리(§14).
 
 ---
 
@@ -330,7 +330,9 @@ interface PackSource {
             { "cmd": "set_var", "var": "gold", "op": "add", "value": 10 },
             { "cmd": "set_self_flag", "name": "opened", "value": true }
           ] },
-        { "when": { "self": "opened", "is": true }, "character": "chest_open", "trigger": "none" }
+        { "when": { "self": "opened", "is": true }
+{ "item": "key", "op": ">=", "value": 1 }
+{ "itemCount": "clue", "op": ">=", "value": 3 }, "character": "chest_open", "trigger": "none" }
       ]
     },
     {
@@ -400,6 +402,8 @@ interface PackSource {
 
 | `cmd` | 필드 (기본값) | 동작 | 대기 | parallel |
 |---|---|---|---|---|
+| `give_item` | `item`, `count?`(1), `notify?`(true) | 아이템 증가·labels.itemGet 알림 | 알림까지 | 금지 |
+| `take_item` | `item`, `count?`(1) | 아이템 감소, 모자라면 0 | – | 허용 |
 | `scene` | `name`, `args?`(`{}`), `resultVar?` | 씬 스택에 화면을 열고 정수 결과를 변수에 저장(§8.4) | 씬 종료까지 | 금지 |
 | `text` | `text`, `speaker?`, `portrait?`, `expression?` | 메시지 창 표시(§8.1) | 창이 닫힐 때까지 | 금지 |
 | `choice` | `prompt?`, `options[{label, when?, commands}]`(1~6개), `cancel?`(null) | 선택지 표시(§8.2), 고른 옵션의 `commands` 실행. `when`이 거짓인 옵션은 **숨김**. `cancel`은 cancel 키를 눌렀을 때 선택할 옵션 인덱스(원래 배열 기준). null이면 cancel 키 무시 | 선택 + 하위 실행 끝까지 | 금지 |
@@ -561,9 +565,17 @@ type CommandHandler<A> = (args: A, ctx: CommandContext) => CommandGen | void;
 
 SceneContext는 state(GameStateAccess), showText(request), rng(), openScene(name,args?), 읽기 전용 screen·labels·textMeasurer·lineHeight를 제공한다. 내장 ending은 같은 측정 포트로 본문을 창 폭 안에 줄바꿈한다. showText는 창을 열고 UI가 닫힐 때까지 씬 update를 보류한다. 창을 닫는 입력은 씬에 재사용하지 않는다. openScene은 자식 씬을 쌓고 done/value 핸들을 돌려준다. 부모는 자식 종료 뒤 다시 진행한다.
 
-난수는 seed 1의 uint32 LCG(`state = 1664525*state + 1013904223 mod 2^32`)이고 반환값은 state/2^32다. 선택 SaveData.rngState에 보존하고 로드 시 uint32가 아니면 1, 구 세이브에 없으면 초기 seed 1을 쓴다. 씬 상태는 저장하지 않으며 씬 중 save는 오류다. formatVersion·saveVersion은 1을 유지한다.
+난수는 seed 1의 uint32 LCG(`state = 1664525*state + 1013904223 mod 2^32`)이고 반환값은 state/2^32다. 선택 SaveData.rngState에 보존하고 로드 시 uint32가 아니면 1, 구 세이브에 없으면 초기 seed 1을 쓴다. 씬 상태는 저장하지 않으며 씬 중 save는 오류다. formatVersion은 1이며 G2 세이브는 saveVersion 2다.
 
 내장 ending args는 `{title, lines: string[], image?}`다. 확인 키를 누르면 labels.newGame/continue를 표시하고 방향키로 선택, 다시 확인하면 0/1로 닫힌다. 일반 플레이의 platform이 새 게임/마지막 세이브를 복원하고, 세이브가 없으면 새 게임을 만든다. 헤드리스·녹화는 결과만 남기고 재시작하지 않는다.
+
+### 8.5 아이템·내장 메뉴 (G2)
+
+선택 파일 items.json은 `{id: {name, description, icon?, category: "item"|"clue"}}`다. 이름은 공백만일 수 없고 icon은 팩 내부 이미지 경로(V4)다. count는 0 이상의 안전 정수, give/take의 count는 1 이상의 안전 정수다. 초기 상태·시나리오/film state의 선택 items 레코드로 시작 개수를 줄 수 있고 생략 시 0이다. 상태 변경 시 페이지 조건을 다시 평가한다. GameStateAccess는 getItem/setItem/itemCount를 제공한다. API_VERSION=1, formatVersion=1 유지.
+
+G1 텍스트의 {item:id}·{itemCount:category}는 메시지를 열 때 고정된 개수로 치환하며 TTS 평문과 같은 경로다. choice prompt·label·speaker에도 기존 var와 같이 쓸 수 있다. itemGet은 {name}·{count} 전용 템플릿, {{·}}는 중괄호 이스케이프다. 삽입한 이름을 G1 제어문자로 다시 해석하지 않는다. 알림은 화자 없는 일반 text로 narrator 음성·자막 경로를 따른다.
+
+내장 menu args는 빈 객체다. 필드 cancel은 메인/UI/씬/전환/대기 트리거가 없을 때만 연다. items.json이 있는 팩은 labels.menuItems/menuClues/menuClose/menuEmpty가 필수이고, 없는 기존 팩은 이 라벨이 모두 있을 때만 메뉴가 활성화된다. 좌우 탭(아이템/단서/닫기), 상하 목록, 확인 설명(+icon), 설명에서 확인/취소는 목록, 목록 취소·닫기 탭 확인은 종료(결과 0)다. 항목은 ID 순서, 개수 0은 숨기며 긴 목록은 페이지를 나눈다. 메뉴는 G3의 맵 정지·스냅샷·DrawList·저장 불가 규칙을 그대로 사용한다. item 사용은 범위 밖이다.
 
 ## 9. 플러그인 API v1
 
@@ -633,7 +645,7 @@ export interface EngineApi {
 }
 
 export interface CommandContext {
-  state: GameStateAccess;                 // get/setFlag, get/setVar, get/setSelf (선언 안 된 키는 throw)
+  state: GameStateAccess;                 // get/setItem, itemCount, get/setFlag, get/setVar, get/setSelf (선언 안 된 키는 throw)
   thisEvent: { mapId: string; id: string } | null;
   player: { readonly mapId: string; readonly x: number; readonly y: number; readonly dir: Dir };
   waitFrames(n: number): Wait;
@@ -698,7 +710,8 @@ export interface CommandContext {
 
 ```ts
 interface SaveData {
-  saveVersion: 1;
+  saveVersion: 2;
+  items: Record<string, number>;
   rngState?: number; // G3: uint32 시드 상태, 구 세이브는 1
   packId: string;
   gameVersion: string;
@@ -718,7 +731,7 @@ interface SaveData {
 
 1. JSON 파싱에 실패했거나 `packId`가 다르면 → 세이브 없음으로 취급한다.
 2. `saveVersion`이 현재보다 크면 → 세이브 없음으로 취급한다(경고 로그). 작으면 `engine/sim/state/saveMigrations`를 순서대로 적용한다.
-3. 플래그와 변수: `game.json.state`에 **선언된 키만** 가져온다. 세이브에 값이 있고 타입이 맞으면 그 값을, 아니면 초기값을 쓴다. 세이브에만 있는 키는 버리고 경고 로그를 남긴다.
+3. 아이템은 items.json에 선언된 ID만 복원하고 음수가 아닌 안전 정수만 유지한다(없는/잘못된 값은 0). 미선언 키는 버리고 경고한다. G3 rngState는 그대로 보존한다. v1→v2 마이그레이션은 items: {}를 추가한다. 플래그와 변수: `game.json.state`에 **선언된 키만** 가져온다. 세이브에 값이 있고 타입이 맞으면 그 값을, 아니면 초기값을 쓴다. 세이브에만 있는 키는 버리고 경고 로그를 남긴다.
 4. 셀프 플래그: 맵 ID가 `maps`에 있고 이벤트 ID가 그 맵에 있는 키만 유지한다.
 5. 위치: 맵이 `maps`에 없거나, 좌표가 범위 밖이거나 `collision`이면 `game.start`를 쓴다.
 6. plugin `loadSave` 훅을 호출한다(`fromGameVersion` = 세이브의 `gameVersion`).

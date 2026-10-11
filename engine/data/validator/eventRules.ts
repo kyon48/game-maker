@@ -1,3 +1,5 @@
+import { menuLabelKeys } from '../items';
+import { MenuArgs } from '../scenes';
 import { EndingArgs } from '../scenes';
 import { textRules } from './textRules';
 import type { TSchema } from '@sinclair/typebox';
@@ -20,6 +22,7 @@ export async function eventRules(context: ValidationContext, basics: PackBasics,
     if (!check(ConditionSchema, value, file, pointer)) return;
     if ('flag' in value) { usedFlags.add(value.flag); if (!Object.hasOwn(game!.state.flags, value.flag)) report('V3', file, pointer + '/flag', 'Undeclared flag'); }
     else if ('var' in value) { usedVars.add(value.var); if (!Object.hasOwn(game!.state.vars, value.var)) report('V3', file, pointer + '/var', 'Undeclared variable'); }
+    else if ('item' in value) { if (!Object.hasOwn(basics.items ?? {}, value.item)) report('V3', file, pointer + '/item', 'Undeclared item'); }
     else if ('self' in value && !scoped) report('V3', file, pointer + '/self', 'Self requires an event context');
     else if ('all' in value || 'any' in value) {
       const key = 'all' in value ? 'all' : 'any', children = 'all' in value ? value.all : value.any;
@@ -43,11 +46,16 @@ export async function eventRules(context: ValidationContext, basics: PackBasics,
       });
       if (!check(definition.args, args, file, p)) return;
       if (command.cmd === 'scene') {
-        const schema = options.scenes?.get(command.name as string) ?? (command.name === 'ending' ? EndingArgs : undefined);
+        const schema = options.scenes?.get(command.name as string) ?? (command.name === 'ending' ? EndingArgs : command.name === 'menu' ? MenuArgs : undefined);
         if (!schema) report('V1', file, p + '/name', 'Unknown scene');
         else check(schema, command.args ?? {}, file, p + '/args');
         if (command.resultVar !== undefined) { const name = command.resultVar as string; usedVars.add(name); if (!Object.hasOwn(game.state.vars, name)) report('V3', file, p + '/resultVar', 'Undeclared variable'); }
         if (command.name === 'ending' && typeof (command.args as Record<string, unknown>)?.image === 'string') sceneAssets.push({ file, pointer: p + '/args/image', path: (command.args as { image: string }).image });
+      }
+      if (command.cmd === 'scene' && command.name === 'menu') for (const key of menuLabelKeys) if (!game.labels[key]) report('V3', 'game.json', '/labels/' + key, 'Missing menu label');
+      if (command.cmd === 'give_item' || command.cmd === 'take_item') {
+        if (!Object.hasOwn(basics.items ?? {}, command.item as string)) report('V3', file, p + '/item', 'Undeclared item');
+        if (command.cmd === 'give_item' && command.notify !== false && !game.labels.itemGet) report('V3', 'game.json', '/labels/itemGet', 'Missing itemGet label');
       }
       if (command.cmd === 'text') {
         if ((command.portrait === undefined) !== (command.expression === undefined)) report('V1', file, p, 'portrait and expression must be supplied together');

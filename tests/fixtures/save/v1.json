@@ -1,0 +1,15 @@
+{
+  "saveVersion": 1,
+  "packId": "base",
+  "gameVersion": "0.0.9",
+  "engineVersion": "0.12.0",
+  "savedAt": "2026-10-11T00:00:00.000Z",
+  "map": "map",
+  "x": 3,
+  "y": 3,
+  "dir": "left",
+  "flags": { "met": true },
+  "vars": { "n": 8 },
+  "selfFlags": { "map:npc:opened": true },
+  "rngState": 12345
+}

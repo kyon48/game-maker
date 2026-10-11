@@ -40,6 +40,7 @@ export async function filmRules(context: ValidationContext, basics: PackBasics, 
     checks.arrival(map, x, y, file, pointer);
   };
   function condition(e: Condition | FilmExpect, file: string, pointer: string): void {
+    if ('item' in e && !Object.hasOwn(basics.items ?? {}, e.item)) report('V3', file, pointer + '/item', 'Undeclared film item');
     if ('flag' in e && !Object.hasOwn(game.state.flags, e.flag)) report('V3', file, pointer + '/flag', 'Undeclared film flag');
     if ('var' in e && !Object.hasOwn(game.state.vars, e.var)) report('V3', file, pointer + '/var', 'Undeclared film variable');
     if ('all' in e || 'any' in e) { const key = 'all' in e ? 'all' : 'any'; const children = 'all' in e ? e.all : e.any; children.forEach((child, i) => condition(child, file, `${pointer}/${key}/${i}`)); }
@@ -63,6 +64,7 @@ export async function filmRules(context: ValidationContext, basics: PackBasics, 
     for (const kind of ['flags', 'vars'] as const) for (const key of Object.keys(film.state?.[kind] ?? {})) {
       if (!Object.hasOwn(game.state[kind], key)) report('V3', file, `/state/${kind}/${escapePointer(key)}`, 'Undeclared film state key');
     }
+    for (const key of Object.keys(film.state?.items ?? {})) if (!Object.hasOwn(basics.items ?? {}, key)) report('V3', file, `/state/items/${escapePointer(key)}`, 'Undeclared film item');
     let possible = new Set([start.map]); const chapters = new Set<string>();
     for (const [i, step] of film.steps.entries()) {
       const p = `/steps/${i}`;
@@ -81,7 +83,7 @@ export async function filmRules(context: ValidationContext, basics: PackBasics, 
       if ('chapter' in step) { if (chapters.has(step.chapter)) report('V9', file, p + '/chapter', 'Duplicate film chapter'); chapters.add(step.chapter); }
       if ('expectSave' in step) condition(step.expectSave, file, p + '/expectSave');
       if ('reload' in step) possible = new Set(game.maps);
-      if ('expect' in step && 'scene' in step.expect && step.expect.scene !== 'ending' && !options.scenes?.has(step.expect.scene)) report('V3', file, p + '/expect/scene', 'Unknown scene');
+      if ('expect' in step && 'scene' in step.expect && !['ending', 'menu'].includes(step.expect.scene) && !options.scenes?.has(step.expect.scene)) report('V3', file, p + '/expect/scene', 'Unknown scene');
       if ('expect' in step) { condition(step.expect, file, p + '/expect'); if ('map' in step.expect && !('self' in step.expect)) { possible = new Set([step.expect.map]); continue; } }
       if ('walkTo' in step) {
         const target = step.walkTo;

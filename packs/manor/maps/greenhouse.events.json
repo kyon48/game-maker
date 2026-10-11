@@ -155,9 +155,9 @@
                   "label": "수첩에 기록한다",
                   "commands": [
                     {
-                      "cmd": "set_flag",
-                      "flag": "clue_receipt",
-                      "value": true
+                      "cmd": "give_item",
+                      "item": "clue_receipt",
+                      "notify": false
                     },
                     {
                       "cmd": "set_self_flag",

@@ -1,0 +1,53 @@
+{
+  "name": "수첩 메뉴에서 시계 단서 열람",
+  "start": {
+    "map": "hall",
+    "x": 18,
+    "y": 18,
+    "dir": "up"
+  },
+  "state": {
+    "flags": {
+      "introduced": true
+    },
+    "items": {
+      "clue_clock": 1
+    }
+  },
+  "steps": [
+    {
+      "chapter": "단서 수첩"
+    },
+    {
+      "press": "cancel"
+    },
+    {
+      "waitFor": "scene"
+    },
+    {
+      "pause": 0.3
+    },
+    {
+      "press": "right"
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "pause": 0.3
+    },
+    {
+      "press": "cancel"
+    },
+    {
+      "press": "cancel"
+    },
+    {
+      "expect": {
+        "item": "clue_clock",
+        "op": "==",
+        "value": 1
+      }
+    }
+  ]
+}

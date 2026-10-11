@@ -2,7 +2,7 @@
   "$schema": "../../schemas/game.schema.json",
   "id": "manor",
   "title": "빗소리 저택: 봉인된 약속",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "formatVersion": 1,
   "screen": {
     "width": 480,
@@ -28,7 +28,12 @@
   ],
   "labels": {
     "continue": "조사 이어하기",
-    "newGame": "새 조사 시작"
+    "newGame": "새 조사 시작",
+    "itemGet": "{name}을(를) 얻었다.",
+    "menuItems": "아이템",
+    "menuClues": "단서",
+    "menuClose": "닫기",
+    "menuEmpty": "아직 기록이 없다."
   },
   "state": {
     "flags": {
@@ -41,11 +46,6 @@
       "ending_truth": false,
       "ending_promise": false,
       "ending_accusation": false,
-      "clue_clock": false,
-      "clue_seal": false,
-      "clue_letter": false,
-      "clue_ledger": false,
-      "clue_receipt": false,
       "puzzle_solved": false
     },
     "vars": {

@@ -12,7 +12,12 @@
   "plugins": [],
   "labels": {
     "continue": "이어하기",
-    "newGame": "처음부터"
+    "newGame": "처음부터",
+    "itemGet": "{name}을(를) 얻었다.",
+    "menuItems": "아이템",
+    "menuClues": "단서",
+    "menuClose": "닫기",
+    "menuEmpty": "아직 기록이 없다."
   },
   "state": {
     "flags": {

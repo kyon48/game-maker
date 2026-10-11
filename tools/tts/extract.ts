@@ -18,7 +18,7 @@ export function collectTexts(pack: ValidatedPack): { text: string; speaker?: str
   return found;
 }
 export function staticUtterances(pack: ValidatedPack) {
-  return collectTexts(pack).filter(m => ![m.text, m.speaker ?? ''].some(text => parseText(text).some(t => t.kind === 'var' || t.kind === 'plugin'))).map(m => ({ plainText: plainText(m.text, { variable: () => '', plugin: () => '' }), speaker: m.speaker }));
+  return collectTexts(pack).filter(m => ![m.text, m.speaker ?? ''].some(text => parseText(text).some(t => ['var', 'plugin', 'item', 'itemCount'].includes(t.kind)))).map(m => ({ plainText: plainText(m.text, { variable: () => '', plugin: () => '' }), speaker: m.speaker }));
 }
 export async function extractFilm(pack: ValidatedPack, film: Film, plugins: PluginRuntime, warn: (text: string) => void = console.warn) {
   const extraction: Film = { ...film, steps: film.steps.map(s => 'advanceText' in s && s.advanceText === 'voice' ? { ...s, advanceText: 'auto' } : s) };

@@ -1,3 +1,4 @@
+import { menu } from './menu';
 import { Value } from '@sinclair/typebox/value';
 import type { SceneContext, SceneDefinition, InputFrame } from '@engine/api';
 import { DrawListSchema } from '../../data/scenes';
@@ -7,7 +8,7 @@ export type RuntimeScene = SceneDefinition<unknown, unknown>;
 export interface SceneSnapshot { name: string; state: unknown; draw: DrawList }
 export class SceneStack {
   private readonly stack: { name: string; definition: RuntimeScene; state: unknown; result: { done: boolean; value?: number } }[] = [];
-  readonly definitions = new Map<string, RuntimeScene>([['ending', ending as RuntimeScene]]);
+  readonly definitions = new Map<string, RuntimeScene>([['ending', ending as RuntimeScene], ['menu', menu as RuntimeScene]]);
   constructor(private readonly context: () => SceneContext, private readonly images?: ReadonlySet<string>, private readonly completed?: (name: string, result: number) => void) {}
   get opened(): boolean { return this.stack.length > 0; }
   open(name: string, args: unknown = {}): { done: boolean; value?: number } {

@@ -19,10 +19,10 @@ export class GameSession {
     const data = this.pack.maps.get(start.map), events = this.pack.events.get(start.map);
     if (!data || !events || !new Collision(data).passable(start.x, start.y)) throw new Error('Invalid session start');
     return new Game({ ...this.pack.game, start, state }, data, this.pack.characters, events, {
-      skin: this.pack.skin, commonEvents: this.pack.common, ...this.options, selfFlags, rngState: rngState ?? this.options.rngState,
+      items: this.pack.items, skin: this.pack.skin, commonEvents: this.pack.common, ...this.options, selfFlags: selfFlags ?? this.options.selfFlags, rngState: rngState ?? this.options.rngState,
       mapLoader: this.options.mapLoader ?? { load: id => { const data = this.pack.maps.get(id), events = this.pack.events.get(id); return data && events ? Promise.resolve({ data, events }) : Promise.reject(new Error(`Unknown map: ${id}`)); } },
       save: value => {
-        this.saved = { ...value, flags: { ...value.flags }, vars: { ...value.vars }, selfFlags: { ...value.selfFlags }, saveVersion: SAVE_VERSION, packId: this.pack.game.id, gameVersion: this.pack.game.version, engineVersion: this.options.plugins?.engineVersion ?? '', savedAt: '1970-01-01T00:00:00.000Z' };
+        this.saved = { ...value, flags: { ...value.flags }, vars: { ...value.vars }, selfFlags: { ...value.selfFlags }, items: { ...value.items }, saveVersion: SAVE_VERSION, packId: this.pack.game.id, gameVersion: this.pack.game.version, engineVersion: this.options.plugins?.engineVersion ?? '', savedAt: '1970-01-01T00:00:00.000Z' };
         this.options.save?.(value);
       },
     });
@@ -32,15 +32,15 @@ export class GameSession {
     if (!this.saved) throw new Error('Cannot reload without a save');
     const raw = this.saved;
     const restored = loadSave(JSON.stringify(raw), this.pack.game, this.pack.events, this.pack.maps, {
-      loadSave: this.options.plugins ? (state, from) => this.options.plugins!.loadSave(state, raw as unknown as Record<string, unknown>, from) : undefined,
+      items: this.pack.items, loadSave: this.options.plugins ? (state, from) => this.options.plugins!.loadSave(state, raw as unknown as Record<string, unknown>, from) : undefined,
     }).state;
     if (!restored) throw new Error('Saved data cannot be loaded');
     this.game.main.abort();
-    this.game = this.create({ map: restored.map, x: restored.x, y: restored.y, dir: restored.dir }, { flags: restored.flags, vars: restored.vars }, restored.selfFlags, restored.rngState);
+    this.game = this.create({ map: restored.map, x: restored.x, y: restored.y, dir: restored.dir }, { flags: restored.flags, vars: restored.vars, items: restored.items }, restored.selfFlags, restored.rngState);
   }
   expectSave(condition: SaveExpect): boolean {
     if (!this.saved) throw new Error('No saved data');
-    const state = new GameState({ flags: { ...this.pack.game.state.flags, ...this.saved.flags }, vars: { ...this.pack.game.state.vars, ...this.saved.vars } });
+    const state = new GameState({ items: this.saved.items, flags: { ...this.pack.game.state.flags, ...this.saved.flags }, vars: { ...this.pack.game.state.vars, ...this.saved.vars } }, this.pack.items);
     for (const [key, value] of Object.entries(this.saved.selfFlags)) { const [map, event, name] = key.split(':'); state.setSelf(map!, event!, name!, value); }
     return evaluate(condition as Condition, state, 'self' in condition && 'map' in condition ? { mapId: condition.map, id: condition.event } : null, this.options.plugins ? (name, args, state) => this.options.plugins!.evaluate(name, args, state) : undefined);
   }

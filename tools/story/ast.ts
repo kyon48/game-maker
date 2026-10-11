@@ -2,6 +2,8 @@ export interface Source { file: string; line: number }
 export interface Diagnostic extends Source { code: string; level: 'error' | 'warning'; message: string }
 export type Condition =
   | { kind: 'flag'; name: string; enabled: boolean }
+  | { kind: 'item'; name: string; op: '==' | '!=' | '<' | '<=' | '>' | '>='; value: number }
+  | { kind: 'itemCount'; name: string; op: '==' | '!=' | '<' | '<=' | '>' | '>='; value: number }
   | { kind: 'variable'; name: string; op: '==' | '!=' | '<' | '<=' | '>' | '>='; value: number }
   | { kind: 'all' | 'any'; conditions: Condition[] };
 export interface Destination { location: string; anchor: string }
@@ -11,6 +13,7 @@ export type Statement = Source & (
   | { kind: 'narration'; text: string }
   | { kind: 'choice'; prompt: string; options: Option[] }
   | { kind: 'if'; condition: Condition; then: Statement[]; else: Statement[] }
+  | { kind: 'give' | 'take'; item: string; count: number; silent?: boolean }
   | { kind: 'set' | 'unset'; flag: string }
   | { kind: 'add' | 'sub'; variable: string; amount: number }
   | { kind: 'go'; destination: Destination; dir?: Dir }
@@ -38,6 +41,7 @@ export type Header = Source & (
   | { kind: 'screen'; width: number; height: number }
 );
 export interface Story extends Source {
+  items: (Source & { id: string; name: string; description: string; category: 'item' | 'clue'; icon?: string })[];
   headers: Header[];
   characters: (Source & { id: string; name: string; art?: string; voice?: string })[];
   flags: (Source & { name: string })[];

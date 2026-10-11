@@ -7,11 +7,14 @@ export { API_VERSION } from '../data/apiVersion';
 export type { Action, InputFrame, TextMeasurer, PackSource } from '../sim/ports';
 export type { Dir, Command, Condition, SaveData, Wait, CommandGen, TextRequest, ChoiceRequest };
 export interface ReadonlyGameState {
+  getItem(name: string): number;
+  itemCount(category: import('../data/items').Category): number;
   getFlag(name: string): boolean;
   getVar(name: string): number;
   getSelf(mapId: string, eventId: string, name: string): boolean;
 }
 export interface GameStateAccess extends ReadonlyGameState {
+  setItem(name: string, value: number): void;
   setFlag(name: string, value: boolean): void;
   setVar(name: string, value: number): void;
   setSelf(mapId: string, eventId: string, name: string, value: boolean): void;
@@ -59,7 +62,8 @@ export interface SceneContext {
   readonly lineHeight: number;
   state: GameStateAccess;
   readonly screen: { width: number; height: number };
-  readonly labels: { newGame: string; continue: string };
+  readonly items: Readonly<Record<string, Readonly<import('../data/items').Items[string]>>>;
+  readonly labels: import('../data/game').GameConfig['labels'];
   showText(request: TextRequest): void;
   rng(): number;
   openScene(name: string, args?: unknown): { readonly done: boolean; readonly value?: number };

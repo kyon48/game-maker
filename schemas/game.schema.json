@@ -137,6 +137,31 @@
         "newGame"
       ],
       "properties": {
+        "itemGet": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "menuItems": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "menuClues": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "menuClose": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "menuEmpty": {
+          "minLength": 1,
+          "pattern": "\\S",
+          "type": "string"
+        },
         "continue": {
           "minLength": 1,
           "type": "string"
@@ -165,6 +190,17 @@
         "vars"
       ],
       "properties": {
+        "items": {
+          "additionalProperties": false,
+          "type": "object",
+          "patternProperties": {
+            "^[a-z][a-z0-9_]*$": {
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            }
+          }
+        },
         "flags": {
           "additionalProperties": false,
           "type": "object",

@@ -97,21 +97,22 @@ export async function generateFilm(stories: readonly Story[], pack: ValidatedPac
     if (selected !== choices.length) compileError(source, 'S031', '예상 선택지가 실행되지 않았습니다');
   };
   const pendingAuto = () => runtime.game.events.some(e => e.active && e.page?.trigger === 'auto');
-  const condition = (value: Condition, flags: Record<string, boolean>, vars: Record<string, number>): boolean => {
+  const condition = (value: Condition, flags: Record<string, boolean>, vars: Record<string, number>, inventory: Record<string, number>): boolean => {
     if (value.kind === 'flag') return flags[value.name] === value.enabled;
-    if (value.kind === 'variable') { const a = vars[value.name]!, b = value.value; return ({ '==': a === b, '!=': a !== b, '<': a < b, '<=': a <= b, '>': a > b, '>=': a >= b })[value.op]; }
-    return value.kind === 'all' ? value.conditions.every(c => condition(c, flags, vars)) : value.conditions.some(c => condition(c, flags, vars));
+    if (value.kind === 'variable' || value.kind === 'item' || value.kind === 'itemCount') { const a = value.kind === 'variable' ? vars[value.name]! : value.kind === 'item' ? inventory[value.name] ?? 0 : Object.entries(pack.items ?? {}).reduce((n, [id, item]) => n + (item.category === value.name ? inventory[id] ?? 0 : 0), 0), b = value.value; return ({ '==': a === b, '!=': a !== b, '<': a < b, '<=': a <= b, '>': a > b, '>=': a >= b })[value.op]; }
+    return value.kind === 'all' ? value.conditions.every(c => condition(c, flags, vars, inventory)) : value.conditions.some(c => condition(c, flags, vars, inventory));
   };
-  const pathStatements = (list: readonly Statement[], flags: Record<string, boolean>, vars: Record<string, number>, choices: number[], expected: Map<string, boolean>, depth = 0): Statement[] => {
+  const pathStatements = (list: readonly Statement[], flags: Record<string, boolean>, vars: Record<string, number>, choices: number[], expected: Map<string, boolean>, inventory: Record<string, number>, depth = 0): Statement[] => {
     if (depth > 64) compileError(source, 'S031', '공통 이벤트 호출 깊이 초과');
     const result: Statement[] = [];
     for (const node of list) {
       result.push(node);
-      if (node.kind === 'if') result.push(...pathStatements(condition(node.condition, flags, vars) ? node.then : node.else, flags, vars, choices, expected, depth + 1));
-      if (node.kind === 'choice') { const index = Math.max(0, node.options.findIndex(o => o.chosen)); choices.push(index); result.push(...pathStatements(node.options[index]!.statements, flags, vars, choices, expected, depth + 1)); }
+      if (node.kind === 'if') result.push(...pathStatements(condition(node.condition, flags, vars, inventory) ? node.then : node.else, flags, vars, choices, expected, inventory, depth + 1));
+      if (node.kind === 'choice') { const index = Math.max(0, node.options.findIndex(o => o.chosen)); choices.push(index); result.push(...pathStatements(node.options[index]!.statements, flags, vars, choices, expected, inventory, depth + 1)); }
       if (node.kind === 'set' || node.kind === 'unset') { flags[node.flag] = node.kind === 'set'; expected.set(node.flag, node.kind === 'set'); }
+      if (node.kind === 'give' || node.kind === 'take') inventory[node.item] = Math.max(0, (inventory[node.item] ?? 0) + (node.kind === 'give' ? node.count : -node.count));
       if (node.kind === 'add' || node.kind === 'sub') vars[node.variable] = vars[node.variable]! + (node.kind === 'add' ? node.amount : -node.amount);
-      if (node.kind === 'call') result.push(...pathStatements(common.get(node.common)!, flags, vars, choices, expected, depth + 1));
+      if (node.kind === 'call') result.push(...pathStatements(common.get(node.common)!, flags, vars, choices, expected, inventory, depth + 1));
       const last = result.at(-1);
       if (last?.kind === 'scene' && last.name === 'ending') break;
     }
@@ -182,7 +183,7 @@ export async function generateFilm(stories: readonly Story[], pack: ValidatedPac
         const page = [...item.pages].reverse().find(candidate => {
           const index = item.pages.indexOf(candidate);
           const onceAllows = !item.once || (index === 0 ? !completed : completed);
-          return onceAllows && (!candidate.condition || condition(candidate.condition, state.flags, state.vars));
+          return onceAllows && (!candidate.condition || condition(candidate.condition, state.flags, state.vars, state.items));
         });
         if (!page) {
           const bound = boundSteps.get(item), step = bound === undefined ? undefined : steps[bound];
@@ -190,7 +191,7 @@ export async function generateFilm(stories: readonly Story[], pack: ValidatedPac
           continue;
         }
         const choices: number[] = [];
-        const selected = pathStatements(page.statements, state.flags, state.vars, choices, expected);
+        const selected = pathStatements(page.statements, state.flags, state.vars, choices, expected, state.items);
         for (const node of selected) if (node.kind === 'narration') narration.push(node.text, '');
         if (item.trigger !== 'auto') {
           await hints(selected, scene.location);

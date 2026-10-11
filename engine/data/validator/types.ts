@@ -17,6 +17,7 @@ export interface ValidationOptions {
   plugins?: readonly { id: string; apiVersion: number }[];
 }
 export interface ValidatedPack {
+  items?: import('../items').Items;
   portraits?: Portraits;
   voices?: Voices; voiceManifest?: VoiceManifest;
   game: GameConfig; characters: Characters; skin: Skin;

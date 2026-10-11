@@ -1,0 +1,27 @@
+{
+  "clue_clock": {
+    "name": "떨어진 시계",
+    "description": "시계는 정전 때 떨어졌으며 출입 시각을 증명하지 않는다.",
+    "category": "clue"
+  },
+  "clue_seal": {
+    "name": "발송된 봉인",
+    "description": "부인의 문장으로 봉한 원본을 공증인에게 발송했다.",
+    "category": "clue"
+  },
+  "clue_letter": {
+    "name": "부인의 편지",
+    "description": "부인이 원본 발송과 해린의 등사본 보관을 지시했다.",
+    "category": "clue"
+  },
+  "clue_ledger": {
+    "name": "도서실 장부",
+    "description": "도서실은 마을에 증여되었고 해린은 관리인이다.",
+    "category": "clue"
+  },
+  "clue_receipt": {
+    "name": "작업대 영수증",
+    "description": "임종 뒤 구입한 식물 치료제로 독살 소문과 무관하다.",
+    "category": "clue"
+  }
+}

@@ -20,7 +20,7 @@ export class Interpreter {
       filmCues: host.filmCues,
       showMapName: () => host.showMapName(),
       openScene: host.openScene,
-      save: host.save, state: host.state, thisEvent: host.thisEvent,
+      itemNotice: host.itemNotice, save: host.save, state: host.state, thisEvent: host.thisEvent,
       get player() { return host.player; },
       waitFrames: host.waitFrames, waitUntil: host.waitUntil,
       showText: host.showText, showChoice: host.showChoice, evaluate: host.evaluate, face: host.face,

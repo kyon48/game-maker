@@ -4,8 +4,8 @@ export interface EventScope { readonly mapId: string; readonly id: string }
 export type PluginCondition = (name: string, args: unknown, state: GameState) => boolean;
 export function evaluate(condition: Condition, state: GameState, scope: EventScope | null, plugin?: PluginCondition): boolean {
   if ('flag' in condition) return state.getFlag(condition.flag) === condition.is;
-  if ('var' in condition) {
-    const value = state.getVar(condition.var), expected = condition.value;
+  if ('var' in condition || 'item' in condition || 'itemCount' in condition) {
+    const value = 'var' in condition ? state.getVar(condition.var) : 'item' in condition ? state.getItem(condition.item) : state.itemCount(condition.itemCount), expected = condition.value;
     switch (condition.op) {
       case '==': return value === expected;
       case '!=': return value !== expected;

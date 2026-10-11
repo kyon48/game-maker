@@ -32,7 +32,7 @@ it('wraps command context and state, preserving nested generators, self scope an
   const { game } = create(plugin, [point([{ cmd: 'x_probe' }, { cmd: 'set_var', var: 'n', value: 99 }])]);
   game.tick({ held: new Set(), pressed: new Set(['ok']) }); game.tick(empty);
   expect(Object.keys(context!).sort()).toEqual(['player', 'runCommands', 'showChoice', 'showText', 'state', 'stop', 'stopped', 'thisEvent', 'waitFrames', 'waitUntil']);
-  expect(Object.keys(context!.state).sort()).toEqual(['getFlag', 'getSelf', 'getVar', 'setFlag', 'setSelf', 'setVar']);
+  expect(Object.keys(context!.state).sort()).toEqual(['getFlag', 'getItem', 'getSelf', 'getVar', 'itemCount', 'setFlag', 'setItem', 'setSelf', 'setVar']);
   expect(context!.state).not.toBeInstanceOf(GameState); expect(Object.isFrozen(context!.state)).toBe(true);
   expect(() => context!.state.getVar('unknown')).toThrow('Undeclared');
   expect(game.state.getSelf('a', 'point', 'used')).toBe(true); game.tick(empty); expect(game.state.getVar('n')).toBe(7); expect(game.main.running).toBe(false);
@@ -44,7 +44,7 @@ it('evaluates plugin conditions with readonly state in pages and boolean composi
   } };
   const { runtime, game } = create(plugin, [{ id: 'npc', x: 4, y: 4, pages: [{ trigger: 'none', when: { all: [{ plugin: 'x_positive', args: { minimum: 1 } }] } }] }]);
   expect(game.events[0]?.active).toBe(false); game.state.setVar('n', 2); game.tick(empty); expect(game.events[0]?.active).toBe(true);
-  expect(keys.sort()).toEqual(['getFlag', 'getSelf', 'getVar']);
+  expect(keys.sort()).toEqual(['getFlag', 'getItem', 'getSelf', 'getVar', 'itemCount']);
   expect(() => runtime.evaluate('x_positive', { minimum: 'bad' }, game.state)).toThrow('Invalid condition arguments');
 });
 it('rejects duplicate command/condition registration and mismatching plugin versions/filenames', () => {
@@ -61,7 +61,7 @@ it('emits map/tick hooks at transfer boundaries and loadSave after normalization
     api.hooks.on('mapEnter', (ctx, id) => { expect(ctx.mapId).toBe(id); order.push(`enter:${id}:${ctx.player.x}`); });
     api.hooks.on('mapLeave', (ctx, id) => { expect(ctx.mapId).toBe(id); order.push(`leave:${id}`); });
     api.hooks.on('tick', ctx => { order.push(`tick:${ctx.mapId}`); });
-    api.hooks.on('loadSave', (save, from) => { expect(save.packId).toBe('test'); expect(save.saveVersion).toBe(1); expect(from).toBe('0.9.0'); expect(save.x).toBe(1); save.vars.n = 12; });
+    api.hooks.on('loadSave', (save, from) => { expect(save.packId).toBe('test'); expect(save.saveVersion).toBe(2); expect(from).toBe('0.9.0'); expect(save.x).toBe(1); save.vars.n = 12; });
   } };
   const { runtime, game } = create(plugin, [point([{ cmd: 'transfer', map: 'b', x: 3, y: 3, fade: false }])]);
   expect(order).toEqual(['enter:a:1']); game.tick({ held: new Set(), pressed: new Set(['ok']) }); game.tick(empty); await Promise.resolve(); game.tick(empty);

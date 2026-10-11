@@ -15,6 +15,10 @@ try {
   const puzzleAgain = await recordFilm('manor', 'lamps', { out: 'out/manor/verify/second', hashes: true, signal: controller.signal, build: false });
   assert.deepEqual(puzzleAgain.hashes, puzzle.hashes);
   assert.ok(puzzle.frames > 0);
+  const menu = await recordFilm('manor', 'menu', { out: 'out/manor/verify/menu-first', hashes: true, signal: controller.signal, build: false });
+  const menuAgain = await recordFilm('manor', 'menu', { out: 'out/manor/verify/menu-second', hashes: true, signal: controller.signal, build: false });
+  assert.deepEqual(menuAgain.hashes, menu.hashes); assert.ok(menu.frames > 0);
+  console.log(`menu film:verify passed: ${menu.frames} frame hashes match`);
   console.log(`scene film:verify passed: ${puzzle.frames} puzzle frame hashes match`);
   console.log(`film:verify passed: ${first.frames} frame RGBA hashes match; ${chapter.frames} chapter frames match full recording; ${first.captureChecks + second.captureChecks + chapter.captureChecks} browser/decoded RGBA samples match`);
 } catch (error) { console.error(String(error)); process.exitCode = 1; } finally { process.off('SIGINT', interrupt); process.off('SIGTERM', interrupt); }

@@ -1,3 +1,5 @@
+import { ItemsSchema, menuLabelKeys, itemNotice } from '../items';
+import type { Items } from '../items';
 import { PortraitsSchema, portraitSlot, pngSize } from '../portraits';
 import type { Portraits } from '../portraits';
 import { packPath } from '../loader/path';
@@ -32,6 +34,14 @@ export async function coreRules(context: ValidationContext) {
     if (!await source.exists(`plugins/${name}.ts`) && !context.diagnostics.some(item => item.code === 'V3' && item.file === 'game.json' && item.pointer === pointer)) report('V3', 'game.json', pointer, `Missing plugin: plugins/${name}.ts`);
   }
   if (skin.window.padding * 2 >= game.screen.width) report('V9', 'skin.json', '/window/padding', 'Message inner width must be positive');
+  const items = await source.exists('items.json') ? await read('items.json', ItemsSchema) as Items | undefined : undefined;
+  if (items) for (const key of menuLabelKeys) if (!game.labels[key]) report('V3', 'game.json', '/labels/' + key, 'Menu label required for items pack');
+  if (game.labels.itemGet) try { itemNotice(game.labels.itemGet, 'item', 1); } catch (error) { report('V1', 'game.json', '/labels/itemGet', String(error)); }
+  for (const [id, item] of Object.entries(items ?? {})) if (item.icon) {
+    try { packPath('', item.icon); if (!await source.exists(item.icon)) throw new Error('Missing icon'); }
+    catch (error) { report('V4', 'items.json', `/${escapePointer(id)}/icon`, String(error)); }
+  }
+  for (const id of Object.keys(game.state.items ?? {})) if (!Object.hasOwn(items ?? {}, id)) report('V3', 'game.json', `/state/items/${id}`, 'Undeclared item');
   const voices = await source.exists('voices.json') ? await read('voices.json', VoicesSchema) as Voices | undefined : undefined;
   const voiceManifest = await source.exists('voice-manifest.json') ? await read('voice-manifest.json', VoiceManifestSchema) as VoiceManifest | undefined : undefined;
   for (const [speaker, voice] of Object.entries(voices ?? {})) if (!['macos-say', 'fake'].includes(voice.provider)) report('V1', 'voices.json', `/${escapePointer(speaker)}/provider`, 'Unknown TTS provider');
@@ -50,6 +60,6 @@ export async function coreRules(context: ValidationContext) {
       } catch (error) { report('V4', 'portraits.json', pointer, String(error)); }
     }
   }
-  return { portraits, voices, voiceManifest, game, characters, skin, common };
+  return { items, portraits, voices, voiceManifest, game, characters, skin, common };
 }
 export type PackBasics = NonNullable<Awaited<ReturnType<typeof coreRules>>>;

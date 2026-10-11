@@ -1,6 +1,6 @@
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 export interface SaveMigration { from: number; to: number; up(save: Record<string, unknown>): Record<string, unknown> }
-export const saveMigrations: readonly SaveMigration[] = [];
+export const saveMigrations: readonly SaveMigration[] = [{ from: 1, to: 2, up: save => ({ ...save, saveVersion: 2, items: {} }) }];
 export function migrateSave(save: Readonly<Record<string, unknown>>, target = SAVE_VERSION, migrations = saveMigrations): Record<string, unknown> {
   if (!Number.isSafeInteger(target) || target < 0) throw new Error('Invalid target save version');
   let current = JSON.parse(JSON.stringify(save)) as Record<string, unknown>;

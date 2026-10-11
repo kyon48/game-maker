@@ -18,8 +18,9 @@
     },
     {
       "expect": {
-        "flag": "clue_clock",
-        "is": false
+        "item": "clue_clock",
+        "op": "==",
+        "value": 0
       }
     },
     {
@@ -47,8 +48,9 @@
     },
     {
       "expect": {
-        "flag": "clue_clock",
-        "is": true
+        "item": "clue_clock",
+        "op": ">=",
+        "value": 1
       }
     },
     {
@@ -121,8 +123,9 @@
     },
     {
       "expectSave": {
-        "flag": "clue_clock",
-        "is": true
+        "item": "clue_clock",
+        "op": ">=",
+        "value": 1
       }
     },
     {
@@ -160,8 +163,9 @@
     },
     {
       "expect": {
-        "flag": "clue_clock",
-        "is": true
+        "item": "clue_clock",
+        "op": ">=",
+        "value": 1
       }
     },
     {

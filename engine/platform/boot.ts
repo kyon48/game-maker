@@ -71,6 +71,7 @@ async function boot(): Promise<void> {
     source.readJson('skin.json') as Promise<Skin>,
     source.readJson('common-events.json') as Promise<Record<string, { commands: Command[] }>>,
   ]);
+  const items = await source.exists('items.json') ? await source.readJson('items.json') as import('../data/items').Items : undefined;
   const portraits = await source.exists('portraits.json') ? await source.readJson('portraits.json') as Portraits : {};
   const voices = await source.exists('voices.json') ? await source.readJson('voices.json') as Voices : undefined;
   const voiceManifest = await source.exists('voice-manifest.json') ? await source.readJson('voice-manifest.json') as VoiceManifest : undefined;
@@ -87,7 +88,7 @@ async function boot(): Promise<void> {
   const candidate = readSave(film ? null : storage.read(), game.id);
   const savedMap = typeof candidate.data?.map === 'string' && game.maps.includes(candidate.data.map) ? candidate.data.map : game.start.map;
   const savedData = candidate.data ? await loader.load(savedMap) : undefined;
-  const restored = restoreSave(candidate, game, new Map(entries), new Map(savedData ? [[savedMap, savedData.data]] : []));
+  const restored = restoreSave(candidate, game, new Map(entries), new Map(savedData ? [[savedMap, savedData.data]] : []), { items });
   for (const warning of restored.warnings) console.warn(warning);
   const sceneImages = new Set((runtime.sceneImages ?? await source.listFiles()).filter(file => /\.(png|webp|jpe?g)$/i.test(file)));
   await Promise.all([...sceneImages].map(path => loader.image(path)));
@@ -107,13 +108,13 @@ async function boot(): Promise<void> {
   cleanup = () => { keyboard?.dispose(); resizeController.abort(); window.removeEventListener('resize', resize); };
   const continued = restored.state && await chooseStart(context, skin, images, keyboard!, [game.labels.continue, game.labels.newGame]) === 0;
   const state = continued ? restoreSave(candidate, game, new Map(entries), new Map(savedData ? [[savedMap, savedData.data]] : []), {
-    loadSave: (state, from) => plugins.loadSave(state, candidate.data!, from),
+    items, loadSave: (state, from) => plugins.loadSave(state, candidate.data!, from),
   }).state! : null;
   const start = film?.start ?? (state ? { map: state.map, x: state.x, y: state.y, dir: state.dir } : game.start);
   const initial = await loader.load(start.map);
   const filmCues = (import.meta.env.DEV || __RECORDING__) && film ? new (await import('../film/cues')).FilmCueGate() : undefined;
   const options: GameOptions = {
-    voices, voiceLengths: voiceLengths(voiceManifest), filmCues, recording: !!film?.steps.some(s => 'cue' in s || 'advanceText' in s && s.advanceText === 'voice'),
+    items, voices, voiceLengths: voiceLengths(voiceManifest), filmCues, recording: !!film?.steps.some(s => 'cue' in s || 'advanceText' in s && s.advanceText === 'voice'),
     plugins, skin, textMeasurer: new CanvasTextMeasurer(context), mapLoader: prepared ? { load: id => { const map = prepared.get(id); return map ? Promise.resolve(map) : Promise.reject(new Error(`Unknown map: ${id}`)); } } : loader, commonEvents,
     rngState: state?.rngState, sceneImages,
     selfFlags: state?.selfFlags, save: value => { if (!film) storage.write(value); },
@@ -121,9 +122,9 @@ async function boot(): Promise<void> {
   let saveSession: GameSession | undefined;
   if ((import.meta.env.DEV || __RECORDING__) && film && prepared) {
     const { GameSession } = await import('../sim/state/GameSession');
-    saveSession = new GameSession({ game, characters, skin, common: commonEvents, events: new Map(entries), maps: new Map([...prepared].map(([id, map]) => [id, map.data])) }, options, start, { flags: { ...game.state.flags, ...film.state?.flags }, vars: { ...game.state.vars, ...film.state?.vars } });
+    saveSession = new GameSession({ game, items, characters, skin, common: commonEvents, events: new Map(entries), maps: new Map([...prepared].map(([id, map]) => [id, map.data])) }, options, start, { items: { ...game.state.items, ...film.state?.items }, flags: { ...game.state.flags, ...film.state?.flags }, vars: { ...game.state.vars, ...film.state?.vars } });
   }
-  let simulation = saveSession?.game ?? new Game({ ...game, start, state: film ? { flags: { ...game.state.flags, ...film.state?.flags }, vars: { ...game.state.vars, ...film.state?.vars } } : state ? { flags: state.flags, vars: state.vars } : game.state }, initial.data, characters, initial.events, options);
+  let simulation = saveSession?.game ?? new Game({ ...game, start, state: film ? { items: { ...game.state.items, ...film.state?.items }, flags: { ...game.state.flags, ...film.state?.flags }, vars: { ...game.state.vars, ...film.state?.vars } } : state ? { flags: state.flags, vars: state.vars, items: state.items } : game.state }, initial.data, characters, initial.events, options);
   const render = (active = simulation) => {
     context.clearRect(0, 0, canvas.width, canvas.height);
     const snapshot = active.snapshot;
@@ -161,11 +162,11 @@ async function boot(): Promise<void> {
       const raw = result === 1 ? storage.read() : null, candidate = readSave(raw, game.id);
       const mapId = typeof candidate.data?.map === 'string' && game.maps.includes(candidate.data.map) ? candidate.data.map : game.start.map;
       const data = await loader.load(mapId);
-      const restored = restoreSave(candidate, game, new Map(entries), new Map([[mapId, data.data]]), { loadSave: (state, from) => plugins.loadSave(state, candidate.data!, from) }).state;
+      const restored = restoreSave(candidate, game, new Map(entries), new Map([[mapId, data.data]]), { items, loadSave: (state, from) => plugins.loadSave(state, candidate.data!, from) }).state;
       const start = restored ? { map: restored.map, x: restored.x, y: restored.y, dir: restored.dir } : game.start;
       const initial = await loader.load(start.map);
       simulation.main.abort();
-      simulation = new Game({ ...game, start, state: restored ? { flags: restored.flags, vars: restored.vars } : game.state }, initial.data, characters, initial.events, { ...options, selfFlags: restored?.selfFlags, rngState: restored?.rngState });
+      simulation = new Game({ ...game, start, state: restored ? { flags: restored.flags, vars: restored.vars, items: restored.items } : game.state }, initial.data, characters, initial.events, { ...options, selfFlags: restored?.selfFlags, rngState: restored?.rngState });
       restarting = false;
     })().catch(fail); });
   };
