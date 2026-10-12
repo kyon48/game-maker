@@ -96,6 +96,8 @@ flowchart LR
 | `@item id "이름" category=item\|clue desc="설명" [icon=경로]` | 아이템 선언, 한 줄 JSON 문자열 설명 |
 | `@give id [n] [silent]` / `@take id [n]` | 아이템 획득·소모, n 기본 1, silent는 획득 알림 생략 |
 | `item:id>=1` / `items:clue>=3` | 아이템 개수 / 카테고리 합계 비교 조건 |
+| `@battle troop -> 변수` | 수기 battle.json 전투, 결과 변수는 선언 필요 |
+| `@film choose 0,0,0` | 바로 앞 전투 선택 입력. 명령→기술→대상 순서(방어/도주는 명령만) |
 | `@scene 이름 {JSON args} [-> 변수]` | 씬 커맨드. 결과 변수는 선언된 정수 변수 |
 | `@film press ok,ok,right` | 바로 앞 플러그인 씬 풀이 입력. ending은 힌트 없이 2초 표시 후 촬영 종료 |
 | `@cmd {"cmd":"show_map_name"}` | 엔진 커맨드 직접 삽입 |

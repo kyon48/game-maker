@@ -1,0 +1,32 @@
+{
+  "id": "debate",
+  "title": "밤길의 약속",
+  "version": "0.1.0",
+  "formatVersion": 1,
+  "tileSize": 16,
+  "screen": {
+    "width": 320,
+    "height": 240
+  },
+  "maps": [
+    "square"
+  ],
+  "start": {
+    "map": "square",
+    "x": 9,
+    "y": 7,
+    "dir": "up"
+  },
+  "player": "speaker",
+  "plugins": [],
+  "labels": {
+    "continue": "이어하기",
+    "newGame": "새 토론"
+  },
+  "state": {
+    "flags": {},
+    "vars": {
+      "result": -1
+    }
+  }
+}

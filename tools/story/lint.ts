@@ -1,7 +1,7 @@
 import type { StoryConfig } from './config';
 import { parseText, TextSyntaxError } from '../../engine/data/text';
 import type { Story, Diagnostic, Source, Condition, Statement, Event, Anchor, Destination } from './ast';
-export interface LintOptions { packId?: string; expressions?: ReadonlyMap<string, string> | null; config?: StoryConfig }
+export interface LintOptions { battleTroops?: ReadonlySet<string>; packId?: string; expressions?: ReadonlyMap<string, string> | null; config?: StoryConfig }
 /** Pack-wide declarations and conservative reachability, without compiling engine commands. */
 export function lintStories(stories: readonly Story[], options: LintOptions = {}): Diagnostic[] {
   const diagnostics: Diagnostic[] = [];
@@ -122,6 +122,7 @@ export function lintStories(stories: readonly Story[], options: LintOptions = {}
         case 'bgm': case 'sfx': if (node.id !== null && !audio.has(node.id)) report(node, 'S045', `미선언 오디오: ${node.id}`); break;
         case 'set': case 'unset': if (!flags.has(node.flag)) report(node, 'S002', `미선언 플래그: ${node.flag}`); break;
         case 'give': case 'take': if (!items.has(node.item)) report(node, 'S043', `미선언 아이템: ${node.item}`); break;
+        case 'battle': if (!variables.has(node.resultVar)) report(node, 'S003', `미선언 변수: ${node.resultVar}`); if (options.battleTroops && !options.battleTroops.has(node.troop)) report(node, 'S046', `미선언 전투: ${node.troop}`); break;
         case 'scene': if (node.resultVar && !variables.has(node.resultVar)) report(node, 'S003', `미선언 변수: ${node.resultVar}`); break;
         case 'add': case 'sub': if (!variables.has(node.variable)) report(node, 'S003', `미선언 변수: ${node.variable}`); break;
         case 'if': {
@@ -160,7 +161,7 @@ export function lintStories(stories: readonly Story[], options: LintOptions = {}
           break;
         }
         // raw JSON remains opaque: S1b's engine validator owns its content.
-        case 'filmInputs': case 'cmd': case 'wait': case 'shake': case 'fade': case 'filmPause': case 'waitNarration': break;
+        case 'filmChoose': case 'filmInputs': case 'cmd': case 'wait': case 'shake': case 'fade': case 'filmPause': case 'waitNarration': break;
       }
     }
     return maps;

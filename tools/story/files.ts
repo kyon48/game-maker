@@ -56,7 +56,10 @@ export async function readStories(packId: string, root = process.cwd(), allowMis
       }
     } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') diagnostics.push({ file: display(path.join(folder, '.compiled.json')), line: 1, level: 'error', code: 'S026', message: String(error) }); }
   }
-  diagnostics.push(...lintStories(stories, { packId, expressions, config: settings }));
+  let battleTroops: Set<string> | undefined;
+  const battlePath = path.join(folder, '..', 'battle.json');
+  try { const battle = JSON.parse(await readFile(battlePath, 'utf8')) as { troops?: Record<string, unknown> }; battleTroops = new Set(Object.keys(battle.troops ?? {})); } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') io(battlePath, error); }
+  diagnostics.push(...lintStories(stories, { packId, expressions, config: settings, battleTroops }));
   return { stories, expressions, config: settings, diagnostics: diagnostics.sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line || a.code.localeCompare(b.code)) };
 }
 

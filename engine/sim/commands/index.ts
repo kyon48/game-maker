@@ -1,3 +1,4 @@
+import { registerBattle } from './battle';
 import { registerBgm } from './bgm';
 import { registerSfx } from './sfx';
 import { registerGiveItem } from './give_item';
@@ -24,6 +25,7 @@ import { registerIf } from './if';
 import { registerChoice } from './choice';
 import type { CommandRegistry } from '../event/CommandRegistry';
 export function registerBuiltins(registry: CommandRegistry): void {
+  registerBattle(registry);
   registerBgm(registry); registerSfx(registry);
   registerGiveItem(registry); registerTakeItem(registry);
   registerScene(registry);

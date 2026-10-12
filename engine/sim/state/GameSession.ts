@@ -19,7 +19,7 @@ export class GameSession {
     const data = this.pack.maps.get(start.map), events = this.pack.events.get(start.map);
     if (!data || !events || !new Collision(data).passable(start.x, start.y)) throw new Error('Invalid session start');
     return new Game({ ...this.pack.game, start, state }, data, this.pack.characters, events, {
-      audio: this.pack.audio, items: this.pack.items, skin: this.pack.skin, commonEvents: this.pack.common, ...this.options, selfFlags: selfFlags ?? this.options.selfFlags, rngState: rngState ?? this.options.rngState,
+      battle: this.pack.battle, audio: this.pack.audio, items: this.pack.items, skin: this.pack.skin, commonEvents: this.pack.common, ...this.options, selfFlags: selfFlags ?? this.options.selfFlags, rngState: rngState ?? this.options.rngState,
       mapLoader: this.options.mapLoader ?? { load: id => { const data = this.pack.maps.get(id), events = this.pack.events.get(id); return data && events ? Promise.resolve({ data, events }) : Promise.reject(new Error(`Unknown map: ${id}`)); } },
       save: value => {
         this.saved = { ...value, flags: { ...value.flags }, vars: { ...value.vars }, selfFlags: { ...value.selfFlags }, items: { ...value.items }, saveVersion: SAVE_VERSION, packId: this.pack.game.id, gameVersion: this.pack.game.version, engineVersion: this.options.plugins?.engineVersion ?? '', savedAt: '1970-01-01T00:00:00.000Z' };

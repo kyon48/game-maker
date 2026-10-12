@@ -1,0 +1,9 @@
+{
+  "tilewidth": 16,
+  "tileheight": 16,
+  "tilecount": 8,
+  "columns": 8,
+  "image": "tiles.png",
+  "imagewidth": 128,
+  "imageheight": 16
+}

@@ -1,3 +1,5 @@
+import { battleText } from '../battle';
+import { textRules } from './textRules';
 import type { PackSource } from '@engine/api';
 import type { Diagnostic, ValidationOptions, ValidatedPack } from './types';
 import { validationContext, createUsage } from './context';
@@ -11,6 +13,7 @@ export async function validatePack(source: PackSource, id: string, options: Vali
   const basics = await coreRules(context);
   if (!basics) return { diagnostics };
   const usage = createUsage(basics.characters, context.report);
+  for (const [id, skill] of Object.entries(basics.battle?.skills ?? {})) textRules(context, basics, usage, battleText(skill.text, { user: '', target: '', value: 0 }), true, 'battle.json', '/skills/' + id + '/text');
   usage.characterReference(basics.game.player, 'game.json', '/player');
   const checks = await mapRules(context, basics);
   await eventRules(context, basics, checks, usage);

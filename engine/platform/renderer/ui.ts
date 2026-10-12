@@ -22,7 +22,7 @@ export function windowBox(context: CanvasRenderingContext2D, skin: Skin, images:
   }
 }
 export function drawUi(context: CanvasRenderingContext2D, snapshot: Pick<GameSnapshot, 'message' | 'choice'>, skin: Skin,
-  images: ReadonlyMap<string, CanvasImageSource>): void {
+  images: ReadonlyMap<string, CanvasImageSource>, bottomOffset = 0): void {
   context.save(); context.imageSmoothingEnabled = false;
   context.font = `${skin.font.size}px ${JSON.stringify(skin.font.family)}`;
   context.textBaseline = 'top';
@@ -30,7 +30,7 @@ export function drawUi(context: CanvasRenderingContext2D, snapshot: Pick<GameSna
   if (snapshot.message) {
     const message = snapshot.message, speakerRows = message.speaker === undefined ? 0 : 1;
     const height = (skin.message.rows + speakerRows) * lineHeight + 2 * padding;
-    const top = context.canvas.height - height;
+    const top = context.canvas.height - height - bottomOffset;
     const slot = portraitSlot(skin);
     const textLeft = padding + (message.portrait && message.expression ? slot.width + slot.gap : 0);
     windowBox(context, skin, images, 0, top, context.canvas.width, height);
@@ -59,7 +59,7 @@ export function drawUi(context: CanvasRenderingContext2D, snapshot: Pick<GameSna
     for (const option of choice.options) textWidth = Math.max(textWidth, context.measureText(option.label).width + lineHeight);
     const width = Math.min(context.canvas.width, Math.ceil(textWidth) + 2 * padding);
     const height = (choice.options.length + promptRows) * lineHeight + 2 * padding;
-    const left = Math.floor((context.canvas.width - width) / 2), top = context.canvas.height - height - 2 * padding;
+    const left = Math.floor((context.canvas.width - width) / 2), top = context.canvas.height - height - 2 * padding - bottomOffset;
     windowBox(context, skin, images, left, top, width, height);
     context.fillStyle = skin.colors.text;
     if (choice.prompt !== undefined) context.fillText(choice.prompt, left + padding, top + padding);

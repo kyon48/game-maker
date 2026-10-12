@@ -202,3 +202,12 @@
 - 2026-10-12 / G5 / manor truth에 macos-say 목소리·매니페스트와 voice 진행을 적용 / BGM·효과음·대사 음성을 함께 넣는 실제 완료 검증을 한다. 테스트는 기존 fake 제공자만 쓴다.
 - 2026-10-12 / G5 / 엔진 0.14.0, formatVersion 1·saveVersion 2·API_VERSION 1 유지 / 선택 audio.json·mapBgm·커맨드 추가이며 저장 형식과 공개 API는 바뀌지 않는다.
 - 2026-10-12 / G5 / 커맨드 JSON Schema export가 strict union 각 분기에 cmd를 넣고 Command.anyOf에 펼치도록 보완 / bgm id/stop 인자를 같은 등록 스키마로 검증하면서 외부 JSON Schema도 유효한 커맨드를 받아야 한다.
+
+- 2026-10-12 / G4 / 프론트뷰·기존 선택지와 메시지 UI, 하단 60px 아군 상태 영역 / G3 DrawList·film choose·G1/G5/V2 경로를 재사용한다.
+- 2026-10-12 / G4 / 아군을 먼저 입력하고 속도 순 실행, 방어는 실행부터 라운드 끝까지 피해 0.5배(내림·최소 1) / 입력과 계산을 분리하고 결정론적인 간단한 규칙을 따른다.
+- 2026-10-12 / G4 / buff는 생성 라운드 잔여와 이후 turns개 완전 라운드 적용, 같은 stat는 최신 buff로 교체 / speed buff 1턴도 다음 순서에 영향을 주고 중첩 규칙을 단순화한다.
+- 2026-10-12 / G4 / 도주 허용 시 행동 순서에서 확정 성공, 죽은 예약 대상은 첫 생존 대상에 재지정 / 연출용 짧은 전투에서 추가 확률·입력 없이 진행한다.
+- 2026-10-12 / G4 / canLose=false는 결과 1을 저장하고 팩 gameOver 제목의 ending을 연 뒤 원래 이벤트 중단 / 기존 처음부터·이어하기 동작을 재사용하고 실패 뒤 정상 이벤트 진행을 막는다.
+- 2026-10-12 / G4 / troop actors 생략은 전체 선언 아군(1~3), variation 기본 true, power는 damage/heal 필수·buff에서 선택 / 06 예시를 유지하고 불필요한 buff power=0 입력을 없앤다.
+- 2026-10-12 / G4 / @battle과 바로 뒤 @film choose/press, battle.json은 수기 입력, choose는 같은 순수 규칙으로 결과 분기를 예측 / 데이터 생성 범위를 넓히지 않고 음성 길이에 무관한 촬영 경로를 만든다.
+- 2026-10-12 / G4 / 엔진 0.15.0, formatVersion 1·saveVersion 2·API_VERSION 1 유지 / 전투는 선택 파일·내장 씬·커맨드 추가이며 씬은 저장하지 않는다.

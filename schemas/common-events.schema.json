@@ -26,6 +26,29 @@
           "additionalProperties": false,
           "type": "object",
           "required": [
+            "troop",
+            "resultVar",
+            "cmd"
+          ],
+          "properties": {
+            "troop": {
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "type": "string"
+            },
+            "resultVar": {
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "type": "string"
+            },
+            "cmd": {
+              "const": "battle",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
             "id",
             "cmd"
           ],

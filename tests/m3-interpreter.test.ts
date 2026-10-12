@@ -11,6 +11,7 @@ function fixture() {
   const registry = new CommandRegistry(); registerBuiltins(registry);
   const state = new GameState({ flags: { met: false }, vars: { gold: 0 } });
   const host: CommandHost = {
+    canLose: () => true, gameOverLabel: () => 'Game over',
     bgm: () => {}, sfx: () => {},
     itemNotice: () => 'item',
     openScene: () => ({ done: true, value: 0 }),

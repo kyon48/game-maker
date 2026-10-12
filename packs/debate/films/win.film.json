@@ -1,0 +1,84 @@
+{
+  "name": "밤길의 약속 — 논쟁",
+  "steps": [
+    {
+      "chapter": "밤길의 약속"
+    },
+    {
+      "press": "ok"
+    },
+    {
+      "wait": 3
+    },
+    {
+      "choose": 0,
+      "dwell": 0.1
+    },
+    {
+      "wait": 3
+    },
+    {
+      "choose": 0,
+      "dwell": 0.1
+    },
+    {
+      "wait": 3
+    },
+    {
+      "choose": 0,
+      "dwell": 0.1
+    },
+    {
+      "wait": 3
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "wait": 4
+    },
+    {
+      "choose": 0,
+      "dwell": 0.1
+    },
+    {
+      "wait": 3
+    },
+    {
+      "choose": 0,
+      "dwell": 0.1
+    },
+    {
+      "wait": 3
+    },
+    {
+      "choose": 0,
+      "dwell": 0.1
+    },
+    {
+      "wait": 3
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "wait": 4
+    },
+    {
+      "advanceText": "auto"
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "var": "result",
+        "op": "==",
+        "value": 0
+      }
+    },
+    {
+      "pause": 0.5
+    }
+  ]
+}
