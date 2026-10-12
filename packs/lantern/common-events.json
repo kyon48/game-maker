@@ -36,14 +36,14 @@
         "cmd": "text",
         "text": "함께 지킬 사람이 생겼으니 이제 밤길이 덜 외롭겠구나.",
         "portrait": "elder",
-        "expression": "neutral",
+        "expression": "suspicious",
         "speaker": "촌장"
       },
       {
         "cmd": "text",
         "text": "돌아가면 이웃들과 불을 지킬 순서를 정할게요.",
         "portrait": "sora",
-        "expression": "neutral",
+        "expression": "determined",
         "speaker": "소라"
       },
       {
@@ -58,14 +58,14 @@
         "cmd": "text",
         "text": "오늘 밤은 제가 남아 있을게요. 준비가 되면 다른 사람도 초대하고 싶어요.",
         "portrait": "sora",
-        "expression": "neutral",
+        "expression": "determined",
         "speaker": "소라"
       },
       {
         "cmd": "text",
         "text": "서두르지 않아도 좋다. 약속을 지키는 첫날이니까.",
         "portrait": "elder",
-        "expression": "neutral",
+        "expression": "suspicious",
         "speaker": "촌장"
       },
       {

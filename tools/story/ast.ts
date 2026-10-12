@@ -38,7 +38,7 @@ export interface Page extends Source { condition?: Condition; statements: Statem
 export interface Event extends Source { kind: 'event'; id: string; anchor: string; trigger: 'action' | 'auto' | 'touch'; once: boolean; character?: string; wander?: string[]; film?: 'skip'; pages: Page[] }
 export interface Scene extends Source { title: string; location: string; chapter?: string; items: (Event | Statement)[] }
 export interface Anchor extends Source { character: string; name: string; destination?: Destination }
-export interface Location extends Source { id: string; name: string; bgm?: string; layout?: { file: string; line: number; rows: (Source & { text: string })[] }; anchors: Anchor[] }
+export interface Location extends Source { id: string; name: string; bgm?: string; wall?: string; floor?: string; layout?: { file: string; line: number; rows: (Source & { text: string })[] }; anchors: Anchor[] }
 export type Header = Source & (
   | { kind: 'pack'; id: string; title: string }
   | { kind: 'player'; id: string }
@@ -48,7 +48,7 @@ export interface Story extends Source {
   audio: (Source & { id: string; filePath: string; volume?: number; loop?: boolean })[];
   items: (Source & { id: string; name: string; description: string; category: 'item' | 'clue'; icon?: string })[];
   headers: Header[];
-  characters: (Source & { id: string; name: string; art?: string; voice?: string })[];
+  characters: (Source & { id: string; name: string; art?: string; voice?: string; face?: string; assetFace?: string })[];
   flags: (Source & { name: string })[];
   variables: (Source & { name: string; initial: number })[];
   locations: Location[];

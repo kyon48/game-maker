@@ -6,7 +6,9 @@
     "moveTicks": 12
   },
   "elder": {
-    "placeholder": "#c08040",
+    "sheet": "assets/characters/elder.png",
+    "frameWidth": 16,
+    "frameHeight": 24,
     "moveTicks": 20
   },
   "lamp": {
@@ -16,9 +18,15 @@
     "placeholder": "#94b8c6"
   },
   "sailor": {
-    "placeholder": "#5c88c0"
+    "sheet": "assets/characters/sailor.png",
+    "frameWidth": 16,
+    "frameHeight": 24,
+    "moveTicks": 20
   },
   "keeper": {
-    "placeholder": "#bca060"
+    "sheet": "assets/characters/keeper.png",
+    "frameWidth": 16,
+    "frameHeight": 24,
+    "moveTicks": 20
   }
 }

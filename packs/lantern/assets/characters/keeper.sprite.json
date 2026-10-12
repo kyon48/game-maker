@@ -1,0 +1,21 @@
+{
+  "name": "옛 등대지기",
+  "eyes": "#342c39",
+  "hair": {
+    "style": "bun",
+    "color": "#dad0b8"
+  },
+  "accessories": [
+    "square_glasses"
+  ],
+  "outfit": {
+    "cape": "#638066",
+    "lining": "#ede0c7",
+    "tie": [
+      "#c4aa58",
+      "#ede0c7"
+    ],
+    "bottom": "trousers"
+  },
+  "scale": 2
+}

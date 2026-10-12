@@ -23,7 +23,8 @@
     "films": "node --import tsx tools/films.ts",
     "film": "node --import tsx tools/film.ts",
     "film:verify": "node --import tsx tools/film/verify.ts",
-    "tts": "node --import tsx tools/tts.ts"
+    "tts": "node --import tsx tools/tts.ts",
+    "sprite": "node --import tsx tools/sprite.ts"
   },
   "dependencies": {
     "@sinclair/typebox": "^0.34.41"

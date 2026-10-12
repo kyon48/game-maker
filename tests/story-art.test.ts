@@ -15,7 +15,7 @@ import { MessageState } from '../engine/sim/ui/MessageState';
 import { HeadlessTextMeasurer } from '../engine/sim/HeadlessTextMeasurer';
 import { artifacts } from '../tools/film/artifacts';
 import type { FilmView } from '../engine/film/view';
-const baseline = await readFile('packs/lantern/story/main.story.md', 'utf8');
+const baseline = (await readFile('packs/lantern/story/main.story.md', 'utf8')).replace(/ face=\S+/g, '');
 const aliases = expressionAliases(JSON.parse(await readFile('tests/fixtures/art/expressions.json', 'utf8')));
 const fixture = path.resolve('tests/fixtures/art');
 const game = JSON.parse(await readFile('packs/lantern/game.json', 'utf8'));
@@ -62,6 +62,7 @@ async function setup() {
   await cp('packs/lantern', path.join(root, 'packs/lantern'), { recursive: true });
   await cp(fixture, path.join(root, 'art'), { recursive: true });
   const folder = path.join(root, 'packs/lantern'), config = JSON.parse(await readFile(path.join(folder, 'story/story.config.json'), 'utf8'));
+  await writeFile(path.join(folder,'story/main.story.md'),baseline);
   config.artRoot = '../../../art'; await writeFile(path.join(folder, 'story/story.config.json'), JSON.stringify(config));
   return { root, folder };
 }

@@ -5,7 +5,6 @@
     "suspicious": "assets/portraits/elder/suspicious.png"
   },
   "sora": {
-    "determined": "assets/portraits/sora/determined.png",
-    "neutral": "assets/portraits/sora/neutral.png"
+    "determined": "assets/portraits/sora/determined.png"
   }
 }

@@ -14,7 +14,9 @@ export function storyFaces(stories: readonly Story[], aliases: ReadonlyMap<strin
       if (node.kind === 'dialogue') {
         const character = node.speaker && names.get(node.speaker);
         if (!character || !character.art) continue;
-        let key = previous.get(character.id) ?? 'neutral';
+        let key: string;
+        try { key = previous.get(character.id) ?? normalizeExpression(character.face ?? character.assetFace ?? 'neutral', aliases); }
+        catch (error) { throw new StoryArtError(character, String(error), 'S007'); }
         if (node.expression) {
           try { key = normalizeExpression(node.expression, aliases); }
           catch (error) { throw new StoryArtError(node, String(error), 'S007'); }
@@ -35,4 +37,10 @@ export function portraitOutputs(faces: ReadonlyMap<Statement, Face>): Map<string
   const portraits: Record<string, Record<string, string>> = Object.create(null) as Record<string, Record<string, string>>;
   for (const entry of entries) { const [id, key] = entry.split('/') as [string, string]; (portraits[id] ??= Object.create(null) as Record<string, string>)[key] = `assets/portraits/${entry}.png`; }
   return new Map([['portraits.json', JSON.stringify(portraits, null, 2) + '\n']]);
+}
+
+export function artFaces(stories: readonly Story[], aliases: ReadonlyMap<string,string>): ReadonlyMap<Statement, Face> {
+  const faces = new Map(storyFaces(stories, aliases));
+  for (const c of stories.flatMap(s => s.characters)) if (c.art) faces.set({ ...c, kind:'dialogue', text:'' }, {portrait:c.id,expression:normalizeExpression(c.face ?? c.assetFace ?? 'neutral',aliases)});
+  return faces;
 }

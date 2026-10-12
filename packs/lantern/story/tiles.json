@@ -1,6 +1,70 @@
 {
-  "wall": 7,
-  "floor": 2,
-  "door": 8,
-  "tileset": "assets/tilesets/colors.tsj"
+  "tilesets": {
+    "town": {
+      "image": "assets/tilesets/town.png",
+      "columns": 12,
+      "tileSize": 16,
+      "rows": 11
+    },
+    "dungeon": {
+      "image": "assets/tilesets/dungeon.png",
+      "columns": 12,
+      "tileSize": 16,
+      "rows": 11
+    }
+  },
+  "legend": {
+    "G": {
+      "tile": "town:0"
+    },
+    "P": {
+      "tile": "town:43"
+    },
+    "F": {
+      "tile": "town:81",
+      "collide": true,
+      "under": "G"
+    },
+    "Y": {
+      "tile": "town:2",
+      "under": "G"
+    },
+    "T": {
+      "tile": "town:28",
+      "collide": true,
+      "under": "G"
+    },
+    "W": {
+      "tile": "dungeon:40",
+      "collide": true
+    },
+    "M": {
+      "tile": "town:73"
+    },
+    "B": {
+      "tile": "dungeon:66",
+      "collide": true,
+      "under": "M"
+    },
+    "V": {
+      "tile": "town:80",
+      "collide": true,
+      "under": "G"
+    },
+    "L": {
+      "tile": "town:47",
+      "collide": true,
+      "under": "G"
+    },
+    "O": {
+      "tile": "town:81",
+      "collide": true,
+      "under": "G"
+    },
+    "R": {
+      "tile": "town:82",
+      "collide": true,
+      "under": "G"
+    }
+  }
 }

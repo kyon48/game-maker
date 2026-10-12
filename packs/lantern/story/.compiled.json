@@ -139,28 +139,31 @@
     "활짝 미소": "open_smile",
     "흡족": "content"
   },
+  "defaultExpressions": {
+    "sora": "neutral",
+    "elder": "neutral"
+  },
   "files": {
     "assets/portraits/elder/neutral.png": "d4677fe6d28253d4da8c1f7ed59c0c49113567f8139cd2aede628cfdd1c5fe3e",
     "assets/portraits/elder/soft_smile.png": "81dd46a50eb73e0aaac87cedc06a0d1491f177e1dd949be54d21c32a4999784e",
     "assets/portraits/elder/suspicious.png": "3621ec7fbeeb7658122a996191855b945172702758be429323dd3f9bc4ff69ce",
     "assets/portraits/sora/determined.png": "fa1c40717892db3521a15d39622b9fa1913ac27d7b1c75af7f191dbe9b77941e",
-    "assets/portraits/sora/neutral.png": "d4677fe6d28253d4da8c1f7ed59c0c49113567f8139cd2aede628cfdd1c5fe3e",
     "audio.json": "0603111be0a752bcde98e1b6e0dbe390e14883eeb523ade6300d4d54cd1dd651",
-    "common-events.json": "cfceb2ffa47d8c9ee890d13b394c08c5305c22008580c7d4fa492a065a6a061d",
+    "common-events.json": "a2f8f604cbb8d3313a6ff308f51e7ded5f1f43d7c09867700af68277726da1e4",
     "films/main.film.json": "e0acf96efed46633578f03de99e8087d3bdd49a28d1df235407e664502b947c2",
     "films/main.narration.md": "7498ea7738126fe577099530fec067c98037d0990ee47ae3327fe97478c4ce75",
     "game.json": "c5576ba6c9c496b1b65a07db5a24b9113999020d296f42662febc9fbf2d105dc",
     "items.json": "9bda493b410fbd763da923164e009412d1963e1d226ea540653cb70b90ee0308",
-    "maps/garden.events.json": "2ffe5d7e3f96600da17817a35d3762383b2f7785b275fd1b4ca66d0beab39536",
-    "maps/pier.events.json": "ea05d54016ad6e880ef0a687ebba52657dae17983764b5fb4c2b6f1dd3cd43fc",
-    "maps/tower.events.json": "bd520223c18e0e0c736429d167a0c04cc5c7dff5d9f9ff03dc9e3a619cdbb0ee",
-    "portraits.json": "2e360b1177e2addc39f3c9f0353da4384bd1547aa070f1de0394aea8761c2a33",
+    "maps/garden.events.json": "b71ab4ed510593f8baeef923550e3439597a674d9f5b335ddfe498544445b7a0",
+    "maps/pier.events.json": "1da630b2ef18e91b35ad00acaf514bc693e768d981b5edd3fc402877bbf897b6",
+    "maps/tower.events.json": "9d38b37c0cbeb7761a09fb8427aa277588e2f092c7858d994e5d2871b5cc5b6a",
+    "portraits.json": "82aa83d3cc8a7ffbe7060be96c9a36ff6a74313d213f9dd3aa426b908336cb6a",
     "tests/story_main.scenario.json": "c5ba1477037a89599036f3bb5e6813956edcead6c92865691138c997dc0d2903",
     "voices.json": "740fe13ad4bfbe75a1e237a8683033c0fc9b19de467470051e6b22b615f8b1e6"
   },
   "maps": {
-    "maps/garden.tmj": "7e9f081a9f08a2cc4739d19190cce48ea0d134a539b1e184088f9d87577b5bac",
-    "maps/pier.tmj": "9dd84a88640c940a1eaba8924cc537b50831638d5ce9d11fc248456c43f7c80a",
-    "maps/tower.tmj": "47580e097ed7d2d0fe2701f0ea0ebab61b3bcdcdd02a7974024898d69047e1b0"
+    "maps/garden.tmj": "1e13e5e51fcc2a9e2365c6f3e13376ac8c4effea0fc3eed6057094e32a47d8a5",
+    "maps/pier.tmj": "9bd56cdf1dc7a042fd75f6d77dbd9e253626d8b956fe71af0ae208944f888d51",
+    "maps/tower.tmj": "1ce8ece9219b0b5922b44149219158c4afee619f2ff0fcce6e72a9ebdcd6f2b7"
   }
 }

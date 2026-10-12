@@ -1,14 +1,21 @@
+import { normalizeExpression } from './expressions';
 import { packDirectory } from '../packPaths';
 import { readFile, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import type { Story, Source, Diagnostic } from './ast';
-import { storyFaces, portraitOutputs, StoryArtError } from './faces';
+import { artFaces, portraitOutputs, StoryArtError } from './faces';
 import { pngSize } from '../../engine/data/portraits';
 import { object } from './compile';
 /** Generated PNG values are base64 internally; disk files and ownership hashes are binary. */
 export async function planArt(stories: readonly Story[], artRoot: string, aliases: ReadonlyMap<string, string>): Promise<Map<string, string>> {
   const root = await realpath(artRoot), characters = new Map(stories.flatMap(s => s.characters).map(c => [c.id, c]));
-  const faces = storyFaces(stories, aliases), files = portraitOutputs(faces), loaded = new Map<string, Promise<Record<string, unknown>>>();
+  for (const character of characters.values()) if (character.art) {
+    const folder = await realpath(path.join(root, character.art)); if (!folder.startsWith(root + path.sep)) throw new StoryArtError(character, '에셋 경로가 artRoot 밖을 가리킵니다');
+    const data = object(JSON.parse(await readFile(path.join(folder, 'character.json'), 'utf8')));
+    if (data.defaultExpression !== undefined) { if (typeof data.defaultExpression !== 'string') throw new StoryArtError(character, 'defaultExpression은 문자열이어야 합니다'); character.assetFace = normalizeExpression(data.defaultExpression, aliases); } else delete character.assetFace;
+  }
+  const faces = artFaces(stories, aliases);
+  const files = portraitOutputs(faces), loaded = new Map<string, Promise<Record<string, unknown>>>();
   const inside = async (file: string) => {
     const resolved = await realpath(file);
     if (!resolved.startsWith(root + path.sep)) throw new Error('에셋 경로가 artRoot 밖을 가리킵니다');
@@ -80,7 +87,7 @@ export async function artPack(packId: string, root = process.cwd(), force = fals
     const owned = { ...old.files };
     for (const file of removed) delete owned[file];
     for (const [file, text] of files) owned[file] = outputHash(file, text);
-    files.set('story/.compiled.json', jsonBytes({ version: 1, expressions: Object.fromEntries([...input.expressions].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)), files: Object.fromEntries(Object.entries(owned).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)), maps: old.maps }));
+    files.set('story/.compiled.json', jsonBytes({ version: 1, defaultExpressions: Object.fromEntries(input.stories.flatMap(s => s.characters).filter(c => c.art).map(c => [c.id, normalizeExpression(c.assetFace ?? 'neutral', input.expressions!)])), expressions: Object.fromEntries([...input.expressions].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)), files: Object.fromEntries(Object.entries(owned).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)), maps: old.maps }));
     diagnostics.push(...(await artCredits(folder)).map(d => ({ ...d, file: `packs/${packId}/${d.file}` })));
     await writePrepared(packId, root, { diagnostics, files, removed });
   } catch (error) { diagnostics.push(error instanceof StoryArtError ? error.diagnostic : { file: `packs/${packId}/story/story.config.json`, line: 1, code: 'S038', level: 'error', message: error instanceof Error ? error.message : String(error) }); }

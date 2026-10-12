@@ -11,6 +11,7 @@ import { validatePack } from '../engine/data/validator/validate';
 import { rehearse, asFilm } from '../tools/film/rehearse';
 import { runScenario } from '../engine/data/scenarios/run';
 import { scenarioGameWithPlugins } from '../tools/scenarioGame';
+const legend = new Set(Object.keys(JSON.parse(await readFile('packs/lantern/story/tiles.json','utf8')).legend));
 const baseline = (await readFile('packs/lantern/story/main.story.md', 'utf8')).replace(/ voice=[^\s]+/g, '');
 const game = JSON.parse(await readFile('packs/lantern/game.json', 'utf8')) as unknown;
 const tiles = JSON.parse(await readFile('packs/lantern/story/tiles.json', 'utf8')) as unknown;
@@ -28,7 +29,7 @@ async function prepare(text: string) {
 it('parses scene JSON and return var, lints undeclared vars and malformed JSON, compiles without losing fields', () => {
   const text = baseline.replace('  @cmd {"cmd":"save"}', '  @scene ending {"title":"끝","lines":["기록"]} -> trust');
   const parsed = parseStory(text, 'main.story.md'); expect(parsed.diagnostics).toEqual([]);
-  expect(lintStories([parsed.story]).filter(d => d.level === 'error')).toEqual([]);
+  expect(lintStories([parsed.story], { legend }).filter(d => d.level === 'error')).toEqual([]);
   const compiled = compileStories([parsed.story], game, tiles);
   expect(compiled.files.get('maps/pier.events.json')).toContain('"resultVar": "trust"');
   expect(lintStories([parseStory(text.replace('-> trust', '-> undeclared'), 'main.story.md').story]).some(d => d.code === 'S003')).toBe(true);

@@ -1,8 +1,8 @@
 @pack lantern "등대지기의 약속"
 @player sora
 @screen 480x270
-@character sora "소라" art=base voice=sora
-@character elder "촌장" art=base voice=elder
+@character sora "소라" art=base voice=sora face=determined
+@character elder "촌장" art=base voice=elder face=suspicious
 @character lamp "등대 불씨"
 @character sign "안내판"
 @character sailor "뱃사공" voice=sailor
@@ -20,21 +20,21 @@
 @audio door file=assets/audio/door.wav volume=0.6
 @audio confirm file=assets/audio/confirm.wav volume=0.6
 
-@location pier "선착장" bgm=quiet
+@location pier "선착장" bgm=quiet wall=F floor=G
 @layout
 ########################
-#......................#
-#......................#
-#......................#
-#.......e..............x
-#......................#
-#..s...................#
-#......................#
-#......................#
-#......b...............#
-#............k.........#
-#....n.................#
-#......................#
+L......................L
+L.Y...............Y.T..L
+L......................L
+L.....PPePPPPPPPPPPPPPPx
+L.....P................L
+L..sPPP................L
+L.....P................L
+L.Y...P...........Y.T..L
+L.....Pb...............L
+L.....PPPPPPPk.........L
+L....nP................L
+L.Y...............Y.T..L
 ########################
 @end
 @anchor s = start
@@ -44,11 +44,11 @@
 @anchor k = keeper_spot
 @anchor x = to_tower -> tower:entry
 
-@location tower "등대" bgm=mystery
+@location tower "등대" bgm=mystery wall=W floor=M
 @layout
 ################
 #..............#
-#..............#
+#.B.........B..#
 #..............#
 w..............#
 #..............#
@@ -57,7 +57,7 @@ w..............#
 #..............#
 #..............x
 #..............#
-#..............#
+#.B.........B..#
 #..............#
 ################
 @end
@@ -65,21 +65,21 @@ w..............#
 @anchor l = lamp_spot
 @anchor x = to_garden -> garden:entry
 
-@location garden "등대 뒤 마당" bgm=quiet
+@location garden "등대 뒤 마당" bgm=quiet wall=F floor=G
 @layout
 ########################
-#......................#
-#......................#
-#......................#
-#......................#
-#......................#
-#........c.............#
-#......................#
-#......................#
-x......................#
-#......................#
-#......................#
-#......................#
+L......................L
+L..Y.Y...........Y.Y...L
+L......................L
+L..T................T..L
+L.......VOR............L
+L........c.............L
+L......................L
+L......................L
+x......................L
+L......................L
+L..Y.Y...........Y.Y...L
+L......................L
 ########################
 @end
 @anchor x = entry -> tower:to_garden
