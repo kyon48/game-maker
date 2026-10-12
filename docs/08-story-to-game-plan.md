@@ -89,6 +89,10 @@ flowchart LR
 | `@waitNarration` | 장면에서는 나레이션 대기열 전체 완료 대기. 이벤트·공통 이벤트 안에서는 cue 위치까지 도달 후 완료 대기 |
 | `story.config.json: voices` | 목소리 키 → `{provider, voice, speed?}`. `@character … voice=키`를 표시 이름으로 연결해 voices.json 생성 |
 | `story.config.json: narrator` | 나레이션·화자 없는 대사에 사용할 목소리 키 |
+| `@audio id file=경로 [volume=0.8] [loop]` | audio.json 선언 (volume 기본 1, loop 기본 false) |
+| `@location id "이름" [bgm=audioId]` | 장소 기본 BGM → game.json mapBgm |
+| `@bgm id [fade=초]` / `@bgm stop [fade=초]` | 음악 재생·정지·페이드 |
+| `@sfx id` | 효과음 한 번 재생 |
 | `@item id "이름" category=item\|clue desc="설명" [icon=경로]` | 아이템 선언, 한 줄 JSON 문자열 설명 |
 | `@give id [n] [silent]` / `@take id [n]` | 아이템 획득·소모, n 기본 1, silent는 획득 알림 생략 |
 | `item:id>=1` / `items:clue>=3` | 아이템 개수 / 카테고리 합계 비교 조건 |
@@ -181,7 +185,7 @@ S2부터 voices가 있으면 `advanceText: "voice", count: 1`과 `narrate`를 �
 | 명령 | 입력 | 출력 | 검증·실패 |
 |---|---|---|---|
 | `story lint` | `story/*.story.md` | 진단 목록(파일:줄, 코드) | 문법 오류, 미선언 플래그·인물·앵커, 모르는 표정 이름, 선택지 7개 이상, 레이아웃 폭 불일치, 앵커 중복, 도달 불가 장소, 챕터 제목 중복. 종료 코드 1 |
-| `story compile` | story.md, `story/tiles.json`, 기존 `.tmj` | `game.json`(state·maps·start·mapNames 갱신), `maps/*.events.json`, `common-events.json`, 없는 `.tmj`, `story/.compiled.json`(생성 파일 해시) | lint 통과 후 실행. 마지막 컴파일 이후 **손으로 고친 생성 파일**이 있으면 중단(`--force`로 덮어씀). 끝나면 `validate`를 호출 |
+| `story compile` | story.md, `story/tiles.json`, 기존 `.tmj` | `game.json`(state·maps·start·mapNames·mapBgm 갱신), `maps/*.events.json`, `common-events.json`, 없는 `.tmj`, `story/.compiled.json`(생성 파일 해시) | lint 통과 후 실행. 마지막 컴파일 이후 **손으로 고친 생성 파일**이 있으면 중단(`--force`로 덮어씀). 끝나면 `validate`를 호출 |
 | `story film` | story.md | `films/<name>.film.json`, `films/<name>.narration.md`, `tests/story_<name>.scenario.json`(촬영 경로 전체) | 끝나면 `films`(리허설)와 `scenarios` 호출 |
 | `story art` | story.md의 `@character art=…`, story/story.config.json의 artRoot(설정 파일 기준 상대 경로 권장) | `assets/portraits/<char>/<expr>.png`(**쓰인 표정만** 복사), `portraits.json` | fallback 체인으로도 못 찾는 표정은 오류. 소유권 해시로 복사본 보호·미사용 추적 PNG 삭제. 원본 없는 check는 별칭 캐시·복사본 해시만 검사. CREDITS.md 출처 누락은 경고 |
 | `story build` | 위 전부 | — | `lint → compile → art → film → tts → validate → scenarios → films` 한 번에 |

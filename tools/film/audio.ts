@@ -22,7 +22,7 @@ export async function dialogueAudio(pack: string, out: string, events: readonly 
   try {
     // Bound demuxer looping itself: infinite stream_loop can hang ffmpeg 6 at filter EOF.
     const durations: Record<string, number> = {};
-    for (const event of events) if (event.type === 'music-start' && event.loop && durations[event.file] === undefined) {
+    for (const event of events) if ((event.type === 'music-start' || event.type === 'bgm-start') && event.loop && durations[event.file] === undefined) {
       const file = path.join(root, 'packs', pack, event.file);
       const probe = await run(['-i', file, '-af', 'aresample=48000,aformat=channel_layouts=mono,astats=metadata=0:reset=0', '-f', 'null', '-']);
       const match = probe.stderr.match(/Number of samples: (\d+)/);

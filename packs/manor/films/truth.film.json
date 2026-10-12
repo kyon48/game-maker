@@ -9,7 +9,7 @@
       "pause": 1.5
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice"
     },
     {
       "settle": true
@@ -32,14 +32,14 @@
       "press": "ok"
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice"
     },
     {
       "choose": 0,
       "dwell": 0.4
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice"
     },
     {
       "settle": true
@@ -59,14 +59,14 @@
       "press": "ok"
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice"
     },
     {
       "choose": 0,
       "dwell": 0.4
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice"
     },
     {
       "settle": true
@@ -105,14 +105,14 @@
       "press": "ok"
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice"
     },
     {
       "choose": 0,
       "dwell": 0.4
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice"
     },
     {
       "settle": true
@@ -129,14 +129,14 @@
       "press": "ok"
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice"
     },
     {
       "choose": 0,
       "dwell": 0.4
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice"
     },
     {
       "settle": true
@@ -189,14 +189,14 @@
       "press": "ok"
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice"
     },
     {
       "choose": 0,
       "dwell": 0.4
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice"
     },
     {
       "settle": true
@@ -213,14 +213,14 @@
       "press": "ok"
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice"
     },
     {
       "choose": 0,
       "dwell": 0.4
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice"
     },
     {
       "settle": true
@@ -273,14 +273,14 @@
       "press": "ok"
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice"
     },
     {
       "choose": 0,
       "dwell": 0.4
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice"
     },
     {
       "settle": true
@@ -302,14 +302,14 @@
       "press": "ok"
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice"
     },
     {
       "choose": 1,
       "dwell": 0.4
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice"
     },
     {
       "settle": true
@@ -343,14 +343,14 @@
       "press": "ok"
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice"
     },
     {
       "choose": 0,
       "dwell": 0.4
     },
     {
-      "advanceText": "auto"
+      "advanceText": "voice"
     },
     {
       "waitFor": "scene"

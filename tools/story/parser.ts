@@ -1,6 +1,6 @@
 import type { Story, Source, Statement, Event, Page, Option, Diagnostic, Location, Scene } from './ast';
 import { parseCondition } from './conditions';
-import { tokens, id, integer, options, route, destination, simple } from './syntax';
+import { tokens, id, integer, seconds, options, route, destination, simple } from './syntax';
 interface Line extends Source { text: string; raw: string; indent: number }
 export function parseStory(text: string, file = '<story>'): { story: Story; diagnostics: Diagnostic[] } {
   const parser = new Parser(text, file); parser.parse();
@@ -15,7 +15,7 @@ class Parser {
   private scene?: Scene;
   private chapter?: string;
   constructor(text: string, file: string) {
-    this.story = { file, line: 1, items: [], headers: [], characters: [], flags: [], variables: [], locations: [], chapters: [], scenes: [], common: [] };
+    this.story = { file, line: 1, audio: [], items: [], headers: [], characters: [], flags: [], variables: [], locations: [], chapters: [], scenes: [], common: [] };
     this.lines = text.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n').split('\n').map((raw, i) => ({ raw, text: raw.trim(), indent: raw.match(/^ */)![0].length, file, line: i + 1 }));
     for (const line of this.lines) if (/^ *\t/.test(line.raw)) this.error(line, '들여쓰기에 탭을 사용할 수 없습니다');
   }
@@ -74,6 +74,15 @@ class Parser {
     const t = tokens(text), values = t.map(token => token.value), [command, a, b] = values;
     const count = (n: number) => { if (t.length !== n) throw new Error('헤더 인자 수가 잘못되었습니다'); };
     const quoted = () => { if (!t[2]?.quoted || !b?.trim()) throw new Error('비어 있지 않은 큰따옴표 문자열이 필요합니다'); };
+    if (command === '@audio') {
+      const loop = t.slice(2).filter(token => token.value === 'loop').length;
+      if (loop > 1) throw new Error('loop 중복');
+      const attrs = options(t.slice(2).filter(token => token.value !== 'loop'), ['file', 'volume']);
+      if (!attrs.file) throw new Error('audio file 필요');
+      const volume = attrs.volume === undefined ? undefined : seconds(attrs.volume);
+      if (volume !== undefined && volume > 1) throw new Error('volume은 0~1입니다');
+      this.story.audio.push({ ...src, id: id(a!), filePath: attrs.file, ...(volume !== undefined ? { volume } : {}), ...(loop ? { loop: true } : {}) }); return;
+    }
     if (command === '@pack') { count(3); quoted(); this.story.headers.push({ ...src, kind: 'pack', id: id(a!), title: b! }); return; }
     if (command === '@player') { count(2); this.story.headers.push({ ...src, kind: 'player', id: id(a!) }); return; }
     if (command === '@screen') {
@@ -89,8 +98,8 @@ class Parser {
     if (command === '@flag') { count(2); this.story.flags.push({ ...src, name: id(a!) }); return; }
     if (command === '@var') { count(3); this.story.variables.push({ ...src, name: id(a!), initial: integer(b!) }); return; }
     if (command === '@location') {
-      count(3); quoted(); this.scene = undefined;
-      this.location = { ...src, id: id(a!), name: b!, anchors: [] }; this.story.locations.push(this.location); return;
+      if (t.length < 3) throw new Error('장소 ID와 이름 필요'); quoted(); const attrs = options(t.slice(3), ['bgm']); this.scene = undefined;
+      this.location = { ...src, id: id(a!), name: b!, ...(attrs.bgm ? { bgm: id(attrs.bgm) } : {}), anchors: [] }; this.story.locations.push(this.location); return;
     }
     throw new Error(`해석할 수 없는 최상위 줄: ${text}`);
   }

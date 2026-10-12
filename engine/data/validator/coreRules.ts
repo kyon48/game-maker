@@ -1,3 +1,5 @@
+import { AudioSchema, audioFilePattern } from '../audio';
+import type { Audio } from '../audio';
 import { ItemsSchema, menuLabelKeys, itemNotice } from '../items';
 import type { Items } from '../items';
 import { PortraitsSchema, portraitSlot, pngSize } from '../portraits';
@@ -34,6 +36,15 @@ export async function coreRules(context: ValidationContext) {
     if (!await source.exists(`plugins/${name}.ts`) && !context.diagnostics.some(item => item.code === 'V3' && item.file === 'game.json' && item.pointer === pointer)) report('V3', 'game.json', pointer, `Missing plugin: plugins/${name}.ts`);
   }
   if (skin.window.padding * 2 >= game.screen.width) report('V9', 'skin.json', '/window/padding', 'Message inner width must be positive');
+  const audio = await source.exists('audio.json') ? await read('audio.json', AudioSchema) as Audio | undefined : undefined;
+  for (const [id, sound] of Object.entries(audio ?? {})) {
+    try { packPath('', sound.file); if (!audioFilePattern.test(sound.file) || !await source.exists(sound.file)) throw new Error('Missing or unsupported audio file'); }
+    catch (error) { report('V4', 'audio.json', `/${escapePointer(id)}/file`, String(error)); }
+  }
+  for (const [map, id] of Object.entries(game.mapBgm ?? {})) {
+    if (!game.maps.includes(map)) report('V3', 'game.json', `/mapBgm/${map}`, 'Unknown map');
+    if (!Object.hasOwn(audio ?? {}, id)) report('V3', 'game.json', `/mapBgm/${map}`, 'Undeclared audio');
+  }
   const items = await source.exists('items.json') ? await read('items.json', ItemsSchema) as Items | undefined : undefined;
   if (items) for (const key of menuLabelKeys) if (!game.labels[key]) report('V3', 'game.json', '/labels/' + key, 'Menu label required for items pack');
   if (game.labels.itemGet) try { itemNotice(game.labels.itemGet, 'item', 1); } catch (error) { report('V1', 'game.json', '/labels/itemGet', String(error)); }
@@ -60,6 +71,6 @@ export async function coreRules(context: ValidationContext) {
       } catch (error) { report('V4', 'portraits.json', pointer, String(error)); }
     }
   }
-  return { items, portraits, voices, voiceManifest, game, characters, skin, common };
+  return { audio, items, portraits, voices, voiceManifest, game, characters, skin, common };
 }
 export type PackBasics = NonNullable<Awaited<ReturnType<typeof coreRules>>>;

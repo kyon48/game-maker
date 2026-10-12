@@ -10,6 +10,8 @@ export interface ChoiceRequest { prompt?: string; labels: (string | null)[]; can
 export interface TransferRequest { map: string; marker?: string; x?: number; y?: number; dir?: Dir; fade?: boolean }
 export interface CommandContext {
   readonly filmCues?: import('../ports').FilmCuePort;
+  bgm(id: string | null, fade: number): void;
+  sfx(id: string): void;
   showMapName(): void;
   itemNotice(item: string, count: number): string;
   save(): void;

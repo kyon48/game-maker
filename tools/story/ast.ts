@@ -13,6 +13,8 @@ export type Statement = Source & (
   | { kind: 'narration'; text: string }
   | { kind: 'choice'; prompt: string; options: Option[] }
   | { kind: 'if'; condition: Condition; then: Statement[]; else: Statement[] }
+  | { kind: 'bgm'; id: string | null; fade?: number }
+  | { kind: 'sfx'; id: string }
   | { kind: 'give' | 'take'; item: string; count: number; silent?: boolean }
   | { kind: 'set' | 'unset'; flag: string }
   | { kind: 'add' | 'sub'; variable: string; amount: number }
@@ -34,13 +36,14 @@ export interface Page extends Source { condition?: Condition; statements: Statem
 export interface Event extends Source { kind: 'event'; id: string; anchor: string; trigger: 'action' | 'auto' | 'touch'; once: boolean; character?: string; wander?: string[]; film?: 'skip'; pages: Page[] }
 export interface Scene extends Source { title: string; location: string; chapter?: string; items: (Event | Statement)[] }
 export interface Anchor extends Source { character: string; name: string; destination?: Destination }
-export interface Location extends Source { id: string; name: string; layout?: { file: string; line: number; rows: (Source & { text: string })[] }; anchors: Anchor[] }
+export interface Location extends Source { id: string; name: string; bgm?: string; layout?: { file: string; line: number; rows: (Source & { text: string })[] }; anchors: Anchor[] }
 export type Header = Source & (
   | { kind: 'pack'; id: string; title: string }
   | { kind: 'player'; id: string }
   | { kind: 'screen'; width: number; height: number }
 );
 export interface Story extends Source {
+  audio: (Source & { id: string; filePath: string; volume?: number; loop?: boolean })[];
   items: (Source & { id: string; name: string; description: string; category: 'item' | 'clue'; icon?: string })[];
   headers: Header[];
   characters: (Source & { id: string; name: string; art?: string; voice?: string })[];

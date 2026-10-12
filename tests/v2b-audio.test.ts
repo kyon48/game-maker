@@ -39,8 +39,9 @@ it('short real ffmpeg integration produces stereo 48kHz AAC and removes temporar
     await run(['-loglevel', 'error', '-f', 'lavfi', '-i', 'sine=frequency=330:duration=0.4', path.join(root, 'packs/base/assets/music/test.wav')]);
     const events: FramedEvent[] = [
       { type: 'narration-start', tick: 0, frame: 0, id: 1, text: 'fake narration', plainText: 'fake narration', voiceKey: key, voiceFrames: 15 },
-      { type: 'music-start', tick: 0, frame: 0, id: 2, file: 'assets/music/test.wav', volume: 0.2, fade: 0.05, loop: true },
+      { type: 'bgm-start', audioId: 'test', tick: 0, frame: 0, id: 2, file: 'assets/music/test.wav', volume: 0.2, fade: 0.05, loop: true },
     ];
+    events.push({ type: 'sfx', tick: 16, frame: 7, id: 3, audioId: 'test', file: 'assets/music/test.wav', volume: 0.3 });
     expect(await dialogueAudio('base', out, events, 30, 30, abort.signal, 0, root)).toBe(true);
     const info = await run(['-i', path.join(out, 'video.mp4'), '-f', 'null', '-']);
     expect(info.stderr).toMatch(/Audio: aac.*48000 Hz, stereo/);

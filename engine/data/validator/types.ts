@@ -17,6 +17,7 @@ export interface ValidationOptions {
   plugins?: readonly { id: string; apiVersion: number }[];
 }
 export interface ValidatedPack {
+  audio?: import('../audio').Audio;
   items?: import('../items').Items;
   portraits?: Portraits;
   voices?: Voices; voiceManifest?: VoiceManifest;

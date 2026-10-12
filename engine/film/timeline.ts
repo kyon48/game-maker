@@ -9,6 +9,9 @@ export type TimelineEvent =
   | { tick: number; type: 'chapter'; title: string }
   | { tick: number; type: 'narration-start'; id: number; text: string; plainText: string; voiceKey: string; voiceFrames: number }
   | { tick: number; type: 'narration-end'; id: number; text: string; plainText: string; voiceKey: string; voiceFrames: number }
+  | { type: 'sfx'; tick: number; id: number; audioId: string; file: string; volume: number }
+  | { type: 'bgm-start'; tick: number; id: number; audioId: string; file: string; volume: number; fade: number; loop: boolean }
+  | { type: 'bgm-stop'; tick: number; id: number; file: string; volume: number; fade: number }
   | { tick: number; type: 'music-start'; id: number; file: string; volume: number; fade: number; loop: boolean }
   | { tick: number; type: 'music-stop'; id: number; file: string; volume: number; fade: number };
 export type FramedEvent = TimelineEvent & { frame: number };

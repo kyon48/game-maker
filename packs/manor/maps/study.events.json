@@ -9,6 +9,10 @@
           "trigger": "touch",
           "commands": [
             {
+              "cmd": "sfx",
+              "id": "door"
+            },
+            {
               "cmd": "transfer",
               "map": "hall",
               "marker": "from_study",
@@ -48,6 +52,10 @@
                 {
                   "label": "수첩에 기록한다",
                   "commands": [
+                    {
+                      "cmd": "sfx",
+                      "id": "get"
+                    },
                     {
                       "cmd": "give_item",
                       "item": "clue_seal",
@@ -133,6 +141,10 @@
                 {
                   "label": "수첩에 기록한다",
                   "commands": [
+                    {
+                      "cmd": "sfx",
+                      "id": "get"
+                    },
                     {
                       "cmd": "give_item",
                       "item": "clue_letter",

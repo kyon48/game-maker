@@ -68,6 +68,13 @@ export function simple(text: string, source: Source): Statement {
   const raw = /^@cmd\s+(.+)$/.exec(text);
   if (raw) return { ...source, kind: 'cmd', value: JSON.parse(raw[1]!) as unknown };
   const t = tokens(text).map(token => token.value), [command, a, b] = t;
+  if (command === '@bgm') {
+    if (t.length < 2) throw new Error('BGM ID 또는 stop 필요');
+    const attrs = options(tokens(text).slice(2), ['fade']), fade = attrs.fade === undefined ? undefined : seconds(attrs.fade);
+    if (fade !== undefined && fade > 3600) throw new Error('fade은 3600초 이하입니다');
+    return { ...source, kind: 'bgm', id: a === 'stop' ? null : id(a!), ...(fade !== undefined ? { fade } : {}) };
+  }
+  if (command === '@sfx') { if (t.length !== 2) throw new Error('효과음 ID 한 개 필요'); return { ...source, kind: 'sfx', id: id(a!) }; }
   if (command === '@shake' || command === '@waitNarration') {
     if (t.length !== 1) throw new Error('인자 없는 명령입니다');
     return { ...source, kind: command === '@shake' ? 'shake' : 'waitNarration' };

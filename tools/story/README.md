@@ -128,7 +128,7 @@ compile은 기존 lint를 통과한 뒤 모든 변환·앵커·소유권 검사�
 엔진 validate 오류가 있으면 이미 쓴 생성물은 남아 있으므로 원고/입력을 고친 뒤 다시 컴파일한다.
 
 필수 수기 입력은 game.json, characters.json, skin.json, CREDITS.md, 에셋, story/tiles.json이다.
-game.json은 state/maps/start/mapNames **네 필드만** 갱신한다. 제목·플레이어·해상도·버전·labels 등은 기존 값을 보존한다.
+game.json은 state/maps/start/mapNames/mapBgm **다섯 필드만** 갱신한다. 제목·플레이어·해상도·버전·labels 등은 기존 값을 보존한다.
 @pack/@player/@screen 헤더를 바꿔도 그 메타데이터를 자동 변경하지 않는다.
 시작 장소는 첫 장면(없으면 첫 장소), 시작 앵커는 그 장소의 start다. 방향은 기존 start.dir, 없으면 down이다.
 
@@ -362,3 +362,9 @@ portraits.json·PNG도 .compiled.json의 소유권 대상이다. art는 모든 �
 |---|---|---|
 | S043 | 오류 | 미선언 아이템(명령·조건·텍스트) |
 | S044 | 오류 | 모르는 아이템 카테고리(조건·텍스트) |
+
+## G5 게임 사운드
+
+`@audio quiet file=assets/audio/quiet.ogg volume=0.8 loop`가 audio.json을 생성한다(소유권 검사 대상). `@location pier "선착장" bgm=quiet`는 game.json mapBgm을 생성한다. `@bgm quiet fade=0.5`, `@bgm stop fade=1`, `@sfx get`은 엔진 커맨드로 그대로 변환한다. fade는 초, 지원 파일은 ogg/wav/mp3/flac/m4a다. 미선언 오디오(명령·location bgm)는 **S045 오류**다. 선언 중복은 S016, 옵션/숫자는 S001.
+
+게임 음악은 이 문법으로 일반 플레이와 촬영에 함께 적용하므로 @film music 힌트는 필요 없다. 사람이 쓴 film의 music 단계는 촬영 전용 음악을 덮어쓰는 용도로 유지한다. 게임 BGM과 film music은 같은 채널이며 나중 요청이 이긴다. 동일 mapBgm ID는 새 요청 없이 계속 재생한다. `node --import tsx tools/generate-game-audio.ts <pack>`으로 CC0 원본 BGM 2곡·효과음 3개를 재생성한다.

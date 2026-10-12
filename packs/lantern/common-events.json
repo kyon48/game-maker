@@ -2,6 +2,15 @@
   "relight": {
     "commands": [
       {
+        "cmd": "bgm",
+        "id": "quiet",
+        "fade": 0.3
+      },
+      {
+        "cmd": "sfx",
+        "id": "confirm"
+      },
+      {
         "cmd": "fade",
         "to": "black",
         "frames": 12

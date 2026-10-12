@@ -57,13 +57,14 @@ export function croppedEvents(events: readonly FramedEvent[], from: number, to: 
   const narrationEnds = new Set(result.flatMap(e => e.type === 'narration-end' ? [e.id] : []));
   for (const e of [...result]) if (e.type === 'narration-start' && !narrationEnds.has(e.id)) result.push({ ...e, type: 'narration-end', frame: to - from });
   // A stopped track can still be fading at the chapter boundary.
-  for (const e of events) if (e.type === 'music-start' && e.frame < from) {
-    const stop = events.find(s => s.type === 'music-stop' && s.id === e.id);
-    const fade = stop?.type === 'music-stop' ? stop.fade : 0;
+  for (const e of events) if ((e.type === 'music-start' || e.type === 'bgm-start') && e.frame < from) {
+    const stop = events.find(s => (s.type === 'music-stop' || s.type === 'bgm-stop') && s.id === e.id);
+    const fade = stop && (stop.type === 'music-stop' || stop.type === 'bgm-stop') ? stop.fade : 0;
     if (!stop || stop.frame + fade * fps > from) {
       result.unshift({ ...e, frame: 0 });
       if (stop && stop.frame < from) result.push({ ...stop, frame: 0 });
     }
   }
+  result.unshift(...events.filter(e => e.type === 'sfx' && e.frame < from).map(e => ({ ...e, frame: 0 })));
   return result.sort((a, b) => a.frame - b.frame || a.tick - b.tick);
 }

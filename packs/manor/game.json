@@ -57,5 +57,11 @@
     "study": "서재",
     "library": "도서실",
     "greenhouse": "온실"
+  },
+  "mapBgm": {
+    "hall": "quiet",
+    "study": "mystery",
+    "library": "quiet",
+    "greenhouse": "quiet"
   }
 }

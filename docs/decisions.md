@@ -192,3 +192,13 @@
 - 2026-10-12 / G2 / lantern 후속 촌장 페이지는 열쇠가 0이면 silent로 다시 지급 / 아이템이 없던 구 세이브나 열쇠를 잃은 상태에서도 등대를 켤 수 있게 함. 기존 대사·TTS 매니페스트는 재사용.
 - 2026-10-12 / G2 / 엔진 0.13.0·saveVersion 2, formatVersion 1·API_VERSION 1 유지 / 선택 items.json·조건·커맨드·API 추가는 하위 호환이며 세이브는 1→2 마이그레이션으로 items: {}를 추가함.
 - 2026-10-12 / G2 / GameSession 최초 생성 시 전달한 selfFlags를 유지하도록 보완 / v1 이어하기 재현 테스트에서 선택 옵션이 undefined 인자로 덮여 조사 기록이 사라지는 기존 문제를 확인함. reload는 복원한 셀프 플래그를 우선함.
+
+- 2026-10-12 / G5 / BGM transport를 세이브에 넣지 않고 로드한 맵의 mapBgm으로 시작(saveVersion 2 유지) / 맵 기본 음악만으로 이어하기가 충분하고 재생 위치 복원은 이번 범위 밖이다.
+- 2026-10-12 / G5 / mapBgm 없는 맵은 정지, 같은 ID는 재시작 없이 유지, 커맨드 override는 다음 맵 진입까지 / 기본값과 교체 시점이 예측 가능하다.
+- 2026-10-12 / G5 / volume=1·loop=false·fade=0초 기본, 교체 fade는 기존 곡 아웃과 새 곡 인에 같이 적용, SFX는 한 번 재생 / 기존 film music 기본값을 따른다.
+- 2026-10-12 / G5 / film music과 게임 BGM은 같은 채널에서 나중 요청이 이김(같은 game BGM ID에는 새 요청 없음), SFX는 덕킹 제외 / 일반 플레이 요청을 촬영에서도 보존하고 음성 덕킹 규칙을 재사용한다.
+- 2026-10-12 / G5 / Web Audio는 첫 키·포인터 입력으로 시작, 숨김 탭 suspend·복귀 resume, 종료 시 source/context 정리 / 세이브 없는 직접 새 게임도 자동 재생 제한을 지키고 백그라운드 소리를 막는다.
+- 2026-10-12 / G5 / story compile 소유 game.json 필드에 mapBgm을 추가하고 audio.json을 생성, film music 힌트는 추가하지 않음 / 원고 사운드를 게임·영상 모두에 적용하며 촬영 전용 music 단계는 유지한다.
+- 2026-10-12 / G5 / manor truth에 macos-say 목소리·매니페스트와 voice 진행을 적용 / BGM·효과음·대사 음성을 함께 넣는 실제 완료 검증을 한다. 테스트는 기존 fake 제공자만 쓴다.
+- 2026-10-12 / G5 / 엔진 0.14.0, formatVersion 1·saveVersion 2·API_VERSION 1 유지 / 선택 audio.json·mapBgm·커맨드 추가이며 저장 형식과 공개 API는 바뀌지 않는다.
+- 2026-10-12 / G5 / 커맨드 JSON Schema export가 strict union 각 분기에 cmd를 넣고 Command.anyOf에 펼치도록 보완 / bgm id/stop 인자를 같은 등록 스키마로 검증하면서 외부 JSON Schema도 유효한 커맨드를 받아야 한다.

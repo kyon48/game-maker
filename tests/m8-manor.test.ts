@@ -27,7 +27,7 @@ it.each([
   const runtime = await nodePluginRuntime(new FsSource('packs/manor'), 'packs/manor');
   let game: Game;
   await runScenario(pack, { name: 'choice visibility', start: { map: 'hall', x: 18, y: 19, dir: 'down' }, state: { flags: { introduced: true, ...Object.fromEntries(Object.entries(flags).filter(([id]) => !clueFlags.includes(id))) }, items: Object.fromEntries(Object.entries(flags).filter(([id]) => clueFlags.includes(id)).map(([id, value]) => [id, value ? 1 : 0])) }, steps: [{ press: 'ok' }, { advanceText: true }] }, (pack, start, state) => {
-    game = new Game({ ...pack.game, start, state }, pack.maps.get(start.map)!, pack.characters, pack.events.get(start.map)!, { items: pack.items, plugins: runtime, skin: pack.skin, commonEvents: pack.common });
+    game = new Game({ ...pack.game, start, state }, pack.maps.get(start.map)!, pack.characters, pack.events.get(start.map)!, { audio: pack.audio, items: pack.items, plugins: runtime, skin: pack.skin, commonEvents: pack.common });
     return game;
   });
   expect(game!.choice.snapshot?.options.map(option => option.index)).toEqual(indices);
@@ -36,7 +36,7 @@ it('full investigation saves through the real command and reload preserves clues
   const runtime = await nodePluginRuntime(new FsSource('packs/manor'), 'packs/manor');
   const saves: PersistentState[] = [];
   await runScenario(pack, JSON.parse(await readFile('packs/manor/tests/truth_full_route.scenario.json', 'utf8')), (pack, start, state) => new Game({ ...pack.game, start, state }, pack.maps.get(start.map)!, pack.characters, pack.events.get(start.map)!, {
-    items: pack.items, plugins: runtime, skin: pack.skin, commonEvents: pack.common, save: state => saves.push(structuredClone(state)),
+    audio: pack.audio, items: pack.items, plugins: runtime, skin: pack.skin, commonEvents: pack.common, save: state => saves.push(structuredClone(state)),
     mapLoader: { load: async id => ({ data: pack.maps.get(id)!, events: pack.events.get(id)! }) },
   }));
   expect(saves).toHaveLength(1); const saved = saves[0]!;
@@ -46,7 +46,7 @@ it('full investigation saves through the real command and reload preserves clues
   const state = loadSave(JSON.stringify({ ...saved, packId: 'manor', saveVersion: 2, gameVersion: '0.1.0' }), pack.game, pack.events, pack.maps, { items: pack.items }).state!;
   expect(state).toEqual(saved);
   const freshRuntime = await nodePluginRuntime(new FsSource('packs/manor'), 'packs/manor');
-  const reloaded = new Game({ ...pack.game, start: { map: state.map, x: state.x, y: state.y, dir: state.dir }, state: { flags: state.flags, vars: state.vars, items: state.items } }, pack.maps.get(state.map)!, pack.characters, pack.events.get(state.map)!, { items: pack.items, plugins: freshRuntime, skin: pack.skin, commonEvents: pack.common, selfFlags: state.selfFlags });
+  const reloaded = new Game({ ...pack.game, start: { map: state.map, x: state.x, y: state.y, dir: state.dir }, state: { flags: state.flags, vars: state.vars, items: state.items } }, pack.maps.get(state.map)!, pack.characters, pack.events.get(state.map)!, { audio: pack.audio, items: pack.items, plugins: freshRuntime, skin: pack.skin, commonEvents: pack.common, selfFlags: state.selfFlags });
   expect(reloaded.main.running).toBe(false); expect(reloaded.snapshot.message).toBeNull(); expect(reloaded.snapshot.fade).toBe(0);
   expect(reloaded.evaluate({ itemCount: 'clue', op: '>=', value: 5 }, null)).toBe(true);
 });
