@@ -84,7 +84,7 @@ export async function filmRules(context: ValidationContext, basics: PackBasics, 
       if ('chapter' in step) { if (chapters.has(step.chapter)) report('V9', file, p + '/chapter', 'Duplicate film chapter'); chapters.add(step.chapter); }
       if ('expectSave' in step) condition(step.expectSave, file, p + '/expectSave');
       if ('reload' in step) possible = new Set(game.maps);
-      if ('expect' in step && 'scene' in step.expect && !['ending', 'menu'].includes(step.expect.scene) && !options.scenes?.has(step.expect.scene)) report('V3', file, p + '/expect/scene', 'Unknown scene');
+      if ('expect' in step && 'scene' in step.expect && !['ending', 'menu', ...(basics.battle ? ['battle'] : [])].includes(step.expect.scene) && !options.scenes?.has(step.expect.scene)) report('V3', file, p + '/expect/scene', 'Unknown scene');
       if ('expect' in step) { condition(step.expect, file, p + '/expect'); if ('map' in step.expect && !('self' in step.expect)) { possible = new Set([step.expect.map]); continue; } }
       if ('walkTo' in step) {
         const target = step.walkTo;

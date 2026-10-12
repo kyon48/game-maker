@@ -1,0 +1,10 @@
+{
+  "hit": {
+    "file": "assets/audio/door.wav",
+    "volume": 0.5
+  },
+  "heal": {
+    "file": "assets/audio/get.wav",
+    "volume": 0.5
+  }
+}

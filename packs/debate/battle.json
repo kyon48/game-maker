@@ -1,0 +1,77 @@
+{
+  "variation": false,
+  "labels": {
+    "hp": "설득력",
+    "attack": "반박",
+    "defend": "침묵",
+    "escape": "다음에 이야기한다",
+    "gameOver": "토론이 끝났다",
+    "victory": "약속을 받아 냈다",
+    "defeat": "다시 생각해 보자"
+  },
+  "actors": {
+    "visitor": {
+      "name": "여행자",
+      "hp": 20,
+      "atk": 6,
+      "def": 2,
+      "speed": 6,
+      "skills": [
+        "reason",
+        "listen"
+      ]
+    }
+  },
+  "enemies": {
+    "host": {
+      "name": "마을 대표",
+      "hp": 16,
+      "atk": 4,
+      "def": 2,
+      "speed": 4,
+      "skills": [
+        "concern"
+      ],
+      "script": {
+        "1": "concern",
+        "2": "concern",
+        "3": "concern"
+      }
+    }
+  },
+  "skills": {
+    "reason": {
+      "name": "함께 지킬 이유",
+      "effect": "damage",
+      "power": 8,
+      "text": "{user}의 반박에 {target}의 설득력이 {value}만큼 달라졌다.",
+      "sfx": "hit"
+    },
+    "listen": {
+      "name": "이야기 듣기",
+      "effect": "heal",
+      "power": 2,
+      "text": "{user}가 숨을 고르고 설득력 {value}을 회복했다.",
+      "sfx": "heal"
+    },
+    "concern": {
+      "name": "밤길의 걱정",
+      "effect": "damage",
+      "power": 8,
+      "text": "{user}의 걱정이 {target}에게 닿았다. 설득력 -{value}.",
+      "sfx": "hit"
+    }
+  },
+  "troops": {
+    "night_watch": {
+      "actors": [
+        "visitor"
+      ],
+      "enemies": [
+        "host"
+      ],
+      "canLose": true,
+      "canEscape": true
+    }
+  }
+}

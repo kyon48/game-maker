@@ -1,3 +1,4 @@
+import { BattleArgs } from '../battle';
 import { menuLabelKeys } from '../items';
 import { MenuArgs } from '../scenes';
 import { EndingArgs } from '../scenes';
@@ -46,10 +47,15 @@ export async function eventRules(context: ValidationContext, basics: PackBasics,
       });
       if (!check(definition.args, args, file, p)) return;
       if ((command.cmd === 'bgm' || command.cmd === 'sfx') && command.id !== undefined && !Object.hasOwn(basics.audio ?? {}, command.id as string)) report('V3', file, p + '/id', 'Undeclared audio');
+      if (command.cmd === 'battle') {
+        if (!basics.battle?.troops[command.troop as string]) report('V3', file, p + '/troop', 'Unknown battle troop');
+        const name = command.resultVar as string; usedVars.add(name); if (!Object.hasOwn(game.state.vars, name)) report('V3', file, p + '/resultVar', 'Undeclared variable');
+      }
       if (command.cmd === 'scene') {
-        const schema = options.scenes?.get(command.name as string) ?? (command.name === 'ending' ? EndingArgs : command.name === 'menu' ? MenuArgs : undefined);
+        const schema = options.scenes?.get(command.name as string) ?? (command.name === 'ending' ? EndingArgs : command.name === 'menu' ? MenuArgs : command.name === 'battle' && basics.battle ? BattleArgs : undefined);
         if (!schema) report('V1', file, p + '/name', 'Unknown scene');
         else check(schema, command.args ?? {}, file, p + '/args');
+        if (command.name === 'battle' && !basics.battle?.troops[(command.args as { troop?: string })?.troop ?? '']) report('V3', file, p + '/args/troop', 'Unknown battle troop');
         if (command.resultVar !== undefined) { const name = command.resultVar as string; usedVars.add(name); if (!Object.hasOwn(game.state.vars, name)) report('V3', file, p + '/resultVar', 'Undeclared variable'); }
         if (command.name === 'ending' && typeof (command.args as Record<string, unknown>)?.image === 'string') sceneAssets.push({ file, pointer: p + '/args/image', path: (command.args as { image: string }).image });
       }

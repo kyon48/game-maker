@@ -53,6 +53,10 @@ export function simple(text: string, source: Source): Statement {
     if (expression && !speaker) throw new Error('화자 없이 표정을 지정할 수 없습니다');
     return { ...source, kind: 'dialogue', speaker, expression, text: dialogue[3]! };
   }
+  const battle = /^@battle\s+(\S+)\s+->\s+(\S+)$/.exec(text);
+  if (battle) return { ...source, kind: 'battle', troop: id(battle[1]!), resultVar: id(battle[2]!) };
+  const choose = /^@film\s+choose\s+(\S+)$/.exec(text);
+  if (choose) { const choices = choose[1]!.split(',').map(n => integer(n)); if (choices.some(n => n < 0 || n > 5)) throw new Error('선택 번호는 0~5입니다'); return { ...source, kind: 'filmChoose', choices }; }
   const scene = /^@scene\s+([a-z][a-z0-9_]*)\s+(\{.*\})(?:\s+->\s+([a-z][a-z0-9_]*))?$/.exec(text);
   if (scene) {
     const args = JSON.parse(scene[2]!) as unknown;

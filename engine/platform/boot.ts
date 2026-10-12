@@ -72,6 +72,7 @@ async function boot(): Promise<void> {
     source.readJson('skin.json') as Promise<Skin>,
     source.readJson('common-events.json') as Promise<Record<string, { commands: Command[] }>>,
   ]);
+  const battle = await source.exists('battle.json') ? await source.readJson('battle.json') as import('../data/battle').Battle : undefined;
   const audio = await source.exists('audio.json') ? await source.readJson('audio.json') as import('../data/audio').Audio : undefined;
   const items = await source.exists('items.json') ? await source.readJson('items.json') as import('../data/items').Items : undefined;
   const portraits = await source.exists('portraits.json') ? await source.readJson('portraits.json') as Portraits : {};
@@ -119,7 +120,7 @@ async function boot(): Promise<void> {
   const initial = await loader.load(start.map);
   const filmCues = (import.meta.env.DEV || __RECORDING__) && film ? new (await import('../film/cues')).FilmCueGate() : undefined;
   const options: GameOptions = {
-    audio, items, voices, voiceLengths: voiceLengths(voiceManifest), filmCues, recording: !!film?.steps.some(s => 'cue' in s || 'advanceText' in s && s.advanceText === 'voice'),
+    battle, audio, items, voices, voiceLengths: voiceLengths(voiceManifest), filmCues, recording: !!film?.steps.some(s => 'cue' in s || 'advanceText' in s && s.advanceText === 'voice'),
     plugins, skin, textMeasurer: new CanvasTextMeasurer(context), mapLoader: prepared ? { load: id => { const map = prepared.get(id); return map ? Promise.resolve(map) : Promise.reject(new Error(`Unknown map: ${id}`)); } } : loader, commonEvents,
     rngState: state?.rngState, sceneImages,
     selfFlags: state?.selfFlags, save: value => { if (!film) storage.write(value); },
@@ -127,7 +128,7 @@ async function boot(): Promise<void> {
   let saveSession: GameSession | undefined;
   if ((import.meta.env.DEV || __RECORDING__) && film && prepared) {
     const { GameSession } = await import('../sim/state/GameSession');
-    saveSession = new GameSession({ game, audio, items, characters, skin, common: commonEvents, events: new Map(entries), maps: new Map([...prepared].map(([id, map]) => [id, map.data])) }, options, start, { items: { ...game.state.items, ...film.state?.items }, flags: { ...game.state.flags, ...film.state?.flags }, vars: { ...game.state.vars, ...film.state?.vars } });
+    saveSession = new GameSession({ game, battle, audio, items, characters, skin, common: commonEvents, events: new Map(entries), maps: new Map([...prepared].map(([id, map]) => [id, map.data])) }, options, start, { items: { ...game.state.items, ...film.state?.items }, flags: { ...game.state.flags, ...film.state?.flags }, vars: { ...game.state.vars, ...film.state?.vars } });
   }
   let simulation = saveSession?.game ?? new Game({ ...game, start, state: film ? { items: { ...game.state.items, ...film.state?.items }, flags: { ...game.state.flags, ...film.state?.flags }, vars: { ...game.state.vars, ...film.state?.vars } } : state ? { flags: state.flags, vars: state.vars, items: state.items } : game.state }, initial.data, characters, initial.events, options);
   const render = (active = simulation) => {
@@ -148,7 +149,7 @@ async function boot(): Promise<void> {
       drawMapName(context, snapshot.mapName, skin);
     }
     if (snapshot.scenes.length) drawScene(context, snapshot.scenes.at(-1)!.draw, skin, images, game.tileSize);
-    drawUi(context, snapshot, skin, images);
+    drawUi(context, snapshot, skin, images, snapshot.scenes.at(-1)?.name === 'battle' ? 60 : 0);
     drawPortrait(presentation.hdContext, snapshot.message, skin, portraits, images, canvas.width, canvas.height);
   };
   if ((import.meta.env.DEV || __RECORDING__) && film) {

@@ -70,10 +70,11 @@ export function compileStories(stories: readonly Story[], gameValue: unknown, ti
       case 'call': return [{ cmd: 'call', common: node.common }];
       case 'give': return [{ cmd: 'give_item', item: node.item, count: node.count, ...(node.silent ? { notify: false } : {}) }];
       case 'take': return [{ cmd: 'take_item', item: node.item, count: node.count }];
+      case 'battle': return [{ cmd: 'battle', troop: node.troop, resultVar: node.resultVar }];
       case 'scene': return [{ cmd: 'scene', name: node.name, args: node.args, ...(node.resultVar ? { resultVar: node.resultVar } : {}) }];
       case 'cmd': return [node.value];
       case 'narration': case 'waitNarration': return [{ cmd: 'film_cue', id: cues.get(node)! }];
-      case 'filmInputs': case 'filmPause': case 'filmWalkTo': return [];
+      case 'filmChoose': case 'filmInputs': case 'filmPause': case 'filmWalkTo': return [];
     }
   });
   const eventData = (event: Event, map: string) => {

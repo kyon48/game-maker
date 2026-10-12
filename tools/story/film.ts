@@ -1,3 +1,5 @@
+import { battleChoiceResult } from './battle';
+import { Random } from '../../engine/sim/scenes/Random';
 import { FilmCueGate } from '../../engine/film/cues';
 import { storyCues, sceneNarrationCues } from './cues';
 import type { Film, FilmStep } from '../../engine/data/schema/film';
@@ -66,19 +68,39 @@ export async function generateFilm(stories: readonly Story[], pack: ValidatedPac
     const auto = trigger === 'auto';
     await waitReady(trigger !== 'action', map, auto);
     let selected = 0, cueIndex = 0, sceneIndex = 0;
-    const sceneNodes = selectedPath.filter(node => node.kind === 'scene');
+    const sceneNodes = selectedPath.filter(node => node.kind === 'scene' || node.kind === 'battle');
     const queued = selectedPath.filter(node => node.kind === 'narration' || node.kind === 'waitNarration');
     while (runtime.game.map.id === map && (runtime.game.main.running || runtime.game.message.opened || runtime.game.choice.opened)) {
       if (runtime.game.scenes.opened) {
-        const node = sceneNodes[sceneIndex++];
         const name = runtime.game.snapshot.scenes.at(-1)!.name;
-        if (!node || node.kind !== 'scene' || node.name !== name) compileError(source, 'S031', `원고 경로와 다른 씬: ${name}`);
+        const previous = sceneNodes[sceneIndex - 1];
+        if (name === 'ending' && previous?.kind === 'battle' && pack.battle?.troops[previous.troop]?.canLose === false && runtime.game.state.getVar(previous.resultVar) === 1) { steps.push({ pause: 2 }); endingReached = true; break; }
+        const node = sceneNodes[sceneIndex++];
+        if (!node || !['scene', 'battle'].includes(node.kind) || (node.kind === 'scene' ? node.name : node.kind === 'battle' ? 'battle' : '') !== name) compileError(source, 'S031', `원고 경로와 다른 씬: ${name}`);
         steps.push({ waitFor: 'scene' });
         if (name === 'ending') { steps.push({ pause: 2 }); endingReached = true; break; }
         const hint = selectedPath[selectedPath.indexOf(node) + 1];
-        if (hint?.kind !== 'filmInputs') compileError(node, 'S042', '플러그인 씬 바로 다음에 @film press 입력 힌트가 필요합니다');
-        for (const action of hint.actions) await emit({ press: action });
-        if (runtime.game.scenes.opened) compileError(node, 'S042', '촬영 입력 힌트로 씬이 닫히지 않았습니다');
+        if (hint?.kind !== 'filmInputs' && hint?.kind !== 'filmChoose') compileError(node, 'S042', '플러그인 씬 바로 다음에 @film press 입력 힌트가 필요합니다');
+        if (hint.kind === 'filmInputs') for (const action of hint.actions) await emit({ press: action });
+        else for (const choice of hint.choices) {
+          let ticks = 0;
+          while (!runtime.game.choice.opened && runtime.game.scenes.opened) {
+            if (++ticks > 36000) compileError(node, 'S042', '전투 선택지 준비 시간 초과');
+            if (runtime.game.message.opened) await emit({ advanceText: pack.voices?.[runtime.game.message.snapshot?.speaker ?? 'narrator'] ? 'voice' : 'auto', count: 1 });
+            else await emit({ wait: 1 });
+          }
+          await emit({ choose: choice, dwell: 0.4 });
+        }
+        if (node.kind === 'battle') {
+          let ticks = 0;
+          while (runtime.game.scenes.opened && !runtime.game.choice.opened) {
+            if (runtime.game.scenes.activeName === 'ending') { steps.push({ pause: 2 }); endingReached = true; break; }
+            if (++ticks > 36000) compileError(node, 'S042', '전투 종료 시간 초과');
+            if (runtime.game.message.opened) await emit({ advanceText: pack.voices?.[runtime.game.message.snapshot?.speaker ?? 'narrator'] ? 'voice' : 'auto', count: 1 });
+            else await emit({ wait: 1 });
+          }
+        }
+        if (runtime.game.scenes.opened && !endingReached) compileError(node, 'S042', '촬영 입력 힌트로 씬이 닫히지 않았습니다');
       } else if (gate.pending) {
         const node = queued[cueIndex++];
         if (!node || cues.get(node) !== gate.pending) compileError(source, 'S031', `원고 경로와 다른 cue: ${gate.pending}`);
@@ -102,17 +124,25 @@ export async function generateFilm(stories: readonly Story[], pack: ValidatedPac
     if (value.kind === 'variable' || value.kind === 'item' || value.kind === 'itemCount') { const a = value.kind === 'variable' ? vars[value.name]! : value.kind === 'item' ? inventory[value.name] ?? 0 : Object.entries(pack.items ?? {}).reduce((n, [id, item]) => n + (item.category === value.name ? inventory[id] ?? 0 : 0), 0), b = value.value; return ({ '==': a === b, '!=': a !== b, '<': a < b, '<=': a <= b, '>': a > b, '>=': a >= b })[value.op]; }
     return value.kind === 'all' ? value.conditions.every(c => condition(c, flags, vars, inventory)) : value.conditions.some(c => condition(c, flags, vars, inventory));
   };
-  const pathStatements = (list: readonly Statement[], flags: Record<string, boolean>, vars: Record<string, number>, choices: number[], expected: Map<string, boolean>, inventory: Record<string, number>, depth = 0): Statement[] => {
+  let fatalBattlePlan = false;
+  const pathStatements = (list: readonly Statement[], flags: Record<string, boolean>, vars: Record<string, number>, choices: number[], expected: Map<string, boolean>, inventory: Record<string, number>, depth = 0, predicted = new Random(runtime.game.rng.state)): Statement[] => {
+    if (depth === 0) fatalBattlePlan = false;
     if (depth > 64) compileError(source, 'S031', '공통 이벤트 호출 깊이 초과');
     const result: Statement[] = [];
     for (const node of list) {
       result.push(node);
-      if (node.kind === 'if') result.push(...pathStatements(condition(node.condition, flags, vars, inventory) ? node.then : node.else, flags, vars, choices, expected, inventory, depth + 1));
-      if (node.kind === 'choice') { const index = Math.max(0, node.options.findIndex(o => o.chosen)); choices.push(index); result.push(...pathStatements(node.options[index]!.statements, flags, vars, choices, expected, inventory, depth + 1)); }
+      if (node.kind === 'battle') {
+        const hint = list[list.indexOf(node) + 1];
+        if (hint?.kind === 'filmChoose' && pack.battle) { try { vars[node.resultVar] = battleChoiceResult(pack.battle, node.troop, hint.choices, () => predicted.next()); } catch (error) { compileError(node, 'S042', String(error)); } }
+        if (hint?.kind === 'filmChoose' && pack.battle && vars[node.resultVar] === 1 && !pack.battle.troops[node.troop]!.canLose) { result.push(hint); fatalBattlePlan = true; break; }
+      }
+      if (node.kind === 'if') result.push(...pathStatements(condition(node.condition, flags, vars, inventory) ? node.then : node.else, flags, vars, choices, expected, inventory, depth + 1, predicted));
+      if (node.kind === 'choice') { const index = Math.max(0, node.options.findIndex(o => o.chosen)); choices.push(index); result.push(...pathStatements(node.options[index]!.statements, flags, vars, choices, expected, inventory, depth + 1, predicted)); }
       if (node.kind === 'set' || node.kind === 'unset') { flags[node.flag] = node.kind === 'set'; expected.set(node.flag, node.kind === 'set'); }
       if (node.kind === 'give' || node.kind === 'take') inventory[node.item] = Math.max(0, (inventory[node.item] ?? 0) + (node.kind === 'give' ? node.count : -node.count));
       if (node.kind === 'add' || node.kind === 'sub') vars[node.variable] = vars[node.variable]! + (node.kind === 'add' ? node.amount : -node.amount);
-      if (node.kind === 'call') result.push(...pathStatements(common.get(node.common)!, flags, vars, choices, expected, inventory, depth + 1));
+      if (node.kind === 'call') result.push(...pathStatements(common.get(node.common)!, flags, vars, choices, expected, inventory, depth + 1, predicted));
+      if (fatalBattlePlan) break;
       const last = result.at(-1);
       if (last?.kind === 'scene' && last.name === 'ending') break;
     }

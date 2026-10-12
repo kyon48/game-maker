@@ -1,0 +1,312 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "labels",
+    "actors",
+    "enemies",
+    "skills",
+    "troops"
+  ],
+  "properties": {
+    "labels": {
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "hp",
+        "attack",
+        "defend"
+      ],
+      "properties": {
+        "hp": {
+          "type": "string"
+        },
+        "attack": {
+          "type": "string"
+        },
+        "defend": {
+          "type": "string"
+        },
+        "escape": {
+          "type": "string"
+        },
+        "victory": {
+          "type": "string"
+        },
+        "defeat": {
+          "type": "string"
+        },
+        "gameOver": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string"
+        }
+      }
+    },
+    "variation": {
+      "type": "boolean"
+    },
+    "actors": {
+      "additionalProperties": false,
+      "type": "object",
+      "patternProperties": {
+        "^[a-z][a-z0-9_]*$": {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "name",
+            "hp",
+            "atk",
+            "def",
+            "speed",
+            "skills"
+          ],
+          "properties": {
+            "name": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "hp": {
+              "minimum": 1,
+              "maximum": 1000000,
+              "type": "integer"
+            },
+            "atk": {
+              "minimum": 0,
+              "maximum": 1000000,
+              "type": "integer"
+            },
+            "def": {
+              "minimum": 0,
+              "maximum": 1000000,
+              "type": "integer"
+            },
+            "speed": {
+              "minimum": 0,
+              "maximum": 1000000,
+              "type": "integer"
+            },
+            "skills": {
+              "minItems": 1,
+              "maxItems": 6,
+              "uniqueItems": true,
+              "type": "array",
+              "items": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              }
+            },
+            "image": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "enemies": {
+      "additionalProperties": false,
+      "type": "object",
+      "patternProperties": {
+        "^[a-z][a-z0-9_]*$": {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "name",
+            "hp",
+            "atk",
+            "def",
+            "speed",
+            "skills"
+          ],
+          "properties": {
+            "name": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "hp": {
+              "minimum": 1,
+              "maximum": 1000000,
+              "type": "integer"
+            },
+            "atk": {
+              "minimum": 0,
+              "maximum": 1000000,
+              "type": "integer"
+            },
+            "def": {
+              "minimum": 0,
+              "maximum": 1000000,
+              "type": "integer"
+            },
+            "speed": {
+              "minimum": 0,
+              "maximum": 1000000,
+              "type": "integer"
+            },
+            "skills": {
+              "minItems": 1,
+              "maxItems": 6,
+              "uniqueItems": true,
+              "type": "array",
+              "items": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              }
+            },
+            "image": {
+              "type": "string"
+            },
+            "weights": {
+              "additionalProperties": false,
+              "type": "object",
+              "patternProperties": {
+                "^[a-z][a-z0-9_]*$": {
+                  "exclusiveMinimum": 0,
+                  "maximum": 1000000,
+                  "type": "number"
+                }
+              }
+            },
+            "script": {
+              "additionalProperties": false,
+              "type": "object",
+              "patternProperties": {
+                "^[1-9][0-9]*$": {
+                  "pattern": "^[a-z][a-z0-9_]*$",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "skills": {
+      "additionalProperties": false,
+      "type": "object",
+      "patternProperties": {
+        "^[a-z][a-z0-9_]*$": {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "name",
+            "effect",
+            "text"
+          ],
+          "properties": {
+            "name": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "effect": {
+              "anyOf": [
+                {
+                  "const": "damage",
+                  "type": "string"
+                },
+                {
+                  "const": "heal",
+                  "type": "string"
+                },
+                {
+                  "const": "buff",
+                  "type": "string"
+                }
+              ]
+            },
+            "power": {
+              "minimum": 0,
+              "maximum": 1000000,
+              "type": "integer"
+            },
+            "text": {
+              "type": "string"
+            },
+            "stat": {
+              "anyOf": [
+                {
+                  "const": "atk",
+                  "type": "string"
+                },
+                {
+                  "const": "def",
+                  "type": "string"
+                },
+                {
+                  "const": "speed",
+                  "type": "string"
+                }
+              ]
+            },
+            "multiplier": {
+              "exclusiveMinimum": 0,
+              "maximum": 10,
+              "type": "number"
+            },
+            "turns": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "integer"
+            },
+            "sfx": {
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "troops": {
+      "additionalProperties": false,
+      "type": "object",
+      "patternProperties": {
+        "^[a-z][a-z0-9_]*$": {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "enemies",
+            "canLose"
+          ],
+          "properties": {
+            "actors": {
+              "minItems": 1,
+              "maxItems": 3,
+              "uniqueItems": true,
+              "type": "array",
+              "items": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              }
+            },
+            "enemies": {
+              "minItems": 1,
+              "maxItems": 3,
+              "type": "array",
+              "items": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "type": "string"
+              }
+            },
+            "background": {
+              "type": "string"
+            },
+            "image": {
+              "type": "string"
+            },
+            "canLose": {
+              "type": "boolean"
+            },
+            "canEscape": {
+              "type": "boolean"
+            },
+            "variation": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    }
+  }
+}

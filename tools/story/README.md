@@ -368,3 +368,11 @@ portraits.json·PNG도 .compiled.json의 소유권 대상이다. art는 모든 �
 `@audio quiet file=assets/audio/quiet.ogg volume=0.8 loop`가 audio.json을 생성한다(소유권 검사 대상). `@location pier "선착장" bgm=quiet`는 game.json mapBgm을 생성한다. `@bgm quiet fade=0.5`, `@bgm stop fade=1`, `@sfx get`은 엔진 커맨드로 그대로 변환한다. fade는 초, 지원 파일은 ogg/wav/mp3/flac/m4a다. 미선언 오디오(명령·location bgm)는 **S045 오류**다. 선언 중복은 S016, 옵션/숫자는 S001.
 
 게임 음악은 이 문법으로 일반 플레이와 촬영에 함께 적용하므로 @film music 힌트는 필요 없다. 사람이 쓴 film의 music 단계는 촬영 전용 음악을 덮어쓰는 용도로 유지한다. 게임 BGM과 film music은 같은 채널이며 나중 요청이 이긴다. 동일 mapBgm ID는 새 요청 없이 계속 재생한다. `node --import tsx tools/generate-game-audio.ts <pack>`으로 CC0 원본 BGM 2곡·효과음 3개를 재생성한다.
+
+## G4 전투
+
+`@battle night_watch -> result`는 수기 battle.json troop을 실행한다. 결과 변수는 @var로 선언한다(S003). battle.json이 있는 lint는 troop ID도 검사한다(S046); 데이터 전체·이미지·기술은 엔진 validate가 검사하며 story는 battle.json을 생성/소유하지 않는다.
+
+바로 다음 줄에 `@film choose 0,0,0,0,0,0`(라운드마다 명령→기술→대상, 방어/도주는 명령만) 또는 `@film press …` 힌트를 쓴다. 누락·부족·미종료는 S042다. choose 힌트는 메시지를 보통 음성/auto 경로로 진행하며 다음 선택지까지 기다린다. 순수 전투 규칙과 같은 시드로 결과를 계산해 resultVar 뒤의 조건 분기도 촬영 경로에 반영한다. press는 원시 입력이므로 텍스트 확인까지 직접 지정하며 결과를 사용하는 원고 분기는 choose 힌트를 권장한다. 일반 시나리오는 동일한 수동 입력 기록이다. hint와 게임 결과의 expect는 실제 헤드리스 실행으로 다시 확인한다.
+
+canLose=false로 패배하면 이후 이벤트·장면을 실행하지 않고 게임 오버 ending을 2초 담아 촬영을 끝낸다. 전투 결과 분기는 choose 힌트로 계획하며 일반 플레이의 재시작/이어하기 선택을 자동으로 누르지 않는다.

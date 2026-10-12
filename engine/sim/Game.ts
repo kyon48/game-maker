@@ -1,3 +1,5 @@
+import { battle } from './scenes/battle';
+import type { Battle } from '../data/battle';
 import { SoundState } from './state/SoundState';
 import type { Audio, SoundSnapshot } from '../data/audio';
 import { itemNotice, menuLabelKeys } from '../data/items';
@@ -59,6 +61,7 @@ export interface GameSnapshot {
   readonly choice: ChoiceSnapshot | null;
 }
 export interface GameOptions {
+  battle?: Battle;
   audio?: Audio;
   items?: Items;
   rngState?: number;
@@ -125,6 +128,7 @@ export class Game {
     this.scenes = new SceneStack(() => this.sceneContext(), options.sceneImages, (name, value) => {
       this.sceneResult = { name, value }; if (!options.recording) options.sceneEnd?.(name, value);
     });
+    if (options.battle) this.scenes.definitions.set('battle', battle(options.battle, (labels, prompt) => this.choice.open({ labels, prompt, cancelIndex: null }), () => this.choice.result ?? 0, id => this.sound.playSfx(id)) as import('./scenes/SceneStack').RuntimeScene);
     for (const [name, definition] of options.plugins?.scenes ?? []) this.scenes.definitions.set(name, definition);
     this.sound.playBgm(this.config.mapBgm?.[this.map.id] ?? null);
     this.showMapName();
@@ -226,6 +230,7 @@ export class Game {
     const mapId = () => this.map.id;
     const scope = { mapId: this.map.id, id: event.id };
     return {
+      canLose: troop => this.options.battle?.troops[troop]?.canLose ?? false, gameOverLabel: () => this.options.battle?.labels.gameOver ?? this.config.labels.newGame,
       bgm: (id, fade) => this.sound.playBgm(id, fade), sfx: id => this.sound.playSfx(id),
       filmCues: this.options.recording ? this.options.filmCues : undefined,
       showMapName: () => this.showMapName(),
@@ -323,7 +328,7 @@ export class Game {
     const measurer = this.options.textMeasurer ?? new HeadlessTextMeasurer(this.options.skin?.font.size ?? 12);
     return { textMeasurer: Object.freeze({ width: (text: string) => measurer.width(text) }), lineHeight: this.options.skin?.font.lineHeight ?? 16, items: Object.freeze(Object.fromEntries(Object.entries(this.options.items ?? {}).map(([id, item]) => [id, Object.freeze({ ...item })]))), state: stateAccess(this.state), screen: Object.freeze({ ...this.config.screen }), labels: Object.freeze({ ...this.config.labels }),
       rng: () => this.rng.next(), openScene: (name, args) => this.scenes.open(name, args),
-      showText: request => { if (this.message.opened || this.choice.opened) throw new Error('Scene UI already open'); this.message.open(request, 'plugin'); } };
+      showText: request => { if (this.message.opened || this.choice.opened) throw new Error('Scene UI already open'); this.message.open(request, this.scenes.activeName === 'battle' ? 'command' : 'plugin'); } };
   }
   private showMapName(): void { this.mapName.show(this.config.mapNames?.[this.map.id]); this.nameShownThisTick = true; }
   private capture(): GameSnapshot {

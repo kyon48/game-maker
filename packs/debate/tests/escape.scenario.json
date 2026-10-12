@@ -1,0 +1,36 @@
+{
+  "name": "escape",
+  "steps": [
+    {
+      "press": "ok"
+    },
+    {
+      "wait": 3
+    },
+    {
+      "choose": 2
+    },
+    {
+      "wait": 3
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "wait": 4
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "var": "result",
+        "op": "==",
+        "value": 2
+      }
+    }
+  ]
+}

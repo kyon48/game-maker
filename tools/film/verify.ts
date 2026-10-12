@@ -18,6 +18,10 @@ try {
   const menu = await recordFilm('manor', 'menu', { out: 'out/manor/verify/menu-first', hashes: true, signal: controller.signal, build: false });
   const menuAgain = await recordFilm('manor', 'menu', { out: 'out/manor/verify/menu-second', hashes: true, signal: controller.signal, build: false });
   assert.deepEqual(menuAgain.hashes, menu.hashes); assert.ok(menu.frames > 0);
+  const fight = await recordFilm('debate', 'win', { out: 'out/debate/verify/first', hashes: true, verifyCapture: true, signal: controller.signal });
+  const fightAgain = await recordFilm('debate', 'win', { out: 'out/debate/verify/second', hashes: true, signal: controller.signal, build: false });
+  assert.deepEqual(fightAgain.hashes, fight.hashes); assert.ok(fight.frames > 0);
+  console.log(`battle film:verify passed: ${fight.frames} frame hashes match`);
   console.log(`menu film:verify passed: ${menu.frames} frame hashes match`);
   console.log(`scene film:verify passed: ${puzzle.frames} puzzle frame hashes match`);
   console.log(`film:verify passed: ${first.frames} frame RGBA hashes match; ${chapter.frames} chapter frames match full recording; ${first.captureChecks + second.captureChecks + chapter.captureChecks} browser/decoded RGBA samples match`);

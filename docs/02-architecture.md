@@ -589,6 +589,18 @@ sim은 소리를 내지 않는다. 스냅샷 audio는 현재 bgm ID(null=정지)
 
 일반 플레이는 platform Web Audio가 부팅 때 모든 파일을 디코딩한다. 첫 키/포인터 입력으로 AudioContext를 시작하고 탭 숨김은 suspend, 다시 보일 때는 이미 시작한 context만 resume한다. 종료 때 모든 source/context/listener를 정리한다. 녹화는 Web Audio를 만들지 않고 bgm-start/stop·sfx 타임라인만 기록해 후합성한다. film music과 게임 BGM은 한 음악 채널이며 나중 요청이 이긴다.
 
+### 8.7 연출용 턴제 전투 (G4)
+
+선택 `battle.json`은 labels/actors/enemies/skills/troops(06 §7.2)다. formatVersion 1·saveVersion 2 유지. actor/enemy는 name, hp(1~1000000), atk/def/speed(0~1000000), skills(1~6개), image?를 가진다. enemy는 weights(기술 ID→양수 가중치), script(양의 안전 정수 라운드 번호→기술 ID)를 추가한다. troop은 enemies(1~3개), actors?(없으면 선언된 아군 전원, 1~3명), background?, image?(적 공통 이미지), canLose, canEscape?(false), variation?을 가진다. 전역 variation 기본 true이며 troop이 우선한다. 이미지·효과음은 팩 파일로 검증(V4/V3), 기술·전투원·명령 참조 V3, 범위·턴 키·buff 필드 V1이다.
+
+skill은 name/effect/text, damage/heal은 power(0~1000000), buff는 stat(atk/def/speed), multiplier(0 초과~10), turns(1~100)다. sfx는 선택 audio ID다. 같은 능력치 buff는 최신 것으로 교체한다. 생성 라운드의 잔여 행동과 이후 지정 개수의 완전한 라운드에 적용하고 종료 때 차감한다(speed도 다음 라운드 순서에 적용 가능). heal은 power만큼 최대 HP까지만 회복한다.
+
+아군 행동을 먼저 입력하고 라운드 순서는 speed 내림차순 → 동률 아군 먼저 → 배열 순서로 정한다. damage는 max(1,power+atk-def), variation은 rng로 [0.9,1.1) 배율이다. 방어는 실행 시점부터 라운드 끝까지 피해 배율 0.5, 최종 피해는 내림 후 최소 1, 메시지 value는 damage/heal의 실제 HP 변화, buff의 배율이다. 앞 행동에 쓰러진 대상은 같은 대상 진영의 첫 생존자로 바꾼다. 적 script는 가중치 rng보다 우선하며 damage 대상은 첫 생존 상대, heal/buff는 첫 생존 동료다. 도주는 허용 시 해당 행동 순서에서 확정 성공이다.
+
+`battle {troop,resultVar}`는 내장 battle 씬을 열고 0 승리 / 1 패배 / 2 도주를 변수에 남긴다. canLose=false 패배는 결과 1 저장 후 labels.gameOver(전투 데이터)를 제목으로 기존 ending을 열고 원래 이벤트를 중단한다. 일반 플레이의 재시작·이어하기는 ending과 동일하고 녹화·헤드리스는 자동 재시작하지 않는다. 전투 중 저장은 G3와 같은 오류다.
+
+프론트뷰는 적 image(없으면 이름 상자), 아군 하단 이름·HP 창, 기존 선택지로 명령/기술/대상을 보여 준다. 일반 UI는 battle 화면에서 하단 60px를 비워 아군 상태를 가리지 않는다. 진행 문구 {user}/{target}/{value}는 리터럴로 치환·이스케이프한 뒤 G1 메시지 해석 경로로 보낸다. skill.text는 같은 G1 검증기를 쓴다. 씬 메시지는 일반 MessageState의 음성·자막 경로, sfx는 G5 요청 경로다. battle 상태·HP·buff·행동 큐는 씬 스냅샷에만 있고 세이브에는 넣지 않는다.
+
 ## 9. 플러그인 API v1
 
 팩 전용 기능은 `packs/<id>/plugins/<이름>.ts`에 둔다. 엔진 코어를 고치지 않는다.

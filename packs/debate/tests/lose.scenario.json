@@ -1,0 +1,72 @@
+{
+  "name": "lose",
+  "steps": [
+    {
+      "press": "ok"
+    },
+    {
+      "wait": 3
+    },
+    {
+      "choose": 1
+    },
+    {
+      "wait": 3
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "wait": 4
+    },
+    {
+      "choose": 1
+    },
+    {
+      "wait": 3
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "wait": 4
+    },
+    {
+      "choose": 1
+    },
+    {
+      "wait": 3
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "wait": 4
+    },
+    {
+      "choose": 1
+    },
+    {
+      "wait": 3
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "wait": 4
+    },
+    {
+      "advanceText": true
+    },
+    {
+      "settle": true
+    },
+    {
+      "expect": {
+        "var": "result",
+        "op": "==",
+        "value": 1
+      }
+    }
+  ]
+}

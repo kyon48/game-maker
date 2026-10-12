@@ -81,3 +81,5 @@ G5 실제 녹화 확인(2026-10-12, ffmpeg-static loudnorm 분석의 input_i, �
 | lantern main | 134.200초 | 1920×1080 / 30fps | 48kHz 스테레오 AAC | -14.03 LUFS | 대사 16개·나레이션 3개·BGM 시작 5개·SFX 2개 |
 
 일반 manor 페이지에서 5파일 디코딩, 첫 입력 전 suspended, 입력 후 running, loop BGM 및 단서 획득 one-shot SFX의 실제 Web Audio source 시작을 Playwright로 확인했다. 결과 mp4는 out/에만 보관하며 커밋하지 않는다.
+
+G4: 내장 battle 씬은 일반 choice/press·진행 메시지로 입력하고 resultVar expect로 확인한다. film:verify는 debate win 전투도 두 번 녹화하여 프레임 RGBA 해시를 비교한다.

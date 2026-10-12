@@ -1,3 +1,6 @@
+import { battleRules } from './battleRules';
+import { BattleSchema } from '../battle';
+import type { Battle } from '../battle';
 import { AudioSchema, audioFilePattern } from '../audio';
 import type { Audio } from '../audio';
 import { ItemsSchema, menuLabelKeys, itemNotice } from '../items';
@@ -45,6 +48,8 @@ export async function coreRules(context: ValidationContext) {
     if (!game.maps.includes(map)) report('V3', 'game.json', `/mapBgm/${map}`, 'Unknown map');
     if (!Object.hasOwn(audio ?? {}, id)) report('V3', 'game.json', `/mapBgm/${map}`, 'Undeclared audio');
   }
+  const battle = await source.exists('battle.json') ? await read('battle.json', BattleSchema) as Battle | undefined : undefined;
+  if (battle) await battleRules(context, battle, audio);
   const items = await source.exists('items.json') ? await read('items.json', ItemsSchema) as Items | undefined : undefined;
   if (items) for (const key of menuLabelKeys) if (!game.labels[key]) report('V3', 'game.json', '/labels/' + key, 'Menu label required for items pack');
   if (game.labels.itemGet) try { itemNotice(game.labels.itemGet, 'item', 1); } catch (error) { report('V1', 'game.json', '/labels/itemGet', String(error)); }
@@ -71,6 +76,6 @@ export async function coreRules(context: ValidationContext) {
       } catch (error) { report('V4', 'portraits.json', pointer, String(error)); }
     }
   }
-  return { audio, items, portraits, voices, voiceManifest, game, characters, skin, common };
+  return { battle, audio, items, portraits, voices, voiceManifest, game, characters, skin, common };
 }
 export type PackBasics = NonNullable<Awaited<ReturnType<typeof coreRules>>>;

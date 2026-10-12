@@ -1,0 +1,42 @@
+{
+  "events": [
+    {
+      "id": "debate",
+      "x": 9,
+      "y": 6,
+      "pages": [
+        {
+          "character": "host",
+          "trigger": "action",
+          "commands": [
+            {
+              "cmd": "battle",
+              "troop": "night_watch",
+              "resultVar": "result"
+            },
+            {
+              "cmd": "if",
+              "cond": {
+                "var": "result",
+                "op": "==",
+                "value": 0
+              },
+              "then": [
+                {
+                  "cmd": "text",
+                  "text": "밤길을 함께 지키자는 약속을 받아 냈다."
+                }
+              ],
+              "else": [
+                {
+                  "cmd": "text",
+                  "text": "이번에는 설득하지 못했다. 의견을 정리해 다시 이야기하자."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

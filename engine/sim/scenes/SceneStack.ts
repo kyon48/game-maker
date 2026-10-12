@@ -10,6 +10,7 @@ export class SceneStack {
   private readonly stack: { name: string; definition: RuntimeScene; state: unknown; result: { done: boolean; value?: number } }[] = [];
   readonly definitions = new Map<string, RuntimeScene>([['ending', ending as RuntimeScene], ['menu', menu as RuntimeScene]]);
   constructor(private readonly context: () => SceneContext, private readonly images?: ReadonlySet<string>, private readonly completed?: (name: string, result: number) => void) {}
+  get activeName(): string | undefined { return this.stack.at(-1)?.name; }
   get opened(): boolean { return this.stack.length > 0; }
   open(name: string, args: unknown = {}): { done: boolean; value?: number } {
     const definition = this.definitions.get(name);
