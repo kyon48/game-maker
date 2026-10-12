@@ -1,8 +1,9 @@
+import { packDirectory, packLocations } from '../packPaths';
 import { planArt } from './art';
 import { storyFaces, portraitOutputs, StoryArtError } from './faces';
 import { artGeneratedPath, artPng } from './ownership';
 import { storyVoices } from './config';
-import { readFile, writeFile, mkdir, unlink, readdir, stat } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, unlink, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { readStories } from './files';
@@ -19,7 +20,7 @@ async function readOptional(file: string): Promise<string | undefined> { try { r
 export async function prepareCompilation(packId: string, root = process.cwd(), options: CompileOptions = {}): Promise<Prepared> {
   const input = await readStories(packId, root, options.check), diagnostics = [...input.diagnostics];
   if (diagnostics.some(d => d.level === 'error')) return { diagnostics };
-  const pack = path.join(root, 'packs', packId), display = (file: string) => `packs/${packId}/${file}`;
+  const pack = packDirectory(packId, root), display = (file: string) => `packs/${packId}/${file}`;
   const report = (file: string, code: string, message: string) => diagnostics.push({ file: display(file), line: 1, code, level: 'error', message });
   let game: unknown, tiles: unknown, old: Manifest | undefined;
   for (const filename of ['game.json', 'story/tiles.json', 'story/.compiled.json']) {
@@ -120,7 +121,7 @@ export async function compilePack(packId: string, root = process.cwd(), options:
 }
 export async function writePrepared(packId: string, root: string, prepared: Prepared & { files?: Map<string, string> }): Promise<void> {
   if (!prepared.files) return;
-  const folder = path.join(root, 'packs', packId);
+  const folder = packDirectory(packId, root);
   for (const [file, text] of prepared.files) {
     const destination = path.join(folder, file);
     if (file === 'story/.compiled.json') continue;
@@ -132,11 +133,11 @@ export async function writePrepared(packId: string, root: string, prepared: Prep
   const manifest = path.join(folder, 'story/.compiled.json'), text = prepared.files.get('story/.compiled.json')!;
   if (await readOptional(manifest) !== text) { await mkdir(path.dirname(manifest), { recursive: true }); await writeFile(manifest, text); }
 }
-export async function storyPackIds(root = process.cwd()): Promise<string[]> {
+export async function storyPackIds(root = process.cwd(), includeExternal = false): Promise<string[]> {
   const result: string[] = [];
-  for (const entry of await readdir(path.join(root, 'packs'), { withFileTypes: true })) {
-    if (!/^[a-z][a-z0-9_]*$/.test(entry.name)) continue;
-    try { if ((await stat(path.join(root, 'packs', entry.name, 'story'))).isDirectory()) result.push(entry.name); }
+  for (const pack of packLocations(root).values()) {
+    if (pack.external && !includeExternal) continue;
+    try { if ((await stat(path.join(pack.directory, 'story'))).isDirectory()) result.push(pack.id); }
     catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
   }
   return result.sort();

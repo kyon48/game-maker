@@ -376,3 +376,11 @@ portraits.json·PNG도 .compiled.json의 소유권 대상이다. art는 모든 �
 바로 다음 줄에 `@film choose 0,0,0,0,0,0`(라운드마다 명령→기술→대상, 방어/도주는 명령만) 또는 `@film press …` 힌트를 쓴다. 누락·부족·미종료는 S042다. choose 힌트는 메시지를 보통 음성/auto 경로로 진행하며 다음 선택지까지 기다린다. 순수 전투 규칙과 같은 시드로 결과를 계산해 resultVar 뒤의 조건 분기도 촬영 경로에 반영한다. press는 원시 입력이므로 텍스트 확인까지 직접 지정하며 결과를 사용하는 원고 분기는 choose 힌트를 권장한다. 일반 시나리오는 동일한 수동 입력 기록이다. hint와 게임 결과의 expect는 실제 헤드리스 실행으로 다시 확인한다.
 
 canLose=false로 패배하면 이후 이벤트·장면을 실행하지 않고 게임 오버 ending을 2초 담아 촬영을 끝낸다. 전투 결과 분기는 choose 힌트로 계획하며 일반 플레이의 재시작/이어하기 선택을 자동으로 누르지 않는다.
+
+## 외부 팩과 납품 (V4)
+
+GAME_PACKS_PATH에 외부 팩 부모 폴더(또는 팩 자체)를 콜론으로 구분해 등록한다. 같은 ID는 오류이며 외부 플러그인은 Node 22.15 이상이 필요하다. 모든 도구의 명시적 팩 ID와 dev 서버가 이 경로를 사용한다. --all은 기본 레포 팩만, --include-external을 함께 쓰면 외부도 처리한다. 외부 팩의 out·.cache·임시 빌드는 팩 폴더 안에 남는다.
+
+`npm run story -- new <id> [--dir <팩 폴더>] [--title "제목"]`은 덮어쓰기 없이 최소 원고·에셋·목소리 설정을 만든다. `npm run release -- <id> [--film main]`은 build·TTS·녹화·측정과 여섯 파일 납품을 실행한다. story/story.config.json의 targetMinutes로 목표 분량, story/release.md의 {title}/{chapters}/{credits}/{duration}으로 설명란을 지정한다. 기본 설명란은 TTS 사용을 알린다.
+
+상세 순서와 검수는 [제작 운영 절차](../../docs/09-production-runbook.md)를 따른다.

@@ -211,3 +211,10 @@
 - 2026-10-12 / G4 / troop actors 생략은 전체 선언 아군(1~3), variation 기본 true, power는 damage/heal 필수·buff에서 선택 / 06 예시를 유지하고 불필요한 buff power=0 입력을 없앤다.
 - 2026-10-12 / G4 / @battle과 바로 뒤 @film choose/press, battle.json은 수기 입력, choose는 같은 순수 규칙으로 결과 분기를 예측 / 데이터 생성 범위를 넓히지 않고 음성 길이에 무관한 촬영 경로를 만든다.
 - 2026-10-12 / G4 / 엔진 0.15.0, formatVersion 1·saveVersion 2·API_VERSION 1 유지 / 전투는 선택 파일·내장 씬·커맨드 추가이며 씬은 저장하지 않는다.
+
+- 2026-10-12 / V4 / GAME_PACKS_PATH는 팩 부모 폴더 또는 직접 팩 폴더, 실경로 기준 중복 ID 거부, --all 기본 내부 팩만 / 링크 없이 비공개 팩을 사용하면서 기본 검사 범위를 유지한다.
+- 2026-10-12 / V4 / 외부 팩의 out·음성 캐시·임시 빌드는 팩 내부, 빌드 복사에서 story·out·.cache도 제외 / 비공개 원고와 산출물이 공개 레포·배포물로 새지 않게 한다.
+- 2026-10-12 / V4 / 외부 플러그인의 허용 import는 Node registerHooks로 해당 폴더에만 해석하며 Node 22.15 이상 필요 / node_modules 링크나 새 의존성 없이 동일 TypeScript 모듈을 읽는다.
+- 2026-10-12 / V4 / story new의 --dir은 팩 폴더 자체, 기존 폴더 거부, artRoot는 주석 예시로 시작, 인물 art 선언이 있을 때만 build의 art 단계 실행 / 원본 얼굴 에셋 없이도 새 팩이 즉시 build된다.
+- 2026-10-12 / V4 / release는 실제 mp4의 길이·LUFS·피크를 측정하고 여섯 파일과 검수 초안을 생성, targetMinutes는 선택 양수 / 제작자의 최종 검수를 위한 수치를 자동 수집한다.
+- 2026-10-12 / V4 / 엔진 수정·개발 의존성 추가 없이 버전 0.15.0 유지 / 변경은 Node 도구와 제작 운영에 한정한다.

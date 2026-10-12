@@ -1,3 +1,4 @@
+import { packPaths } from '../packPaths';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import type { Voices, VoiceManifest } from '../../engine/data/schema/voices';
@@ -6,7 +7,7 @@ import type { TtsProvider } from './provider';
 import { wavFrames } from './provider';
 export interface Utterance { plainText: string; speaker?: string }
 export async function cacheVoices(pack: string, utterances: readonly Utterance[], voices: Voices, providerMap: ReadonlyMap<string, TtsProvider>, options: { root?: string; prune?: boolean; warn?: (text: string) => void } = {}) {
-  const root = options.root ?? process.cwd(), directory = path.join(root, '.cache/voice', pack), manifestFile = path.join(root, 'packs', pack, 'voice-manifest.json');
+  const root = options.root ?? process.cwd(), locations = packPaths(pack, root), directory = locations.cache, manifestFile = path.join(locations.directory, 'voice-manifest.json');
   let manifest: VoiceManifest = {};
   try { manifest = JSON.parse(await readFile(manifestFile, 'utf8')) as VoiceManifest; } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
   await mkdir(directory, { recursive: true });

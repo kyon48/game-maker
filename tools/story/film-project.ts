@@ -1,3 +1,4 @@
+import { packDirectory } from '../packPaths';
 import path from 'node:path';
 import { assertNoStoryVoiceOverlap } from './rehearsal';
 import { FsSource } from '../fsSource';
@@ -10,7 +11,7 @@ import { prepareCompilation, writePrepared, hash } from './project';
 import { readStories } from './files';
 import { jsonBytes, object, StoryCompileError } from './compile';
 export async function planFilm(packId: string, root: string, files: ReadonlyMap<string, string>, stories: readonly Story[], name: string) {
-  const fs = new FsSource(path.join(root, 'packs', packId));
+  const fs = new FsSource(packDirectory(packId, root));
   const source = await storySource(fs.root, files, true);
   const plugins = await nodePluginRuntime(source, fs.root);
   const result = await validatePack(source, packId, plugins.validationOptions);
@@ -24,7 +25,7 @@ export async function filmPack(packId: string, root = process.cwd(), name = 'mai
     const generated = await planFilm(packId, root, prepared.files, (await readStories(packId, root)).stories, name);
     const manifest = object(JSON.parse(prepared.files.get('story/.compiled.json')!) as unknown);
     const owned = object(manifest.files);
-    const fs = new FsSource(path.join(root, 'packs', packId));
+    const fs = new FsSource(packDirectory(packId, root));
     for (const [file, bytes] of generated) {
       if (!force && owned[file] === undefined && await fs.exists(file)) {
         const { readFile } = await import('node:fs/promises');
@@ -43,8 +44,8 @@ export async function filmPack(packId: string, root = process.cwd(), name = 'mai
 
 /** Check committed manifests through rehearsal only; never synthesize audio during check. */
 export async function checkGeneratedFilms(packId: string, root: string, files: ReadonlyMap<string, string>): Promise<Diagnostic[]> {
-  const source = await storySource(path.join(root, 'packs', packId), files);
-  const plugins = await nodePluginRuntime(source, path.join(root, 'packs', packId));
+  const source = await storySource(packDirectory(packId, root), files);
+  const plugins = await nodePluginRuntime(source, packDirectory(packId, root));
   const result = await validatePack(source, packId, plugins.validationOptions), diagnostics: Diagnostic[] = [];
   if (!result.pack) return result.diagnostics.filter(d => d.level === 'error').map(d => ({ file: `packs/${packId}/${d.file}`, line: 1, code: d.code, level: 'error', message: d.pointer + ': ' + d.message }));
   const { asFilm, rehearse } = await import('../film/rehearse');
