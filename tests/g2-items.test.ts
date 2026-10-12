@@ -119,7 +119,7 @@ it('manor legacy examined clues become items, native itemCount decides endings a
 });
 it('story item declarations/commands/conditions lint, compile and repeat byte-identically (lantern + memory mutations)', async () => {
   const text = await readFile('packs/lantern/story/main.story.md', 'utf8'), parsed = parseStory(text.replace(/ voice=[^\s]+/g, ''), 'main.story.md');
-  expect(parsed.diagnostics).toEqual([]); expect(lintStories([parsed.story]).filter(d => d.level === 'error')).toEqual([]);
+  expect(parsed.diagnostics).toEqual([]); expect(lintStories([parsed.story], { legend: new Set(Object.keys(JSON.parse(await readFile('packs/lantern/story/tiles.json','utf8')).legend)) }).filter(d => d.level === 'error')).toEqual([]);
   const game = JSON.parse(await readFile('packs/lantern/game.json', 'utf8')) as unknown, tiles = JSON.parse(await readFile('packs/lantern/story/tiles.json', 'utf8')) as unknown;
   const first = compileStories([parsed.story], game, tiles); expect(first).toEqual(compileStories([parsed.story], game, tiles));
   expect(first.files.get('items.json')).toContain('lighthouse_key'); expect(first.files.get('maps/pier.events.json')).toContain('give_item'); expect(first.files.get('maps/tower.events.json')).toContain('"item": "lighthouse_key"');

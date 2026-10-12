@@ -14,3 +14,6 @@
 - 메시지 얼굴: 사용자 소유 플러시 캐릭터 에셋 `Plush_Character_Game_Assets/characters/base/portrait/`에서 복사.
 
 - 게임 BGM(quiet/mystery)·효과음(get/door/confirm): tools/generate-game-audio.ts로 직접 합성한 원본 사인파, CC0-1.0. 외부 음원 없음.
+
+- 마스코트 도트 인물: tools/sprite.ts와 팩의 *.sprite.json으로 생성한 원본.
+- Tiny Town / Tiny Dungeon: Kenney (www.kenney.nl), CC0. assets/tilesets/*.LICENSE.txt에 라이선스 원문.

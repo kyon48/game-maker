@@ -55,3 +55,9 @@ macOS 한국어 음성이 필요하며 로컬 WAV는 .cache/voice/lantern에만 
 음악 원본 assets/music/harbor.ogg는 보존하지만 원고 음악 문법은 이번 단계에서 추가하지 않아 main 영상에는 쓰지 않는다.
 
 S3부터 story build는 사용 표정만 원본에서 복사하고 대사 얼굴을 연결한다. 원본이 없는 환경에서도 story check는 커밋된 얼굴·별칭·해시로 검사한다. art/build에는 설정한 원본 에셋이 필요하다.
+
+## A1 인물과 맵
+
+인물 입력은 assets/characters/*.sprite.json이다. `npm run sprite -- packs/lantern/assets/characters/sora.sprite.json packs/lantern/assets/characters/sora.png`로 시트와 프리뷰를 다시 만든다. 소라·촌장·뱃사공·옛 등대지기는 같은 도트 기본형에 머리·소품·색·키를 달리했다. story 원고의 소라는 face=determined, 촌장은 face=suspicious가 기본 표정이다.
+
+story/tiles.json은 Kenney Tiny Town/Tiny Dungeon의 0 기반 범례다. 원본 packed 시트·CC0 전문은 assets/tilesets에 둔다. grass 0·flowers 2·bush 28·path 43·fence 47/81·wood 73(Town), wall 40·barrel 66(Dungeon)을 사용한다. 원고의 앵커 위치는 그대로이며 기존 .tmj를 다시 그릴 때만 `story compile lantern --force-maps` 후 build한다. spec·범례·원고·복사 시트·CREDITS는 사람이 관리하고, 도트 PNG/preview는 sprite 생성물, .tmj·이벤트·얼굴·film·시나리오는 story 도구 생성물이다.

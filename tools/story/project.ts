@@ -1,6 +1,6 @@
 import { packDirectory, packLocations } from '../packPaths';
 import { planArt } from './art';
-import { storyFaces, portraitOutputs, StoryArtError } from './faces';
+import { artFaces, portraitOutputs, StoryArtError } from './faces';
 import { artGeneratedPath, artPng } from './ownership';
 import { storyVoices } from './config';
 import { readFile, writeFile, mkdir, unlink, stat } from 'node:fs/promises';
@@ -37,7 +37,7 @@ export async function prepareCompilation(packId: string, root = process.cwd(), o
       const file = `maps/${location.id}.tmj`, text = await readOptional(path.join(pack, file));
       if (text !== undefined) existing.set(file, text);
     }
-    const compilation = compileStories(input.stories, game, tiles, existing, options.forceMaps, input.expressions ?? undefined);
+    const compilation = compileStories(input.stories, game, input.resolvedTiles ?? tiles, existing, options.forceMaps, input.expressions ?? undefined);
     const voices = storyVoices(input.stories, input.config ?? {});
     if (voices) compilation.files.set('voices.json', jsonBytes(voices));
     diagnostics.push(...compilation.diagnostics);
@@ -53,7 +53,7 @@ export async function prepareCompilation(packId: string, root = process.cwd(), o
         if (!aliases) throw new Error('표정 별칭이 없습니다. story art 실행 필요');
         for (const file of [...files.keys()]) if (artGeneratedPath.test(file)) files.delete(file);
         if (diagnostics.some(d => d.code === 'S039')) {
-          const outputs = portraitOutputs(storyFaces(input.stories, aliases));
+          const outputs = portraitOutputs(artFaces(input.stories, aliases));
           const portraits = JSON.parse(outputs.get('portraits.json')!) as Record<string, Record<string, string>>;
           for (const file of Object.values(portraits).flatMap(p => Object.values(p))) {
             const text = await readOptional(path.join(pack, file));
@@ -83,9 +83,10 @@ export async function prepareCompilation(packId: string, root = process.cwd(), o
     }
     if (diagnostics.some(d => d.level === 'error')) return { diagnostics };
     const manifest: Manifest = {
-      version: 1, ...(old?.expressions ? { expressions: old.expressions } : {}), files: Object.fromEntries([...files.keys()].filter(f => ownedPath.test(f)).sort().map(file => [file, !options.check && old?.files[file] && (storyGeneratedPath.test(file) || artGeneratedPath.test(file)) ? old.files[file] : outputHash(file, files.get(file)!)])),
+      version: 1, ...(old?.expressions ? { expressions: old.expressions } : {}), ...(old?.defaultExpressions ? { defaultExpressions: old.defaultExpressions } : {}), files: Object.fromEntries([...files.keys()].filter(f => ownedPath.test(f)).sort().map(file => [file, !options.check && old?.files[file] && (storyGeneratedPath.test(file) || artGeneratedPath.test(file)) ? old.files[file] : outputHash(file, files.get(file)!)])),
       maps: Object.fromEntries([...compilation.maps].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([file, text]) => [file, !options.forceMaps && existing.has(file) && old?.maps[file] ? old.maps[file] : hash(text)])),
     };
+    if (options.check && input.expressions && hasArt) manifest.defaultExpressions = Object.fromEntries(input.stories.flatMap(s => s.characters).filter(c => c.art).map(c => [c.id, input.expressions!.get((c.assetFace ?? 'neutral').trim().toLocaleLowerCase('en-US'))!]));
     if (options.check && input.expressions && hasArt) manifest.expressions = Object.fromEntries([...input.expressions].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0));
     files.set('story/.compiled.json', jsonBytes(manifest));
     if (options.check) {

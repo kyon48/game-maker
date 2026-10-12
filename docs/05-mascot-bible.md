@@ -129,3 +129,9 @@ assets/portraits/elizabeth.prompt.md   # 도구·모델 이름, 날짜, 전체 �
 | 얼굴 중심 좌표 | |
 | 확정 기본형 이미지 | `packs/_shared/mascot/base.png` |
 | 표정 세트 | `packs/_shared/mascot/faces/*.png` |
+
+## 7. A1 도트 규격
+
+도트는 tools/sprite.ts의 결정론적인 픽셀 도형으로 생성한다. 16×24 프레임, 가로 3개 걷기 프레임·세로 아래/왼쪽/오른쪽/위 순의 48×96 투명 RGBA PNG다. 크림색 천 몸·큰 머리·진한 외곽선·단추 눈·짧은 팔다리를 고정하고 spec으로 머리·소품·의상 색만 바꾼다. 맵 도트의 높이는 약 2~2.5등신(고해상도 기본형과 별도)이며 성인 scale 1/2는 머리와 몸을 1/2px 위로 늘리되 발 기준을 유지한다. 고해상도 기본형 확정 이미지를 대신하는 도구가 아니라 맵용 인물 시트다.
+
+spec과 시트를 함께 보존하며 같은 spec은 시트와 이름이 있는 8배 프리뷰를 바이트 동일하게 생성한다. 규격·스타일 목록은 tools/story/README.md, 창작 인물 예시는 packs/lantern/assets/characters/*.sprite.json을 따른다.

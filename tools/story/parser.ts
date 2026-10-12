@@ -92,14 +92,14 @@ class Parser {
     }
     if (command === '@character') {
       if (t.length < 3) throw new Error('인물 ID와 표시 이름이 필요합니다'); quoted();
-      const attrs = options(t.slice(3), ['art', 'voice']);
-      this.story.characters.push({ ...src, id: id(a!), name: b!, art: attrs.art, voice: attrs.voice }); return;
+      const attrs = options(t.slice(3), ['art', 'voice', 'face']);
+      this.story.characters.push({ ...src, id: id(a!), name: b!, art: attrs.art, voice: attrs.voice, face: attrs.face }); return;
     }
     if (command === '@flag') { count(2); this.story.flags.push({ ...src, name: id(a!) }); return; }
     if (command === '@var') { count(3); this.story.variables.push({ ...src, name: id(a!), initial: integer(b!) }); return; }
     if (command === '@location') {
-      if (t.length < 3) throw new Error('장소 ID와 이름 필요'); quoted(); const attrs = options(t.slice(3), ['bgm']); this.scene = undefined;
-      this.location = { ...src, id: id(a!), name: b!, ...(attrs.bgm ? { bgm: id(attrs.bgm) } : {}), anchors: [] }; this.story.locations.push(this.location); return;
+      if (t.length < 3) throw new Error('장소 ID와 이름 필요'); quoted(); const attrs = options(t.slice(3), ['bgm', 'wall', 'floor']); this.scene = undefined;
+      this.location = { ...src, id: id(a!), name: b!, wall: attrs.wall, floor: attrs.floor, ...(attrs.bgm ? { bgm: id(attrs.bgm) } : {}), anchors: [] }; this.story.locations.push(this.location); return;
     }
     throw new Error(`해석할 수 없는 최상위 줄: ${text}`);
   }

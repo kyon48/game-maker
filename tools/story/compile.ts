@@ -1,3 +1,5 @@
+import { parseLegend, legendMap } from './tileLegend';
+import type { Legend } from './tileLegend';
 import { storyFaces } from './faces';
 import { storyCues, sceneNarrationCues } from './cues';
 import type { Story, Location, Anchor, Source, Condition, Statement, Event, Diagnostic } from './ast';
@@ -12,8 +14,9 @@ export function object(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('JSON 객체가 필요합니다');
   return value as Record<string, unknown>;
 }
-export function parseTiles(value: unknown): Tiles {
+export function parseTiles(value: unknown): Tiles | Legend {
   const data = object(value);
+  if (data.legend !== undefined || data.tilesets !== undefined) return parseLegend(value);
   for (const name of ['wall', 'floor', 'door', 'firstgid']) {
     if (name === 'firstgid' && data[name] === undefined) continue;
     if (!Number.isSafeInteger(data[name]) || (data[name] as number) < 1 || (data[name] as number) > 0x0fffffff) throw new Error(`타일 ${name}은 양의 GID여야 합니다`);
@@ -117,9 +120,10 @@ export function compileStories(stories: readonly Story[], gameValue: unknown, ti
   files.set('common-events.json', jsonBytes(Object.fromEntries(stories.flatMap(s => s.common.map(common => [common.id, { commands: commands(common.statements) }])))));
   return { files, maps, diagnostics };
 }
-function makeMap(location: Location, size: number, tiles: Tiles): unknown {
+function makeMap(location: Location, size: number, tiles: Tiles | Legend): unknown {
   const rows = location.layout!.rows.map(row => [...row.text]), width = rows[0]!.length, height = rows.length;
   const anchors = new Map(location.anchors.map(a => [a.character, a]));
+  if ('legend' in tiles) { const objects = location.anchors.map((a,i)=>{const p=anchorPoints(location).get(a.name)!;return {id:i+1,name:a.name,point:true,x:p.x*size,y:p.y*size};}); return legendMap(location,size,tiles,objects); }
   const floor = rows.flatMap(row => row.map(c => c === '#' ? tiles.wall : anchors.get(c)?.destination ? tiles.door : tiles.floor));
   const collision = rows.flatMap(row => row.map(c => c === '#' ? tiles.wall : 0));
   const objects = location.anchors.map((anchor, i) => { const p = anchorPoints(location).get(anchor.name)!; return { id: i + 1, name: anchor.name, point: true, x: p.x * size, y: p.y * size }; });

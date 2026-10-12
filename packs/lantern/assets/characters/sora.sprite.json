@@ -1,0 +1,21 @@
+{
+  "name": "소라",
+  "eyes": "#342c39",
+  "hair": {
+    "style": "messy_short",
+    "color": "#683e38"
+  },
+  "accessories": [
+    "round_glasses"
+  ],
+  "outfit": {
+    "cape": "#416e8c",
+    "lining": "#ede0c7",
+    "tie": [
+      "#c4aa58",
+      "#ede0c7"
+    ],
+    "bottom": "trousers"
+  },
+  "scale": 0
+}

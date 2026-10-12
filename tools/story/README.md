@@ -323,7 +323,7 @@ story/story.config.json의 artRoot는 이 설정 파일 디렉터리 기준이�
 
 `@character sora "소라" art=base`와 `소라(결의): …`를 연결한다. 정규화는 key·영문명·한글명·core 별칭 네 형식이며, 이름은 앞뒤 공백·영문 대소문자를 정리한다. art가 없는 화자·화자 없는 지문·나레이션에는 얼굴을 붙이지 않는다. 표정을 지정했는데 art가 없는 화자는 S041 경고다.
 
-표정은 각 이벤트 페이지·공통 이벤트에서 화자별로 추적한다. 생략하면 같은 흐름의 직전 표정, 없으면 neutral이다. if/선택지의 각 분기는 분기 전 값을 복사해 시작하고, 분기 안 변경은 다른 분기·분기 다음 줄에 이어지지 않는다. 공통 이벤트는 독립 문맥이므로 호출자의 표정을 이어받지 않는다.
+표정은 각 이벤트 페이지·공통 이벤트에서 화자별로 추적한다. 생략하면 같은 흐름의 직전 표정, 없으면 face= → character.json의 defaultExpression → neutral 순이다. if/선택지의 각 분기는 분기 전 값을 복사해 시작하고, 분기 안 변경은 다른 분기·분기 다음 줄에 이어지지 않는다. 공통 이벤트는 독립 문맥이므로 호출자의 표정을 이어받지 않는다.
 
 art는 이 규칙으로 원고의 모든 페이지·공통 이벤트·선택 분기를 검사해 실제 필요한 표정만 복사한다. character.json의 portrait에 key가 없으면 fallback 폴더로 이동한다. 순환·끝까지 없음·PNG 누락/크기 오류·에셋 루트 밖 참조는 원고 파일:줄 오류다. PNG는 원본 바이트 그대로 assets/portraits/<인물>/<key>.png에 복사하고 portraits.json에는 정규화한 key만 넣는다. 원본 에셋은 쓰지 않는다.
 
@@ -384,3 +384,25 @@ GAME_PACKS_PATH에 외부 팩 부모 폴더(또는 팩 자체)를 콜론으로 �
 `npm run story -- new <id> [--dir <팩 폴더>] [--title "제목"]`은 덮어쓰기 없이 최소 원고·에셋·목소리 설정을 만든다. `npm run release -- <id> [--film main]`은 build·TTS·녹화·측정과 여섯 파일 납품을 실행한다. story/story.config.json의 targetMinutes로 목표 분량, story/release.md의 {title}/{chapters}/{credits}/{duration}으로 설명란을 지정한다. 기본 설명란은 TTS 사용을 알린다.
 
 상세 순서와 검수는 [제작 운영 절차](../../docs/09-production-runbook.md)를 따른다.
+
+## A1 기본 표정·타일 범례·도트 인물
+
+`@character sora "소라" art=base face=determined`로 기본 표정을 지정한다. 직전 표정이 있으면 이어 쓰고, 없으면 face=, 에셋 character.json의 defaultExpression, neutral 순으로 고른다. 네 별칭 형식을 모두 허용하고 기본 표정도 art가 복사한다. 원본 없는 check를 위해 매니페스트 defaultExpressions는 **에셋 기본값**을 저장한다.
+
+```json
+{
+  "tilesets": { "town": { "image": "assets/tilesets/town.png", "columns": 12, "tileSize": 16 } },
+  "legend": {
+    "G": { "tile": "town:0" },
+    "F": { "tile": "town:80", "collide": true, "under": "G" }
+  }
+}
+```
+
+번호는 0부터 시작한다. PNG에서 행 수를 읽어 범위를 검사하며 rows를 쓰면 실제 행 수와 일치해야 한다. spacing 기본 0(타일 사이 간격). under는 다른 바닥 범례 한 단계만 참조하며 장식은 decoration에, 통행 금지는 collision에 둔다. `@location pier "선착장" wall=F floor=G`는 #·.·앵커 칸을 장소 기본 타일로 바꾼다. 그 외 글자는 범례에 있어야 하며 앵커와 겹치면 오류다. 기존 wall/floor/door 역할표와 기존 .tmj 보존 규칙은 유지한다. 변경한 레이아웃을 맵에 반영할 때만 compile --force-maps를 쓴다.
+
+| 코드 | 수준 | 의미 |
+|---|---|---|
+| S047 | 오류 | 범례·타일 번호 범위·이미지 크기·장소 기본 타일·앵커 문자 충돌 |
+
+`npm run sprite -- spec.json out.png`는 48×96 RGBA 시트와 384×800 out.preview.png(8배 격자와 이름)를 만든다. spec은 lantern/assets/characters/*.sprite.json을 참고한다. eyes와 모든 색은 #RRGGBB, hair.style은 messy_short/long_straight/bushy_curly/bob/bob_bangs/bun/shaggy_beard, accessories는 round_glasses/square_glasses/witch_hat/hairpin이다. outfit은 cape·lining·tie[두 색]·bottom(trousers/skirt), 선택 vest/coat 색이다. scale은 0/1/2px 높이 증가이며 지면 기준은 유지한다. 이름은 선택 name, 없으면 파일명이다. 프리뷰 이름은 Galmuri11로 그리며 생성 도구는 ffmpeg-static을 사용한다.

@@ -1,7 +1,7 @@
 import type { StoryConfig } from './config';
 import { parseText, TextSyntaxError } from '../../engine/data/text';
 import type { Story, Diagnostic, Source, Condition, Statement, Event, Anchor, Destination } from './ast';
-export interface LintOptions { battleTroops?: ReadonlySet<string>; packId?: string; expressions?: ReadonlyMap<string, string> | null; config?: StoryConfig }
+export interface LintOptions { legend?: ReadonlySet<string>; battleTroops?: ReadonlySet<string>; packId?: string; expressions?: ReadonlyMap<string, string> | null; config?: StoryConfig }
 /** Pack-wide declarations and conservative reachability, without compiling engine commands. */
 export function lintStories(stories: readonly Story[], options: LintOptions = {}): Diagnostic[] {
   const diagnostics: Diagnostic[] = [];
@@ -16,6 +16,7 @@ export function lintStories(stories: readonly Story[], options: LintOptions = {}
     return result;
   };
   const characters = declarations(stories.flatMap(s => s.characters), n => n.id, '인물 ID');
+  for (const c of characters.values()) if (c.face !== undefined && options.expressions && !options.expressions.has(c.face.trim().toLocaleLowerCase('en-US'))) report(c, 'S007', `모르는 표정: ${c.face}`);
   const names = declarations([...characters.values()], n => n.name, '인물 표시 이름');
   for (const character of characters.values()) if (character.voice && !Object.hasOwn(options.config?.voices ?? {}, character.voice)) report(character, 'S035', `설정에 없는 목소리 키: ${character.voice}`);
   if (options.config?.narrator && !Object.hasOwn(options.config.voices ?? {}, options.config.narrator)) report(stories[0]!, 'S035', `설정에 없는 narrator 목소리 키: ${options.config.narrator}`);
@@ -42,10 +43,12 @@ export function lintStories(stories: readonly Story[], options: LintOptions = {}
   if (options.expressions === undefined) report(startSource, 'S015', 'artRoot가 없어 표정 이름 검사를 건너뜁니다', 'warning');
   const anchors = new Map<string, Map<string, Anchor>>(), edges = new Map<string, Set<string>>();
   for (const location of locations.values()) {
+    for (const c of [location.wall,location.floor]) if (c !== undefined && (!options.legend?.has(c) || [...c].length !== 1)) report(location,'S047',`장소 기본 타일 범례 없음: ${c}`);
     if (location.bgm && !audio.has(location.bgm)) report(location, 'S045', `미선언 오디오: ${location.bgm}`);
     edges.set(location.id, new Set()); const lookup = new Map<string, Anchor>(); anchors.set(location.id, lookup);
     const chars = new Set<string>(), anchorNames = new Set<string>();
     for (const anchor of location.anchors) {
+      if (options.legend?.has(anchor.character)) report(anchor, 'S047', `앵커와 범례 문자 충돌: ${anchor.character}`);
       if (chars.has(anchor.character)) report(anchor, 'S010', `앵커 문자 중복: ${anchor.character}`);
       if (anchorNames.has(anchor.name)) report(anchor, 'S016', `앵커 이름 중복: ${anchor.name}`);
       chars.add(anchor.character); anchorNames.add(anchor.name);
@@ -60,7 +63,7 @@ export function lintStories(stories: readonly Story[], options: LintOptions = {}
     for (const row of rows) {
       if ([...row.text].length !== width) report(row, 'S009', '레이아웃 행 폭이 다릅니다');
       for (const character of [...row.text]) {
-        if (character === '#' || character === '.') continue;
+        if (character === '#' || character === '.' || options.legend?.has(character)) continue;
         if (!chars.has(character)) report(row, 'S020', `선언하지 않은 레이아웃 문자: ${JSON.stringify(character)}`);
         positions.set(character, (positions.get(character) ?? 0) + 1);
         if (positions.get(character) === 2) report(row, 'S010', `레이아웃의 앵커 문자 중복: ${character}`);

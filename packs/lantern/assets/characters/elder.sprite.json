@@ -1,0 +1,21 @@
+{
+  "name": "촌장",
+  "eyes": "#342c39",
+  "hair": {
+    "style": "shaggy_beard",
+    "color": "#9a8c7a"
+  },
+  "accessories": [
+    "square_glasses"
+  ],
+  "outfit": {
+    "cape": "#725d72",
+    "lining": "#ede0c7",
+    "tie": [
+      "#c4aa58",
+      "#ede0c7"
+    ],
+    "bottom": "trousers"
+  },
+  "scale": 2
+}
