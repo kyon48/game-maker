@@ -1,3 +1,4 @@
+import { packPaths } from '../packPaths';
 import { decodeRgba } from './frameTransport';
 import { dialogueAudio } from './audio';
 import { preview } from 'vite';
@@ -18,7 +19,7 @@ export async function recordFilm(packId: string, filmId: string, options: Record
   const rehearsal = await rehearse(pack, film, plugins);
   for (const warning of rehearsal.warnings) console.warn(warning);
   if (options.chapter && !film.steps.some(step => 'chapter' in step && step.chapter === options.chapter)) throw new Error(`Unknown chapter: ${options.chapter}`);
-  const fps = options.fps ?? film.fps ?? 30, out = options.out ?? path.join('out', packId, filmId);
+  const fps = options.fps ?? film.fps ?? 30, out = options.out ?? path.join(packPaths(packId).output, filmId);
   if (options.build !== false) await buildPack(packId, { recording: true });
   await mkdir(out, { recursive: true });
   let server: Awaited<ReturnType<typeof preview>> | undefined;
@@ -30,7 +31,7 @@ export async function recordFilm(packId: string, filmId: string, options: Record
   try {
     options.signal?.throwIfAborted();
     options.signal?.addEventListener('abort', interrupt);
-    server = await preview({ configFile: false, root: process.cwd(), build: { outDir: path.resolve('dist', packId) }, preview: { host: '127.0.0.1', port: 0 } });
+    server = await preview({ configFile: false, root: process.cwd(), build: { outDir: path.resolve(packPaths(packId).build) }, preview: { host: '127.0.0.1', port: 0 } });
     const address = server.httpServer.address();
     if (!address || typeof address === 'string') throw new Error('Static server failed');
     browser = await chromium.launch({ channel: 'chromium', headless: true });

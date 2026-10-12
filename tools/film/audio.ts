@@ -1,3 +1,4 @@
+import { packPaths } from '../packPaths';
 import { access, rename, rm } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
@@ -23,7 +24,7 @@ export async function dialogueAudio(pack: string, out: string, events: readonly 
     // Bound demuxer looping itself: infinite stream_loop can hang ffmpeg 6 at filter EOF.
     const durations: Record<string, number> = {};
     for (const event of events) if ((event.type === 'music-start' || event.type === 'bgm-start') && event.loop && durations[event.file] === undefined) {
-      const file = path.join(root, 'packs', pack, event.file);
+      const file = path.join(packPaths(pack, root).directory, event.file);
       const probe = await run(['-i', file, '-af', 'aresample=48000,aformat=channel_layouts=mono,astats=metadata=0:reset=0', '-f', 'null', '-']);
       const match = probe.stderr.match(/Number of samples: (\d+)/);
       const duration = match ? Number(match[1]) / 48000 : 0;

@@ -1,3 +1,4 @@
+import { packDirectory } from '../packPaths';
 import { readFile, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import type { Story, Source, Diagnostic } from './ast';
@@ -50,7 +51,7 @@ export async function artPack(packId: string, root = process.cwd(), force = fals
   const { jsonBytes } = await import('./compile');
   const input = await readStories(packId, root), diagnostics = [...input.diagnostics];
   if (diagnostics.some(d => d.level === 'error')) return diagnostics;
-  const folder = path.join(root, 'packs', packId), manifestFile = path.join(folder, 'story/.compiled.json');
+  const folder = packDirectory(packId, root), manifestFile = path.join(folder, 'story/.compiled.json');
   try {
     if (!input.config?.artRoot || !input.expressions) throw new StoryArtError({ file: `packs/${packId}/story/story.config.json`, line: 1 }, 'story art에는 읽을 수 있는 artRoot가 필요합니다');
     const files = await planArt(input.stories, path.resolve(folder, 'story', input.config.artRoot), input.expressions);

@@ -1,3 +1,4 @@
+import { packDirectory } from '../packPaths';
 import { parseManifest } from './ownership';
 import { parseStoryConfig } from './config';
 import type { StoryConfig } from './config';
@@ -9,8 +10,8 @@ import { expressionAliases } from './expressions';
 import type { Diagnostic, Story } from './ast';
 export interface StoryInput { stories: Story[]; diagnostics: Diagnostic[]; expressions?: ReadonlyMap<string, string> | null; config?: StoryConfig }
 export async function readStories(packId: string, root = process.cwd(), allowMissingArt = false): Promise<StoryInput> {
-  const folder = path.join(root, 'packs', packId, 'story'), diagnostics: Diagnostic[] = [], stories: Story[] = [];
-  const display = (file: string) => path.relative(root, file).split(path.sep).join('/');
+  const folder = path.join(packDirectory(packId, root), 'story'), diagnostics: Diagnostic[] = [], stories: Story[] = [];
+  const display = (file: string) => `packs/${packId}/` + path.relative(packDirectory(packId, root), file).split(path.sep).join('/');
   const io = (file: string, error: unknown) => diagnostics.push({ file: display(file), line: 1, level: 'error', code: 'S019', message: error instanceof Error ? error.message : String(error) });
   if (!/^[a-z][a-z0-9_]*$/.test(packId)) return { stories, diagnostics: [{ file: 'story', line: 1, code: 'S019', level: 'error', message: '팩 ID 형식 오류' }] };
   try {

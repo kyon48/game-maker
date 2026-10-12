@@ -1,3 +1,4 @@
+import { packDirectory } from '../packPaths';
 import { artPack } from './art';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
@@ -26,10 +27,15 @@ async function runTools(id: string, tools: readonly string[]): Promise<boolean> 
   }
   return true;
 }
+async function maybeArt(id: string) { const { readStories } = await import('./files'); return (await readStories(id)).stories.some(s => s.characters.some(c => c.art)) ? artPack(id) : []; }
 const runChecks = (id: string) => runTools(id, ['scenarios', 'films']);
-const usage = () => { console.error('story:1 S019 사용법: npm run story -- lint <packId> | compile <packId> [--force] [--force-maps] | art <packId> [--force] | film <packId> [--name main] [--force] | build <packId> | check <packId>|--all'); process.exitCode = 1; };
+const usage = () => { console.error('story:1 S019 사용법: npm run story -- new <packId> [--dir <path>] [--title <title>] | lint <packId> | compile <packId> [--force] [--force-maps] | art <packId> [--force] | film <packId> [--name main] [--force] | build <packId> | check <packId>|--all'); process.exitCode = 1; };
 try {
-  if (command === 'lint' && packId && !extra.length) print(await lintPack(packId));
+  if (command === 'new' && packId) {
+    const { newStory } = await import('./new'); const options: { dir?: string; title?: string } = {};
+    for (let i = 0; i < extra.length; i += 2) { if (!extra[i + 1]) throw new Error('Missing option value'); if (extra[i] === '--dir') options.dir = extra[i + 1]; else if (extra[i] === '--title') options.title = extra[i + 1]; else throw new Error('Unknown new option'); }
+    console.log(await newStory(packId, options));
+  } else if (command === 'lint' && packId && !extra.length) print(await lintPack(packId));
   else if (command === 'compile' && packId && extra.every(value => ['--force', '--force-maps'].includes(value))) {
     const diagnostics = await compilePack(packId, process.cwd(), { force: extra.includes('--force'), forceMaps: extra.includes('--force-maps') });
     if (!print(diagnostics) && !await validateCompiledPack(packId, process.cwd(), true)) process.exitCode = 1;
@@ -44,14 +50,14 @@ try {
     }
     if (!valid) usage(); else if (!print(await filmPack(packId, process.cwd(), name, force))) await runChecks(packId);
   } else if (command === 'build' && packId && !extra.length) {
-    if (!print(await lintPack(packId)) && !print(await compilePack(packId, process.cwd(), { suppressFilmWarning: true })) && !print(await artPack(packId)) && !print(await filmPack(packId))) {
+    if (!print(await lintPack(packId)) && !print(await compilePack(packId, process.cwd(), { suppressFilmWarning: true })) && !print(await maybeArt(packId)) && !print(await filmPack(packId))) {
       const { FsSource } = await import('../fsSource');
-      const hasVoices = await new FsSource(`packs/${packId}`).exists('voices.json');
+      const hasVoices = await new FsSource(packDirectory(packId)).exists('voices.json');
       if ((!hasVoices || await runTools(packId, ['tts'])) && await validateCompiledPack(packId)) await runChecks(packId);
       else process.exitCode = 1;
     } else process.exitCode = 1;
-  } else if (command === 'check' && packId && !extra.length) {
-    const ids = packId === '--all' ? await storyPackIds() : [packId];
+  } else if (command === 'check' && packId && extra.every(arg => arg === '--include-external')) {
+    const ids = packId === '--all' ? await storyPackIds(process.cwd(), extra.includes('--include-external')) : [packId];
     for (const id of ids) if (!print(await compilePack(id, process.cwd(), { check: true }))) console.log(`${id}: story check passed`);
   } else usage();
 } catch (error) { console.error(`story:1 S019 ${String(error)}`); process.exitCode = 1; }

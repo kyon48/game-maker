@@ -10,6 +10,7 @@ import type { NamedPlugin } from '../engine/sim/plugins/PluginRuntime';
 export async function loadPlugins(source: PackSource, root: string, diagnostics: Diagnostic[] = []): Promise<NamedPlugin[]> {
   const game = await source.readJson('game.json') as { plugins?: unknown };
   if (!Array.isArray(game.plugins) || !game.plugins.every(name => typeof name === 'string' && /^[a-z][a-z0-9_]*$/.test(name))) return [];
+  if (game.plugins.length && !path.resolve(root).startsWith(fileURLToPath(new URL('../', import.meta.url)))) { const { pluginAliases } = await import('./pluginAliases'); pluginAliases(root); }
   const loadedPlugins = await Promise.all(game.plugins.map(async (name, index) => {
     if (!await source.exists(`plugins/${name}.ts`)) {
       diagnostics.push({ level: 'error', code: 'V3', file: 'game.json', pointer: `/plugins/${index}`, message: `Missing plugin: plugins/${name}.ts` });
@@ -21,7 +22,8 @@ export async function loadPlugins(source: PackSource, root: string, diagnostics:
       diagnostics.push({ level: 'error', code: 'V2', file: `plugins/${name}.ts`, pointer: '', message: `Plugin load failed: ${String(error)}` });
       return null;
     }
-    return { name, module: loaded.default };
+    const exported = loaded.default as PluginModule & { default?: PluginModule };
+    return { name, module: exported.default ?? exported };
   }));
   return loadedPlugins.filter((plugin): plugin is NamedPlugin => plugin !== null);
 }

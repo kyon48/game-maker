@@ -43,3 +43,11 @@ film의 narrate도 실제 진행 시점의 G1 평문으로 추출한다. 첫 생
 `npm run story -- build <pack>`은 원고와 story.config.json의 목소리 키에서 voices.json·main film을 생성한 뒤 tts를 실행한다. 캐시에 없는 대사·나레이션만 생성하며 voice-manifest.json은 커밋한다. `story check`와 npm run check는 say를 호출하지 않고 이 매니페스트만 사용한다.
 
 추출용 리허설에서는 메시지를 수동 진행하되 cue는 유지한다. 대사 하나를 닫으면 다음 이벤트 나레이션 cue에서 멈추고 그 문장을 수집한 뒤 다음 대사로 넘어간다. 이벤트 나레이션은 원고의 정확한 위치에서 수집된다.
+
+## 외부 팩과 납품 (V4)
+
+GAME_PACKS_PATH에 외부 팩 부모 폴더(또는 팩 자체)를 콜론으로 구분해 등록한다. 같은 ID는 오류이며 외부 플러그인은 Node 22.15 이상이 필요하다. 모든 도구의 명시적 팩 ID와 dev 서버가 이 경로를 사용한다. --all은 기본 레포 팩만, --include-external을 함께 쓰면 외부도 처리한다. 외부 팩의 out·.cache·임시 빌드는 팩 폴더 안에 남는다.
+
+`npm run story -- new <id> [--dir <팩 폴더>] [--title "제목"]`은 덮어쓰기 없이 최소 원고·에셋·목소리 설정을 만든다. `npm run release -- <id> [--film main]`은 build·TTS·녹화·측정과 여섯 파일 납품을 실행한다. story/story.config.json의 targetMinutes로 목표 분량, story/release.md의 {title}/{chapters}/{credits}/{duration}으로 설명란을 지정한다. 기본 설명란은 TTS 사용을 알린다.
+
+상세 순서와 검수는 [제작 운영 절차](../../docs/09-production-runbook.md)를 따른다.

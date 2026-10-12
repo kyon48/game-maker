@@ -1,3 +1,4 @@
+import { packDirectory } from '../packPaths';
 import { FilmCueGate } from '../../engine/film/cues';
 import { narrationOptions } from '../../engine/film/narration';
 import { voiceLengths } from '../../engine/data/voice';
@@ -21,7 +22,7 @@ export function asFilm(value: unknown): Film {
 export async function filmFiles(source: FsSource): Promise<string[]> { return (await source.listFiles()).filter(file => /^films\/[^/]+\.film\.json$/.test(file)).sort(); }
 export async function prepareFilm(packId: string, id: string) {
   if (!filmId(packId) || !filmId(id)) throw new Error('Invalid pack/film id');
-  const source = new FsSource(`packs/${packId}`), plugins = await nodePluginRuntime(source, `packs/${packId}`);
+  const source = new FsSource(packDirectory(packId)), plugins = await nodePluginRuntime(source, packDirectory(packId));
   const result = await validatePack(source, packId, plugins.validationOptions);
   if (!result.pack) throw new Error(result.diagnostics.map(d => `${d.code} ${d.file}${d.pointer}: ${d.message}`).join('\n'));
   return { pack: result.pack, plugins, film: asFilm(await source.readJson(`films/${id}.film.json`)) };

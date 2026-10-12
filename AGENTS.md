@@ -12,6 +12,7 @@
 | `docs/08-story-to-game-plan.md` | 스토리 → 게임 → 영상 자동화(S 트랙)와 **현재 진행 순서**. `.story.md` 문법(§2.3) |
 | `docs/07-narration-style.md` | 나레이션 작법. 나레이션은 게임 대화창이 아니라 촬영 대본(film) 층에 둔다 |
 | `docs/05-mascot-bible.md` | 아트 기준(구현과 무관) |
+| `docs/09-production-runbook.md` | 제작 운영: 새 팩부터 영상 납품·검수까지 |
 | `docs/decisions.md` | 구현 중 결정 기록 |
 
 문서끼리 충돌하면 02 → 04/06/08 → 07 순으로 우선한다. 배경 자료(01, 03, archive)는 읽기만 한다.

@@ -1,12 +1,12 @@
 import { copyFileSync, mkdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { packDirectory } from './packPaths';
 const require = createRequire(import.meta.url);
 const packageRoot = dirname(require.resolve('galmuri/package.json'));
 const pack = process.argv[2] ?? 'demo';
 if (!/^[a-z][a-z0-9_]*$/.test(pack) || process.argv.length > 3) throw new Error('Usage: fonts [packId]');
-const destination = fileURLToPath(new URL(`../packs/${pack}/assets/fonts/`, import.meta.url));
+const destination = join(packDirectory(pack), 'assets/fonts');
 mkdirSync(destination, { recursive: true });
 copyFileSync(join(packageRoot, 'dist/Galmuri11.woff2'), join(destination, 'Galmuri11.woff2'));
 copyFileSync(join(packageRoot, 'dist/LICENSE.txt'), join(destination, 'OFL.txt'));

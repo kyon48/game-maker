@@ -83,3 +83,11 @@ G5 실제 녹화 확인(2026-10-12, ffmpeg-static loudnorm 분석의 input_i, �
 일반 manor 페이지에서 5파일 디코딩, 첫 입력 전 suspended, 입력 후 running, loop BGM 및 단서 획득 one-shot SFX의 실제 Web Audio source 시작을 Playwright로 확인했다. 결과 mp4는 out/에만 보관하며 커밋하지 않는다.
 
 G4: 내장 battle 씬은 일반 choice/press·진행 메시지로 입력하고 resultVar expect로 확인한다. film:verify는 debate win 전투도 두 번 녹화하여 프레임 RGBA 해시를 비교한다.
+
+## 외부 팩과 납품 (V4)
+
+GAME_PACKS_PATH에 외부 팩 부모 폴더(또는 팩 자체)를 콜론으로 구분해 등록한다. 같은 ID는 오류이며 외부 플러그인은 Node 22.15 이상이 필요하다. 모든 도구의 명시적 팩 ID와 dev 서버가 이 경로를 사용한다. --all은 기본 레포 팩만, --include-external을 함께 쓰면 외부도 처리한다. 외부 팩의 out·.cache·임시 빌드는 팩 폴더 안에 남는다.
+
+`npm run story -- new <id> [--dir <팩 폴더>] [--title "제목"]`은 덮어쓰기 없이 최소 원고·에셋·목소리 설정을 만든다. `npm run release -- <id> [--film main]`은 build·TTS·녹화·측정과 여섯 파일 납품을 실행한다. story/story.config.json의 targetMinutes로 목표 분량, story/release.md의 {title}/{chapters}/{credits}/{duration}으로 설명란을 지정한다. 기본 설명란은 TTS 사용을 알린다.
+
+상세 순서와 검수는 [제작 운영 절차](../../docs/09-production-runbook.md)를 따른다.

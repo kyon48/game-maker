@@ -14,7 +14,7 @@ export class FsSource implements PackSource {
   async listFiles(): Promise<readonly string[]> {
     const walk = async (dir: string): Promise<string[]> => {
       const entries = await readdir(path.join(this.root, dir), { withFileTypes: true });
-      return (await Promise.all(entries.map(entry => entry.isDirectory() ? walk(path.posix.join(dir, entry.name)) : [path.posix.join(dir, entry.name)]))).flat();
+      return (await Promise.all(entries.filter(entry => !['out', '.cache'].includes(entry.name)).map(entry => entry.isDirectory() ? walk(path.posix.join(dir, entry.name)) : [path.posix.join(dir, entry.name)]))).flat();
     };
     return walk('');
   }

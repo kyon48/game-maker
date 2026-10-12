@@ -1,3 +1,4 @@
+import { packPaths } from '../packPaths';
 import path from 'node:path';
 import type { FramedEvent } from '../../engine/film/timeline';
 import { frameOf } from '../../engine/film/timeline';
@@ -41,7 +42,7 @@ export function audioPlan(pack: string, events: readonly FramedEvent[], fps: 30 
     const { offset, duration, delay } = audioTiming(event, fps, startFrame), seconds = Math.min(duration, total - event.frame / fps);
     if (seconds <= 0) continue;
     if (!/^[a-f0-9]{64}$/.test(event.voiceKey)) throw new Error('Invalid voice key');
-    const file = path.join(root, '.cache/voice', pack, event.voiceKey + '.wav'), index = files.length, label = `voice${index}`;
+    const file = path.join(packPaths(pack, root).cache, event.voiceKey + '.wav'), index = files.length, label = `voice${index}`;
     files.push(file); args.push('-i', file);
     filters.push(`[${index}:a]atrim=start=${offset},asetpts=PTS-STARTPTS,aresample=48000,aformat=channel_layouts=stereo,apad=whole_dur=${seconds},atrim=duration=${seconds},adelay=${delay}:all=1[${label}]`);
     labels.push(`[${label}]`); speech.push({ start: event.frame / fps, end: event.frame / fps + seconds });
@@ -55,7 +56,7 @@ export function audioPlan(pack: string, events: readonly FramedEvent[], fps: 30 
     const seconds = Math.min(total - delay, stopTime + fadeOut - offset);
     if (seconds <= 0) continue;
     const reference = packPath('', event.file);
-    const file = path.join(root, 'packs', pack, reference), index = files.length, label = `music${index}`;
+    const file = path.join(packPaths(pack, root).directory, reference), index = files.length, label = `music${index}`;
     files.push(file); if (event.loop) { const length = musicDurations[event.file]; args.push('-stream_loop', String(length ? Math.max(0, Math.ceil((offset + seconds) / length) - 1) : -1)); } args.push('-t', String(offset + seconds), '-i', file);
     const fadeIn = event.fade > 0 ? `min(1,(t+${offset})/${event.fade})` : '1';
     const fade = fadeOut > 0 ? `max(0,min(1,(${stopTime + fadeOut}-(t+${offset}))/${fadeOut}))` : '1';
@@ -65,7 +66,7 @@ export function audioPlan(pack: string, events: readonly FramedEvent[], fps: 30 
   for (const event of events) if (event.type === 'sfx') {
     const original = frameOf(event.tick, fps), offset = Math.max(0, startFrame - original) / fps, delay = event.frame / fps;
     if (delay >= total) continue;
-    const file = path.join(root, 'packs', pack, packPath('', event.file)), index = files.length, label = `sfx${index}`;
+    const file = path.join(packPaths(pack, root).directory, packPath('', event.file)), index = files.length, label = `sfx${index}`;
     files.push(file); args.push('-i', file);
     filters.push(`[${index}:a]atrim=start=${offset},asetpts=PTS-STARTPTS,aresample=48000,aformat=channel_layouts=stereo,atrim=duration=${total - delay},volume=${event.volume},adelay=${Math.round(delay * 1000)}:all=1[${label}]`);
     labels.push(`[${label}]`);
